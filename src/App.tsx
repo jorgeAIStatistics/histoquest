@@ -25,7 +25,7 @@ function RouteError() {
         <h1>{err?.status === 404 ? 'That page does not exist' : 'This screen hit an error'}</h1>
         <p>Your progress is saved locally and was not affected.</p>
         {err?.message && <p className="small muted">{err.message}</p>}
-        <a className="btn btn-primary" href="/">Go to Today</a>
+        <a className="btn btn-primary" href={import.meta.env.BASE_URL}>Go to Today</a>
       </div>
     </Shell>
   )
@@ -53,7 +53,7 @@ const router = createBrowserRouter([
       { path: '*', element: <Navigate to="/" replace /> },
     ],
   },
-])
+], { basename: import.meta.env.BASE_URL.replace(/\/$/, '') || '/' })
 
 export default function App() {
   useApplyPrefs()
