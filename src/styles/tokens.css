@@ -1,0 +1,93 @@
+:root {
+  --ivory: #f6f1e7;
+  --paper: #fbf8f2;
+  --vellum: #efe8da;
+  --rule: #e0d7c5;
+  --ink: #1f1a2e;
+  --ink-2: #4a4458;
+  --ink-3: #6f6880;
+  --hema: #4a3a8c;
+  --hema-soft: #e7e2f4;
+  --eosin: #c93c6e;
+  --eosin-soft: #f7dfe7;
+  --teal: #2c8a80;
+  --teal-soft: #dcefeb;
+  --amber: #a5671a;
+  --amber-soft: #f6e8d2;
+  --danger: #b0303c;
+  --focus: #4a3a8c;
+  --shadow: 0 1px 0 rgba(31, 26, 46, 0.04), 0 8px 24px -12px rgba(31, 26, 46, 0.18);
+
+  --font-display: 'Literata', Georgia, 'Times New Roman', serif;
+  --font-body: 'Atkinson Hyperlegible Next', 'Atkinson Hyperlegible', system-ui, sans-serif;
+
+  /* Modular scale (1.2) on a 17px base */
+  --t-0: 0.833rem;
+  --t-1: 1rem;
+  --t-2: 1.2rem;
+  --t-3: 1.44rem;
+  --t-4: 1.728rem;
+  --t-5: 2.2rem;
+  --t-6: 2.8rem;
+
+  --r-s: 6px;
+  --r-m: 12px;
+  --r-l: 20px;
+  --gutter: clamp(16px, 4vw, 40px);
+  --dur: 220ms;
+  --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --ivory: #16131d;
+    --paper: #1e1a27;
+    --vellum: #272233;
+    --rule: #363045;
+    --ink: #eee9f6;
+    --ink-2: #c4bdd3;
+    --ink-3: #9a92ac;
+    --hema: #ab9df0;
+    --hema-soft: #2e2850;
+    --eosin: #f082a7;
+    --eosin-soft: #452234;
+    --teal: #63c6ba;
+    --teal-soft: #173a37;
+    --amber: #e1a65a;
+    --amber-soft: #3b2c18;
+    --danger: #f0828c;
+    --focus: #ab9df0;
+    --shadow: 0 1px 0 rgba(0, 0, 0, 0.3), 0 10px 30px -14px rgba(0, 0, 0, 0.7);
+    color-scheme: dark;
+  }
+}
+:root[data-theme='dark'] {
+  --ivory: #16131d;
+  --paper: #1e1a27;
+  --vellum: #272233;
+  --rule: #363045;
+  --ink: #eee9f6;
+  --ink-2: #c4bdd3;
+  --ink-3: #9a92ac;
+  --hema: #ab9df0;
+  --hema-soft: #2e2850;
+  --eosin: #f082a7;
+  --eosin-soft: #452234;
+  --teal: #63c6ba;
+  --teal-soft: #173a37;
+  --amber: #e1a65a;
+  --amber-soft: #3b2c18;
+  --danger: #f0828c;
+  --focus: #ab9df0;
+  --shadow: 0 1px 0 rgba(0, 0, 0, 0.3), 0 10px 30px -14px rgba(0, 0, 0, 0.7);
+  color-scheme: dark;
+}
+
+/* Unlockable accents re-tint the primary hue only; teal stays reserved for progress. */
+:root[data-accent='giemsa'] { --hema: #2f5aa8; --hema-soft: #dfe7f6; }
+:root[data-accent='trichrome'] { --hema: #2e6b4f; --hema-soft: #dcebe2; }
+:root[data-accent='congo'] { --hema: #a3352c; --hema-soft: #f5e0dc; }
+:root[data-theme='dark'][data-accent='giemsa'] { --hema: #8fb0f0; --hema-soft: #1f2b45; }
+:root[data-theme='dark'][data-accent='trichrome'] { --hema: #7fcaa3; --hema-soft: #1b3328; }
+:root[data-theme='dark'][data-accent='congo'] { --hema: #f09a8f; --hema-soft: #43231f; }
