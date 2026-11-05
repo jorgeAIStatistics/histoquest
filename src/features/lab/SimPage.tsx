@@ -13,6 +13,8 @@ const SIMS: Record<string, React.LazyExoticComponent<(p: SimProps) => ReactNode>
   'stain-studio': lazy(() => import('./sims/StainStudio')),
   'lab-math': lazy(() => import('./sims/LabMath')),
   'specimen-journey': lazy(() => import('./sims/SpecimenJourney')),
+  'fixation-detective': lazy(() => import('./sims/FixationDetective')),
+  'ihc-room': lazy(() => import('./sims/IhcRoom')),
 }
 
 export interface SimProps {

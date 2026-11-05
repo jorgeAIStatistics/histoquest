@@ -769,7 +769,7 @@ export const lessons: L[] = [
     review: checked,
   },
   {
-    id: 'L-02', version: 1, slug: 'penetration-vs-fixation', title: 'Penetration is not fixation', domain: 'FIX',
+    id: 'L-02', version: 1, simulation: 'fixation-detective', slug: 'penetration-vs-fixation', title: 'Penetration is not fixation', domain: 'FIX',
     objectives: ['FIX-02'], minutes: 10,
     labQuestion: 'If formalin has reached the center of a specimen, is the center fixed?',
     dermConnection: 'Skin biopsies are small, so penetration is quick, but crowding several punches into a container with little formalin can still leave them poorly fixed. Aim for a generous fixative volume (often 15–20:1) with specimens floating freely.',
@@ -894,7 +894,7 @@ export const lessons: L[] = [
     review: checked,
   },
   {
-    id: 'L-04', version: 1, slug: 'pigments-artifacts', title: 'Pigments, precipitates and fixation artifacts', domain: 'FIX',
+    id: 'L-04', version: 1, simulation: 'fixation-detective', slug: 'pigments-artifacts', title: 'Pigments, precipitates and fixation artifacts', domain: 'FIX',
     objectives: ['FIX-05', 'FIX-07'], minutes: 10,
     labQuestion: 'Brown granules appear on a slide. How do you tell a fixation artifact from a real pigment?',
     dermConnection: 'Skin is full of real pigments (melanin, hemosiderin). Recognizing formalin pigment, which lies on top of tissue in bloody areas and is iron-negative, avoids confusing artifact with diagnosis.',

@@ -4,7 +4,7 @@ Software verification and scientific verification are separate. **Passing tests 
 
 ## Software tests (2026-11-04)
 
-`npm run typecheck` is clean. `npm test` passes 32 tests; 2 env-gated helpers are skipped.
+`npm run typecheck` is clean. `npm test` passes 36 tests; 2 env-gated helpers are skipped. (Rerun 2026-11-05 after adding Fixation detective and the IHC room.)
 
 **`src/engine/engine.test.ts`**
 - Local-date handling across DST and month ends.
@@ -27,6 +27,8 @@ Software verification and scientific verification are separate. **Passing tests 
 
 **`src/features/lab/sims/sims.test.ts`**
 - Processing rules accept the correct sequence and flag each class of error.
+- Fixation detective cases: one best approach per case, mixed variable and artifact sets, and scoring that penalizes wrong picks.
+- IHC runs: one correct answer per decision, all four control slides present, and encoded QC rules. A failed external positive control, or signal in the negative reagent control, always makes the run uninterpretable; a passing external control with failing internal controls is a specimen problem.
 - Lab-math generator: across 234 generated problems, every stated answer passes the grader and common errors fail it. Known values are checked, for example 70% from 95% for 500 mL = 368.42 mL.
 
 **`src/content/content.test.ts`**
@@ -119,7 +121,7 @@ Facts the authors deliberately softened to ranges or qualitative wording, which 
 
 1. **Expert review.** A qualified HTL(ASCP) reviewer should review all items, starting with the softened facts above and the HTL-only chemistry. Record `reviewer` and `reviewedOn`.
 2. **Thin objectives.** STAIN-11 (mounting and refractive index), STAIN-13 (dye chemistry) and STAIN-14 (Romanowsky and Pap) have one question each. Several FIX, PROC and EMB objectives have two. Add more original questions here first.
-3. **Fixation detective and IHC troubleshooting room.** Both are designed but not built, and are marked "In development" with no interactive controls. IHC topics are taught in L-16, the IHC layers demo and the bank.
+3. **Simulation depth.** Fixation detective has 5 cases and the IHC room has 6 runs. Both are rule-based and qualitative, and their content is author-checked like everything else. Add more cases, for example zinc formalin for flow-like markers, under-fixed breast tissue for predictive markers, and ISH runs.
 4. **Licensed micrographs.** None are bundled. Image questions use original schematics only. Add a sourced, licensed asset registry, with verified annotations, before any photomicrograph questions.
 5. **Older guideline comparison.** The guideline for exams through Oct 31, 2026 was not diffed against the current one. This only matters for someone who tested before Nov 1, 2026.
 6. **Optional grounded AI tutor.** Not built. The app has a structured hint ladder and says plainly that no AI tutor is connected. A future tutor needs a small server for credentials, retrieval over the atlas and lessons, and citation of the passages it used.

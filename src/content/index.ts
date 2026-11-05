@@ -41,12 +41,12 @@ export const DOMAIN_NAMES = Object.fromEntries(ACTIVE_GUIDELINE.domains.map((d) 
 
 export const SIMULATIONS: { id: string; title: string; station: string; status: 'ready' | 'in-development'; objectives: string[]; blurb: string }[] = [
   { id: 'specimen-journey', title: 'Specimen journey', station: 'accessioning', status: 'ready', objectives: ['FIX-02', 'PROC-01', 'EMB-01', 'STAIN-07', 'OPS-08'], blurb: 'Follow a fictional shave biopsy from receipt to slide review. Every decision has downstream consequences.' },
-  { id: 'fixation-detective', title: 'Fixation detective', station: 'fixation', status: 'in-development', objectives: ['FIX-02', 'FIX-03'], blurb: 'Diagnose fixation problems from tissue, test and artifact evidence.' },
+  { id: 'fixation-detective', title: 'Fixation detective', station: 'fixation', status: 'ready', objectives: ['FIX-02', 'FIX-03', 'FIX-04', 'FIX-05'], blurb: 'Five fixation problems: pick the variables that matter, choose an approach, and predict the artifacts.' },
   { id: 'processing-bench', title: 'Processing bench', station: 'processor', status: 'ready', objectives: ['PROC-01', 'PROC-02', 'PROC-06'], blurb: 'Arrange a processing schedule and troubleshoot what goes wrong when the order breaks.' },
   { id: 'embedding-studio', title: 'Embedding studio', station: 'embedding', status: 'ready', objectives: ['EMB-01'], blurb: 'Rotate tissue in the mold and preview what the sectioning plane will show.' },
   { id: 'microtomy-challenge', title: 'Microtomy challenge', station: 'microtome', status: 'ready', objectives: ['EMB-02', 'EMB-03'], blurb: 'Investigate chatter, compression, folds and knife lines. Weigh competing causes.' },
   { id: 'stain-studio', title: 'Stain studio', station: 'stainer', status: 'ready', objectives: ['STAIN-01', 'STAIN-02', 'STAIN-07'], blurb: 'Build H&E and PAS/PAS-D sequences, match targets, and predict results.' },
-  { id: 'ihc-room', title: 'IHC troubleshooting room', station: 'ihc', status: 'in-development', objectives: ['STAIN-08', 'STAIN-09'], blurb: 'Decide whether a failed run is interpretable and what to investigate next.' },
+  { id: 'ihc-room', title: 'IHC troubleshooting room', station: 'ihc', status: 'ready', objectives: ['STAIN-08', 'STAIN-09'], blurb: 'Six failed IHC runs: read the controls, decide if the run is interpretable, and choose what to investigate first.' },
   { id: 'lab-math', title: 'Laboratory mathematics', station: 'bench', status: 'ready', objectives: ['OPS-03', 'OPS-04'], blurb: 'Step-by-step solutions and dilutions, graded on number and unit.' },
 ]
 export const SIM_TITLES = Object.fromEntries(SIMULATIONS.map((s) => [s.id, s.title]))

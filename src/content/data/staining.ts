@@ -996,7 +996,7 @@ export const lessons: L[] = [
     review: checked,
   },
   {
-    id: 'L-16', version: 1, slug: 'ihc-retrieval-detection-controls', title: 'IHC: retrieval, detection and controls', domain: 'STAIN',
+    id: 'L-16', version: 1, simulation: 'ihc-room', slug: 'ihc-retrieval-detection-controls', title: 'IHC: retrieval, detection and controls', domain: 'STAIN',
     objectives: ['STAIN-08', 'STAIN-09', 'STAIN-10'], minutes: 15, prerequisites: ['L-01'],
     labQuestion: 'An IHC run shows no staining anywhere, including the control. Which layer do you suspect first, and how do you prove it?',
     basics: [

@@ -25,7 +25,7 @@ No account, server or API key is needed. Progress is stored in this browser's `l
 |---|---|
 | Today: 10/20/45-minute plan with reasons, skip, move to tomorrow, resume | `src/features/today` |
 | Learn: 19 lessons in an 8-step structure (bench question → takeaway and sources) | `src/features/learn` |
-| Virtual Lab: 6 working simulations and 2 marked "in development" | `src/features/lab` |
+| Virtual Lab: 8 simulations, from specimen journey to the IHC troubleshooting room | `src/features/lab` |
 | Practice: quick quiz, area practice, cases, review queue, timed exams | `src/features/practice` |
 | Progress: readiness with uncertainty ranges, separate evidence streams, badges | `src/features/progress` |
 | Atlas, Route 2 tracker, Settings | `src/features/{atlas,route2,settings}` |

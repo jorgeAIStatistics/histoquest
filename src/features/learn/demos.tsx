@@ -8,7 +8,7 @@ import { Segmented, SimNotice } from '../../ui/components'
 type Demo = Lesson['demo']
 
 /** Penetration (diffusion front, ~√t) runs ahead of fixation (slower chemical cross-linking). Qualitative only. */
-function PenetrationDemo() {
+export function PenetrationDemo() {
   const [hours, setHours] = useState(4)
   const [size, setSize] = useState<4 | 15>(15)
   const r = 120
@@ -234,7 +234,7 @@ const IHC_STEPS = [
   { id: 'counter', label: 'Hematoxylin counterstain', miss: 'Without counterstain, positive cells cannot be placed in context.' },
 ]
 
-function IhcLayersDemo() {
+export function IhcLayersDemo() {
   const [on, setOn] = useState<Record<string, boolean>>(Object.fromEntries(IHC_STEPS.map((s) => [s.id, true])))
   const all = IHC_STEPS.every((s) => on[s.id])
   const signal = on.primary && on.polymer && on.dab ? (on.retrieval ? 'strong' : 'weak') : 'none'

@@ -10,7 +10,7 @@ Generated from the content bank. Guideline: HT(ASCP), HT(ASCPi), HTL(ASCP), HTL(
 | Questions | 140 | ≥ 120 |
 | Retrieval cards | 88 | ≥ 60 |
 | Atlas entries | 98 | — |
-| Simulations working | 6 of 8 | 4 required |
+| Simulations working | 8 of 8 | 4 required |
 
 ## Review status
 
@@ -79,9 +79,9 @@ Every item is `author-checked`: written to match standard teaching, with textboo
 | Id | Title | Objectives | Demo | Simulation | Retrieval questions |
 |---|---|---|---|---|---|
 | L-01 | Why formalin works: cross-linking chemistry | FIX-01, FIX-06 | crosslink | — | Q-FIX-001, Q-FIX-003, Q-FIX-023, Q-FIX-024 |
-| L-02 | Penetration is not fixation | FIX-02 | penetration-vs-fixation | — | Q-FIX-004, Q-FIX-005, Q-FIX-006, Q-FIX-008 |
+| L-02 | Penetration is not fixation | FIX-02 | penetration-vs-fixation | fixation-detective | Q-FIX-004, Q-FIX-005, Q-FIX-006, Q-FIX-008 |
 | L-03 | Choosing a fixative for the test that comes next | FIX-03, FIX-04 | sequence | — | Q-FIX-009, Q-FIX-011, Q-FIX-014, Q-FIX-016 |
-| L-04 | Pigments, precipitates and fixation artifacts | FIX-05, FIX-07 | sequence | — | Q-FIX-019, Q-FIX-020, Q-FIX-021, Q-FIX-026 |
+| L-04 | Pigments, precipitates and fixation artifacts | FIX-05, FIX-07 | sequence | fixation-detective | Q-FIX-019, Q-FIX-020, Q-FIX-021, Q-FIX-026 |
 | L-05 | Dehydration, clearing, infiltration | PROC-01, PROC-06 | sequence | processing-bench | Q-PROC-001, Q-PROC-002, Q-PROC-003, Q-PROC-019 |
 | L-06 | When processing fails | PROC-02, PROC-04 | sequence | processing-bench | Q-PROC-004, Q-PROC-005, Q-PROC-012, Q-PROC-014 |
 | L-07 | Decalcification and its endpoint | PROC-03, PROC-05 | sequence | — | Q-PROC-007, Q-PROC-009, Q-PROC-011, Q-PROC-017 |
@@ -93,7 +93,7 @@ Every item is `author-checked`: written to match standard teaching, with textboo
 | L-13 | Fibers and amyloid: trichrome, elastic, reticulin, Congo red | STAIN-03 | sequence | — | Q-STAIN-010, Q-STAIN-011, Q-STAIN-015, Q-STAIN-014 |
 | L-14 | Finding microorganisms | STAIN-04, STAIN-07 | sequence | — | Q-STAIN-016, Q-STAIN-017, Q-STAIN-019, Q-STAIN-020 |
 | L-15 | Pigments and minerals | STAIN-05, STAIN-06 | sequence | — | Q-STAIN-021, Q-STAIN-022, Q-STAIN-023, Q-STAIN-025 |
-| L-16 | IHC: retrieval, detection and controls | STAIN-08, STAIN-09, STAIN-10 | ihc-layers | — | Q-STAIN-031, Q-STAIN-032, Q-STAIN-034, Q-STAIN-035 |
+| L-16 | IHC: retrieval, detection and controls | STAIN-08, STAIN-09, STAIN-10 | ihc-layers | ihc-room | Q-STAIN-031, Q-STAIN-032, Q-STAIN-034, Q-STAIN-035 |
 | L-17 | Laboratory mathematics: solutions and dilutions | OPS-03, OPS-04 | dilution-bench | lab-math | Q-OPS-003, Q-OPS-004, Q-OPS-008, Q-OPS-009 |
 | L-18 | Safety and exposure limits in the histology lab | OPS-01, OPS-02 | sequence | — | Q-OPS-011, Q-OPS-012, Q-OPS-013, Q-OPS-014 |
 | L-19 | Quality systems, regulations, management and teaching | OPS-05, OPS-06, OPS-07, OPS-08 | sequence | — | Q-OPS-021, Q-OPS-022, Q-OPS-023, Q-OPS-024 |
