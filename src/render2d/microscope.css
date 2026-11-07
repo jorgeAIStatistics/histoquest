@@ -1,0 +1,437 @@
+.microscope {
+  margin-block: 1.5rem;
+  color: var(--ink);
+  font-family: var(--font-body);
+  overflow-wrap: anywhere;
+}
+.microscope *,
+.microscope *::before,
+.microscope *::after {
+  box-sizing: border-box;
+}
+.microscope-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+.microscope-heading h3 {
+  margin: 0 0 0.35rem;
+  font-family: var(--font-display);
+  font-size: var(--t-3);
+}
+.microscope-heading p {
+  margin: 0;
+  color: var(--ink-2);
+}
+.microscope-family {
+  color: var(--ink-2);
+  font-size: var(--t-0);
+  text-align: right;
+}
+.microscope-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 1rem 1.5rem;
+  padding-block: 0.75rem 1rem;
+}
+.microscope fieldset {
+  min-width: 0;
+  border: 0;
+  padding: 0;
+  margin: 0;
+}
+.microscope legend {
+  margin-bottom: 0.4rem;
+  padding: 0;
+  color: var(--ink-2);
+  font-size: var(--t-0);
+}
+.microscope-objectives > div {
+  display: flex;
+  gap: 0;
+  border: 1px solid var(--rule);
+  border-radius: var(--r-s);
+  overflow: hidden;
+}
+.microscope-objectives label {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-height: 44px;
+  padding: 0.5rem 0.6rem;
+  margin: 0;
+  cursor: pointer;
+  background: var(--paper);
+  font-variant-numeric: tabular-nums;
+}
+.microscope-objectives label + label {
+  border-left: 1px solid var(--rule);
+}
+.microscope-objectives .is-selected {
+  color: var(--hema);
+  background: var(--hema-soft);
+  font-weight: 700;
+}
+.microscope input[type='radio'],
+.microscope input[type='checkbox'] {
+  accent-color: var(--hema);
+  width: 1rem;
+  height: 1rem;
+  flex-shrink: 0;
+  margin: 0;
+}
+.microscope-pan {
+  display: flex;
+  gap: 0.25rem;
+  align-items: center;
+}
+.microscope button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 44px;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--rule);
+  border-radius: var(--r-s);
+  background: var(--paper);
+  color: var(--ink);
+  font: inherit;
+  font-size: var(--t-0);
+  cursor: pointer;
+}
+.microscope button:hover {
+  background: var(--vellum);
+  border-color: var(--ink-3);
+}
+.microscope button:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+.microscope button:focus-visible,
+.microscope input:focus-visible,
+.microscope summary:focus-visible,
+.microscope-field:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 3px;
+}
+.microscope-pan button:not(:nth-child(3)) {
+  min-width: 44px;
+  padding-inline: 0.5rem;
+}
+.microscope-checkbox {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  min-height: 44px;
+  color: var(--ink-2);
+  font-size: var(--t-0);
+}
+.microscope-panels {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1rem;
+}
+.microscope-panels.is-comparing {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.microscope-panel {
+  min-width: 0;
+}
+.microscope-panel-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.5rem;
+  padding: 0.65rem 0.8rem;
+  background: var(--ink);
+  color: var(--paper);
+  border-radius: var(--r-s) var(--r-s) 0 0;
+}
+.microscope-panel-heading strong {
+  font-weight: 700;
+  font-size: var(--t-0);
+}
+.microscope-panel-heading span {
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+}
+.microscope-field {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 8 / 5;
+  overflow: hidden;
+  isolation: isolate;
+  background: #fffdf9;
+  touch-action: none;
+}
+.microscope-tool-pan {
+  cursor: grab;
+}
+.microscope-tool-pan:active {
+  cursor: grabbing;
+}
+.microscope-tool-measure,
+.microscope-tool-annotate {
+  cursor: crosshair;
+}
+.microscope-field canvas {
+  display: block;
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.microscope-field canvas[hidden] {
+  display: none;
+}
+.microscope-marks {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  fill: #1f1a2e;
+}
+.microscope-crosshair {
+  stroke: #1f1a2e;
+  stroke-width: 1;
+  opacity: 0.7;
+}
+.microscope-measure-line {
+  stroke: #1f1a2e;
+  stroke-width: 2;
+}
+.microscope-marks text {
+  font-family: var(--font-body);
+  font-size: inherit;
+  font-weight: 700;
+  paint-order: stroke;
+  stroke: #fffdf9;
+  stroke-width: 3px;
+}
+.microscope-annotation-dot {
+  fill: #4a3a8c;
+  stroke: #fffdf9;
+  stroke-width: 2;
+}
+.microscope-marks .microscope-annotation-number {
+  fill: #fffdf9;
+  stroke: none;
+  text-anchor: middle;
+  font-size: inherit;
+}
+.microscope-pending {
+  fill: none;
+  stroke: #1f1a2e;
+  stroke-width: 2;
+}
+.microscope-scale {
+  position: absolute;
+  left: 4%;
+  bottom: 8%;
+  height: 9px;
+  border: solid #1f1a2e;
+  border-width: 0 2px 2px;
+  filter: drop-shadow(0 1px 1px #fff);
+  pointer-events: none;
+}
+.microscope-scale span {
+  position: absolute;
+  left: 50%;
+  bottom: 11px;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  color: #1f1a2e;
+  background: #fffdf9d9;
+  padding: 1px 5px;
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+}
+.microscope-field-caption {
+  color: var(--ink-2);
+  font-size: var(--t-0);
+  margin: 0.55rem 0 0;
+  line-height: 1.45;
+}
+.microscope-backend-note {
+  color: var(--ink-2);
+  font-size: var(--t-0);
+  margin: 0.35rem 0 0;
+}
+.microscope-image-error {
+  position: absolute;
+  inset: 20%;
+  color: #1f1a2e;
+  text-align: center;
+}
+.microscope-optics {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1rem 1.5rem;
+  margin-top: 1.5rem;
+  padding-block: 1rem;
+  border-block: 1px solid var(--rule);
+}
+.microscope-optics label {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.35rem 0.5rem;
+  align-items: baseline;
+  font-size: var(--t-0);
+}
+.microscope-optics output {
+  color: var(--ink-2);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.75rem;
+}
+.microscope-optics input[type='range'] {
+  grid-column: 1 / -1;
+  width: 100%;
+  accent-color: var(--hema);
+  min-height: 32px;
+  margin: 0;
+}
+.microscope-tools {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.25rem;
+  align-items: end;
+  padding-top: 1.25rem;
+}
+.microscope-tool-choices {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+.microscope-tool-choices label {
+  display: inline-flex;
+  gap: 0.4rem;
+  align-items: center;
+  min-height: 44px;
+  font-size: var(--t-0);
+}
+.microscope-position {
+  margin-left: auto;
+  padding-block: 0.75rem;
+  color: var(--ink-2);
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+}
+.microscope-label-input {
+  flex: 1 1 200px;
+  display: grid;
+  gap: 0.35rem;
+  color: var(--ink-2);
+  font-size: var(--t-0);
+}
+.microscope-label-input input {
+  width: 100%;
+  min-height: 44px;
+  border: 1px solid var(--rule);
+  border-radius: var(--r-s);
+  padding: 0.5rem 0.7rem;
+  background: var(--paper);
+  color: var(--ink);
+  caret-color: var(--hema);
+  font: inherit;
+}
+.microscope-label-input input::placeholder {
+  color: var(--ink-2);
+  opacity: 1;
+}
+.microscope-mark-status {
+  min-height: 1.5em;
+  color: var(--ink-2);
+  font-size: var(--t-0);
+  margin-block: 0.7rem 1.25rem;
+}
+.microscope-mark-list {
+  padding-block: 0.75rem;
+  border-top: 1px solid var(--rule);
+}
+.microscope-mark-list h4 {
+  margin: 0 0 0.5rem;
+}
+.microscope-mark-list ol {
+  padding-left: 1.5rem;
+}
+.microscope-mark-list span,
+.microscope-mark-list p {
+  font-size: var(--t-0);
+  color: var(--ink-2);
+}
+.microscope-description {
+  border-top: 1px solid var(--rule);
+  padding-block: 0.75rem;
+}
+.microscope-description summary {
+  cursor: pointer;
+  padding-block: 0.5rem;
+  color: var(--hema);
+  font-weight: 700;
+}
+.microscope-description p,
+.microscope-description li {
+  max-width: 75ch;
+  color: var(--ink-2);
+  font-size: var(--t-0);
+  line-height: 1.6;
+}
+.microscope-description li + li {
+  margin-top: 0.35rem;
+}
+.microscope-description a {
+  color: var(--hema);
+  text-underline-offset: 0.18em;
+}
+.microscope ::selection {
+  background: var(--hema-soft);
+  color: var(--ink);
+}
+@media (max-width: 850px) {
+  .microscope-optics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .microscope-panels.is-comparing {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .microscope-heading {
+    align-items: start;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .microscope-family {
+    text-align: left;
+  }
+}
+@media (max-width: 480px) {
+  .microscope-toolbar {
+    gap: 0.75rem;
+  }
+  .microscope-objectives {
+    width: 100%;
+  }
+  .microscope-objectives > div {
+    width: 100%;
+  }
+  .microscope-objectives label {
+    flex: 1;
+    justify-content: center;
+    padding-inline: 0.4rem;
+  }
+  .microscope-panel-heading {
+    padding-inline: 0.55rem;
+  }
+  .microscope-optics {
+    gap: 1rem;
+  }
+  .microscope-position {
+    width: 100%;
+    margin: 0;
+    padding: 0;
+  }
+}

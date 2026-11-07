@@ -116,6 +116,105 @@ Every item is `author-checked`: written to match standard teaching, with textboo
 
 | Source | Access for this build |
 |---|---|
+| NordiQC epitope guidance: ASMA | Read |
+| NordiQC epitope guidance: DES | Read |
+| NordiQC epitope guidance: VIM | Read |
+| NordiQC epitope guidance: S100 | Read |
+| NordiQC epitope guidance: SOX10 | Read |
+| NordiQC epitope guidance: MLA | Read |
+| NordiQC epitope guidance: MSA | Read |
+| NordiQC epitope guidance: EMA | Read |
+| NordiQC epitope guidance: CD45 | Read |
+| NordiQC epitope guidance: CD3 | Read |
+| NordiQC epitope guidance: CD20 | Read |
+| NordiQC epitope guidance: CD79a | Read |
+| NordiQC epitope guidance: CD10 | Read |
+| NordiQC epitope guidance: CD30 | Read |
+| NordiQC epitope guidance: CD34 | Read |
+| NordiQC epitope guidance: CD31 | Read |
+| NordiQC epitope guidance: ERG | Read |
+| NordiQC epitope guidance: Ki67 | Read |
+| NordiQC epitope guidance: p53 | Read |
+| NordiQC epitope guidance: p63 | Read |
+| NordiQC epitope guidance: p40 | Read |
+| NordiQC epitope guidance: TTF1 | Read |
+| NordiQC epitope guidance: CDX2 | Read |
+| NordiQC epitope guidance: GATA3 | Read |
+| NordiQC epitope guidance: ER | Read |
+| NordiQC epitope guidance: PR | Read |
+| NordiQC epitope guidance: HER2 IHC | Read |
+| NordiQC epitope guidance: SYP | Read |
+| NordiQC epitope guidance: CGA | Read |
+| NordiQC epitope guidance: INSM1 | Read |
+| NordiQC epitope guidance: WT1 | Read |
+| NordiQC epitope guidance: PAX8 | Read |
+| NordiQC epitope guidance: CALRET | Read |
+| NordiQC epitope guidance: Podop | Read |
+| NordiQC epitope guidance: MLH1 | Read |
+| NordiQC epitope guidance: PMS2 | Read |
+| NordiQC epitope guidance: MSH2 | Read |
+| NordiQC epitope guidance: MSH6 | Read |
+| NordiQC epitope guidance: PD-L1 (TPS/CPS) | Read |
+| NordiQC epitope guidance: ALK (lung) | Read |
+| NordiQC epitope guidance: ECAD | Read |
+| NordiQC epitope guidance: CD117 | Read |
+| NordiQC epitope guidance: DOG1 | Read |
+| NordiQC epitope guidance: GFAP | Read |
+| NordiQC epitope guidance: p16 | Read |
+| NordiQC epitope guidance: Bcl-2 | Read |
+| NordiQC epitope guidance: Bcl-6 | Read |
+| NordiQC epitope guidance: CyD1 | Read |
+| NordiQC epitope guidance: CD68 | Read |
+| NordiQC epitope guidance: CD163 | Read |
+| NordiQC epitope guidance: CD138 | Read |
+| NordiQC epitope guidance: PAX5 | Read |
+| NordiQC epitope guidance: Napsin A | Read |
+| NordiQC epitope guidance: NKX3.1 | Read |
+| NordiQC epitope guidance: SATB2 | Read |
+| NordiQC epitope guidance: AMACR | Read |
+| NordiQC epitope guidance: PSA | Read |
+| NordiQC cytokeratin control guidance | Read |
+| WebPath historical staining manual: PAS | Read |
+| WebPath historical staining manual: PAS with diastase | Read |
+| WebPath historical staining manual: Alcian blue pH 2.5 | Read |
+| WebPath historical staining manual: Mucicarmine | Read |
+| WebPath historical staining manual: Colloidal iron | Read |
+| WebPath historical staining manual: Masson trichrome | Read |
+| WebPath historical staining manual: Verhoeff elastic / Van Gieson | Read |
+| WebPath historical staining manual: Reticulin silver | Read |
+| WebPath historical staining manual: Congo red | Read |
+| WebPath historical staining manual: Tissue Gram | Read |
+| WebPath historical staining manual: Acid-fast stain | Read |
+| WebPath historical staining manual: Fite method | Read |
+| WebPath historical staining manual: Grocott methenamine silver | Read |
+| WebPath historical staining manual: Rapid Giemsa variant | Read |
+| WebPath historical staining manual: Perls iron | Read |
+| WebPath historical staining manual: Fontana–Masson | Read |
+| WebPath historical staining manual: Oil Red O | Read |
+| WebPath historical staining manual: Luxol fast blue | Read |
+| WebPath historical staining manual: Toluidine blue | Read |
+| Colour Deconvolution preset vector data: H&E DAB | Read |
+| Colour Deconvolution 2: method and calibration guidance | Read |
+| Quantification of histochemical staining by color deconvolution | Read |
+| Androgen receptor: antigen background | Read |
+| Beta-catenin: antigen background | Read |
+| Anti-NeuN MAB377: characteristics and controls | Read |
+| Kappa and Lambda mRNA CISH: user manual | Read |
+| Epstein-Barr Virus PNA Probe/Fluorescein: target summary | Read |
+| RNAscope high-risk HPV target and control concepts | Read |
+| RNAscope RNA ISH troubleshooting and controls | Read |
+| Steps to better ISH staining | Read |
+| Troubleshooting routine histology: coverslipping | Read |
+| Digital-ready slides: coverslipping and focus | Read |
+| 101 steps to better histology: reagent and mounting quality | Read |
+| H&E basics, part 4: troubleshooting | Read |
+| How to create a high-quality H&E staining protocol | Read |
+| Testing and validating H&E staining systems | Read |
+| Fundamentals of hematoxylin and eosin staining | Read |
+| Papanicolaou stains, Procedure HT40, revision 10 (2025) | Read |
+| DPX new: optical specification and application | Read |
+| Neo-Mount: solvent compatibility | Read |
+| Crystal Mount: chromogen and dye compatibility | Read |
 | Practical Guide to Specimen Handling in Surgical Pathology, version 12 (March 2025) | Not accessed (general reference only) |
 | Histology Guide: virtual microscopy laboratory and tissue chapters | Read |
 | An Introduction to Specimen Preparation | Read |

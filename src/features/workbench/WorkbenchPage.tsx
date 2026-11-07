@@ -1,4 +1,13 @@
-import { createContext, useContext, useEffect, useRef, useState } from 'react'
+import {
+  createContext,
+  lazy,
+  Suspense,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 import { Link } from 'react-router-dom'
 import { recordSim, setState, useAppState } from '../../store/store'
 import { References } from '../../ui/components'
@@ -15,6 +24,10 @@ import {
   type SpecimenCase,
   type WorkbenchRun,
 } from './model'
+
+import { workbenchTwin, idealControls, type WorkbenchSlide } from './twin'
+import { slideAppearance } from '../../sim/specimen/appearance'
+const Microscope = lazy(() => import('../../render2d/Microscope'))
 
 const ChoiceSeed = createContext('legacy-workbench-v3')
 
@@ -128,7 +141,7 @@ const TASKS = [
   'Choose a preservation pathway that respects the requested studies. Timings must follow a validated method.',
   'Put the three reagent exchanges in order, then select the specimen class for the teaching processor.',
   'Choose the face that will be cut. Predict whether the requested tissue relationship will be visible.',
-  'Prepare a modeled 4 µm section. Inspect how blade and block settings affect the ribbon.',
+  'Prepare a modeled 3–5 µm section. Inspect how blade and block settings affect the ribbon.',
   'Complete the major H&E milestones and inspect how contrast changes. These milestones summarize a full validated method.',
   'Match the requested target to the stain. Include evidence that the method can demonstrate its target.',
   'The sample is negative and the external positive control has failed. Decide what happens next and identify the expected compartment.',
@@ -698,6 +711,12 @@ function LiveStage({ run, specimen }: { run: WorkbenchRun; specimen: SpecimenCas
 
 export default function WorkbenchPage() {
   const run = useAppState((s) => s.workbench)
+  const [slideView, setSlideView] = useState<WorkbenchSlide>('he')
+  const twin = useMemo(() => (run ? workbenchTwin(run, slideView) : null), [run, slideView])
+  const reference = useMemo(
+    () => (run ? workbenchTwin({ ...run, controls: idealControls(run.caseId) }, slideView) : null),
+    [run, slideView],
+  )
   const [choosing, setChoosing] = useState(false)
   const stageHeading = useRef<HTMLHeadingElement>(null)
   const specimen = CASES.find((c) => c.id === run?.caseId)
@@ -904,6 +923,71 @@ export default function WorkbenchPage() {
               </div>
             </section>
           )}
+          {twin && reference && run.controls.section !== null && (
+            <section className="bench-microscopy" aria-label="Causal slide preview">
+              <div className="workbench-heading">
+                <div>
+                  <span className="small muted">Preparation becomes visible</span>
+                  <h2>Your specimen under the microscope</h2>
+                </div>
+                <label>
+                  Slide preparation{' '}
+                  <select
+                    className="input"
+                    value={slideView}
+                    onChange={(e) => setSlideView(e.target.value as WorkbenchSlide)}
+                  >
+                    <option value="he">Routine H&E</option>
+                    <option value="special" disabled={!run.controls.stain}>
+                      Special stain
+                    </option>
+                    <option value="ihc" disabled={!run.controls.ihcAction}>
+                      IHC
+                    </option>
+                  </select>
+                </label>
+              </div>
+              <p className="small muted">
+                Each view represents a separate synthetic section from the same block. Preparation
+                history determines preservation, orientation, tears and stain contrast. Identity and
+                control validity are assessed separately from appearance.
+              </p>
+              {twin.identity.broken && (
+                <p className="notice">
+                  Identity is unresolved. The image cannot establish which specimen a section
+                  belongs to.
+                </p>
+              )}
+              {slideView === 'ihc' && !twin.ihc.valid && (
+                <p className="notice">
+                  IHC controls do not support interpretation. A negative-looking image is not an
+                  interpretable negative.
+                </p>
+              )}
+              <Suspense fallback={<p role="status">Preparing the simulated slide…</p>}>
+                <Microscope appearance={slideAppearance(twin)} ideal={slideAppearance(reference)} />
+              </Suspense>
+              <details className="deeper">
+                <summary>Inspect the synthetic preparation record</summary>
+                <p>
+                  Fixed field: {Math.round(twin.fixation.crosslink * 100)}% · Block face
+                  represented: {Math.round(twin.embedding.representation * 100)}% · Remaining
+                  tissue: {Math.round(twin.block.remaining)} µm.
+                </p>
+                <p>
+                  The earlier station controls summarize these operations. The Lab work surface
+                  exposes the individual events and numeric parameters.
+                </p>
+                <ol>
+                  {twin.events.map((e) => (
+                    <li key={e.sequence}>
+                      {e.t.toFixed(1)} simulation min · {e.station}: {e.intent}
+                    </li>
+                  ))}
+                </ol>
+              </details>
+            </section>
+          )}
           <section className="specimen-record">
             <h2>Specimen record</h2>
             {run.findings.length === 0 ? (
@@ -923,6 +1007,12 @@ export default function WorkbenchPage() {
                       </span>
                     </div>
                     <p>{f.detail}</p>
+                    {f.quality !== undefined && (
+                      <p className="small">
+                        Modeled quality: {f.quality}/100 · Safety record: {f.safety}/100. These are
+                        separate learning measures.
+                      </p>
+                    )}
                     {!f.ok && (
                       <>
                         <p>
@@ -943,10 +1033,11 @@ export default function WorkbenchPage() {
       <details className="bench-sources">
         <summary>Model scope and references</summary>
         <p>
-          Rules are transparent teaching scenarios. They do not calculate fixation kinetics,
-          instrument settings, stain performance, tissue viability, or clinical eligibility.
-          Corrective action is simulated only where explicitly stated. All content remains
-          author-checked, not independently expert-reviewed.
+          Diffusion-like fields, reagent exchange and stain absorbance are synthetic teaching models
+          with illustrative coefficients. They are not calibrated predictions of clinical fixation,
+          instrument performance, tissue viability or eligibility. Corrective action is simulated
+          only where explicitly stated. All content remains author-checked, not independently
+          expert-reviewed.
         </p>
         <References
           refs={[

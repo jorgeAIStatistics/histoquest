@@ -1,4 +1,14 @@
-import { z } from 'zod'
+import { ControlsSchema, type Controls, type Finding, type WorkbenchRun } from './schema'
+export {
+  ControlsSchema,
+  FindingSchema,
+  WorkbenchSchema,
+  type Controls,
+  type Finding,
+  type WorkbenchRun,
+} from './schema'
+import { WORKBENCH as W } from '../../sim/params/workbench'
+import { workbenchQuality } from './twin'
 import { hashString, shuffle } from '../../engine/random'
 
 export const STATIONS = [
@@ -70,62 +80,6 @@ export const CASES = [
   },
 ] as const
 export type SpecimenCase = (typeof CASES)[number]
-/** Null means no learner decision. False is an explicit negative decision. */
-export const ControlsSchema = z.object({
-  identity: z.enum(['hold', 'relabel', 'accept']).nullable().default(null),
-  thickness: z.number().min(1).max(10).nullable().default(null),
-  fragments: z.number().int().min(0).max(12).nullable().default(null),
-  sampling: z.enum(['profile', 'enface', 'random']).nullable().default(null),
-  fixation: z.enum(['validated', 'rush', 'heat']).nullable().default(null),
-  decalcification: z.enum(['edta', 'acid', 'none']).nullable().default(null),
-  schedule: z.enum(['biopsy', 'routine', 'bone']).nullable().default(null),
-  sequence: z
-    .array(z.enum(['dehydrate', 'clear', 'infiltrate']))
-    .length(3)
-    .refine((a) => new Set(a).size === 3, 'Use each processing stage once')
-    .nullable()
-    .default(null),
-  orientation: z.enum(['flat', 'profile', 'longitudinal']).nullable().default(null),
-  section: z.number().min(1).max(12).nullable().default(null),
-  blade: z.enum(['sound', 'nicked']).nullable().default(null),
-  block: z.enum(['conditioned', 'warm']).nullable().default(null),
-  safety: z.boolean().nullable().default(null),
-  dewax: z.boolean().nullable().default(null),
-  nuclei: z.boolean().nullable().default(null),
-  eosin: z.boolean().nullable().default(null),
-  mount: z.boolean().nullable().default(null),
-  stain: z.enum(['pas', 'alcian', 'iron', 'oil']).nullable().default(null),
-  positive: z.boolean().nullable().default(null),
-  ihcAction: z.enum(['release', 'repeat', 'ignore']).nullable().default(null),
-  location: z.enum(['nuclear', 'cytoplasmic', 'membranous']).nullable().default(null),
-  handoff: z.enum(['release', 'hold']).nullable().default(null),
-})
-export type Controls = z.infer<typeof ControlsSchema>
-export const FindingSchema = z.object({
-  station: z.number().int().min(0).max(9),
-  ok: z.boolean(),
-  title: z.string(),
-  detail: z.string(),
-  consequence: z.string(),
-  repair: z.string(),
-})
-export type Finding = z.infer<typeof FindingSchema>
-export const WorkbenchSchema = z
-  .object({
-    caseId: z.enum(['skin', 'colon', 'bone']),
-    // Old v3 drafts retain every decision; their newly added seed is stable.
-    seed: z.string().min(1).default('legacy-workbench-v3'),
-    station: z.number().int().min(0).max(10),
-    controls: ControlsSchema,
-    findings: z.array(FindingSchema).max(10),
-    startedAt: z.string(),
-    recorded: z.boolean().default(false),
-  })
-  .superRefine((r, ctx) => {
-    if (r.findings.length !== r.station || r.findings.some((f, i) => f.station !== i))
-      ctx.addIssue({ code: 'custom', message: 'Station history must be sequential.' })
-  })
-export type WorkbenchRun = z.infer<typeof WorkbenchSchema>
 export function startRun(caseId: SpecimenCase['id'], seed = crypto.randomUUID()): WorkbenchRun {
   return {
     caseId,
@@ -207,9 +161,14 @@ export function evaluateStation(
       )
     case 5:
       return make(
-        c.section === 4 && c.blade === 'sound' && c.block === 'conditioned' && c.safety === true,
+        c.section !== null &&
+          c.section >= 3 &&
+          c.section <= 5 &&
+          c.blade === 'sound' &&
+          c.block === 'conditioned' &&
+          c.safety === true,
         'Section preparation',
-        'This exercise specifies a 4 µm section, sound blade, appropriately conditioned block, and the instrument safety check. Other assays may require different thicknesses.',
+        'This exercise accepts 3–5 µm around a nominal 4 µm section, sound blade, appropriately conditioned block, and the instrument safety check. Other assays may require different thicknesses.',
         'Thick, compressed, or scored sections obscure detail; unsafe handling is a separate failure even if the section looks good.',
         'Apply the instrument procedure, then investigate one plausible variable at a time and inspect a new section.',
       )
@@ -254,7 +213,13 @@ export function evaluateStation(
 export function advanceRun(run: WorkbenchRun): WorkbenchRun {
   if (run.station >= STATIONS.length || missingStationDecisions(run).length > 0) return run
   const specimen = CASES.find((c) => c.id === run.caseId)!
-  const finding = evaluateStation(run.station, run.controls, specimen, run.findings)
+  const explanation = evaluateStation(run.station, run.controls, specimen, run.findings)
+  const metrics = workbenchQuality(run, run.station)
+  const finding = {
+    ...explanation,
+    ...metrics,
+    ok: explanation.ok && (run.station === 9 || metrics.quality >= W['workbench.quality-min']),
+  }
   return { ...run, station: run.station + 1, findings: [...run.findings, finding] }
 }
 
