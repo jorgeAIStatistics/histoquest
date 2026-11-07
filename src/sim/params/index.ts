@@ -1,3 +1,4 @@
+import { MECHANICS_PARAMETERS } from './mechanics'
 import { CORE_PARAMETERS } from './registry'
 import { PROCESS_PARAMETERS } from './process'
 import { WORKBENCH_PARAMETERS } from './workbench'
@@ -8,6 +9,7 @@ import { MOLECULAR_PARAMETERS } from './molecular'
 /** Imported only by simulation/review routes; the storage boundary imports no scientific catalog. */
 export const MODEL_PARAMETERS = [
   ...CORE_PARAMETERS,
+  ...MECHANICS_PARAMETERS,
   ...PROCESS_PARAMETERS,
   ...WORKBENCH_PARAMETERS,
   ...ARCHETYPE_PARAMETERS,

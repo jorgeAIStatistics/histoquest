@@ -72,6 +72,10 @@ export interface Section {
   slideId: string
   compression: number
   chatter: number
+  ribbonContinuity?: number
+  curling?: number
+  thicknessVariation?: number
+  thicknessMap?: number[]
   knifeLines: number[]
   holes: number
   folds: number
@@ -191,6 +195,7 @@ export interface Twin {
     guarded: boolean
     thickness: number
     speed: number
+    consistency: number
     angle: number
     clamp: number
     sharpness: number

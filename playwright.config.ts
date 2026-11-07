@@ -1,4 +1,5 @@
 import { defineConfig, devices } from '@playwright/test'
+const port = Number(process.env.PLAYWRIGHT_PORT ?? 4173)
 
 export default defineConfig({
   testDir: './e2e',
@@ -11,7 +12,7 @@ export default defineConfig({
   expect: { timeout: 8_000 },
   reporter: [['list'], ['html', { open: 'never' }]],
   use: {
-    baseURL: 'http://127.0.0.1:4173/histoquest/',
+    baseURL: `http://127.0.0.1:${port}/histoquest/`,
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
     reducedMotion: 'reduce',
@@ -23,8 +24,8 @@ export default defineConfig({
     { name: 'webkit', use: { ...devices['Desktop Safari'] } },
   ],
   webServer: {
-    command: 'npm run preview -- --host 127.0.0.1 --port 4173 --strictPort',
-    url: 'http://127.0.0.1:4173/histoquest/',
+    command: `npm run preview -- --host 127.0.0.1 --port ${port} --strictPort`,
+    url: `http://127.0.0.1:${port}/histoquest/`,
     reuseExistingServer: !process.env.CI,
     timeout: 30_000,
   },

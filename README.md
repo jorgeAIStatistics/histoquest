@@ -4,7 +4,7 @@ A specimen-to-slide learning platform and interactive study lab for the **Scient
 
 > HistoQuest is an independent study tool. It is not affiliated with, endorsed by, or reviewed by the ASCP Board of Certification. Questions are original and do not reproduce exam items. Content is author-checked, **not expert-reviewed**. See [docs/VERIFICATION.md](docs/VERIFICATION.md).
 
-Follow a **12-chapter pathway** from tissue foundations through technical handoff. Rehearse **three specimens across ten connected stations**, inspect animated teaching figures and real attributed micrographs, and keep a field notebook. The original daily planner, 19 topic lessons, eight focused simulations and exam practice remain available.
+Enter **HistoQuest Lab** for a shared 3D/2D specimen workflow with a procedural microscope, or follow a **12-chapter pathway** from tissue foundations through technical handoff. Rehearse **three specimens across ten connected stations**, inspect animated teaching figures and real attributed micrographs, and keep a field notebook. The original daily planner, 19 topic lessons, eight focused simulations and exam practice remain available.
 
 ## Run it
 
@@ -38,7 +38,7 @@ No account, server or API key is needed. Progress is stored in this browser's `l
 | Content: typed and validated, separate from rendering | `src/content` |
 | Persistence: versioned schema, migrations, JSON export/import | `src/store` |
 
-Stack: React 19, TypeScript, Vite, React Router, Zod (content and storage validation), Motion (animation), Vitest. Teaching illustrations use SVG; the two real micrographs are separately identified and attributed in `public/micrographs/ATTRIBUTION.md`. The HistoQuest Lab foundation adds Three.js, React Three Fiber and Drei for later lazy-loaded scenes; these packages are not imported by the existing study routes. See [the Lab roadmap](docs/ROADMAP.md) and [baseline measurements](docs/BASELINE.md).
+Stack: React 19, TypeScript, Vite, React Router, Zod (content and storage validation), Motion (animation), Vitest. Teaching illustrations use SVG; the two real micrographs are separately identified and attributed in `public/micrographs/ATTRIBUTION.md`. The `/lab3d` route adds Three.js, React Three Fiber and Drei for lazy-loaded procedural instruments; these packages are not imported by the existing study routes. See [the Lab roadmap](docs/ROADMAP.md) and [baseline measurements](docs/BASELINE.md).
 
 The Workbench now derives a simulated microscope slide from a deterministic specimen twin: depth-dependent fixation, reagent exchange, section mechanics and Beer–Lambert stain optics. Eleven procedural tissue families support comparison, teaching zoom, focus, polarization, measurements and annotations, with a Canvas fallback. The workbench uses synthetic, qualitative teaching models. It rehearses decisions and investigation; it does not reproduce instrument handling, validate clinical procedures, or establish professional competency or eligibility.
 
