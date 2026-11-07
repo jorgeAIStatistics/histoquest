@@ -1,0 +1,41 @@
+import type { SlideAppearance, TissueFamily } from '../sim/specimen/types'
+
+/** Renderer test fixture only; clinical/reference protocols come from the twin. */
+export function rendererFixture(family: TissueFamily = 'gut'): SlideAppearance {
+  return {
+    seed: 'renderer-golden-v1',
+    family,
+    archetype: family,
+    target: 'epithelium',
+    targetPresent: true,
+    hematoxylin: 0.8,
+    eosin: 0.75,
+    dab: 0,
+    background: 0,
+    bluing: 1,
+    special: '',
+    specialIntensity: 0,
+    localization: 'nuclear',
+    thickness: 4,
+    preservation: 1,
+    centerPreservation: 1,
+    masking: 0,
+    representation: 1,
+    compression: 0,
+    chatter: 0,
+    knifeLines: [],
+    holes: 0,
+    folds: 0,
+    wrinkles: 0,
+    bubbles: 0,
+    ice: 0,
+    dewax: 1,
+    haze: 0,
+    edge: 0,
+    lifting: 0,
+    pigment: 0,
+    retraction: 0,
+    floaters: [],
+    mounted: true,
+  }
+}

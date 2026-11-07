@@ -1,3 +1,4 @@
+import { LAB_SOURCES } from './lab/sources'
 /**
  * Source registry. `access` records honestly what HistoQuest actually read:
  *  - 'read': the document was retrieved and read while authoring.
@@ -16,6 +17,7 @@ export interface Source {
 }
 
 export const SOURCES: Source[] = [
+  ...LAB_SOURCES,
   { id: 'cap-nsh-2025', title: 'Practical Guide to Specimen Handling in Surgical Pathology, version 12 (March 2025)', publisher: 'CAP / NSH', year: '2025', url: 'https://documents.cap.org/documents/Practical_Guide_to_Specimen_Handling_in_Surgical_Pathology_2025.pdf', access: 'not-accessed', onAscpReadingList: true },
   { id: 'histology-guide', title: 'Histology Guide: virtual microscopy laboratory and tissue chapters', publisher: 'Histology Guide', url: 'https://www.histologyguide.com/', access: 'read', onAscpReadingList: false },
   { id: 'leica-fixation', title: 'An Introduction to Specimen Preparation', publisher: 'Leica Biosystems Knowledge Pathway', url: 'https://www.leicabiosystems.com/knowledge-pathway/an-introduction-to-specimen-preparation/', access: 'read', onAscpReadingList: false },

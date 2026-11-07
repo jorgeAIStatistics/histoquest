@@ -52,3 +52,7 @@ Verified screenshots from the passing Chromium run: [desktop accessioning](scree
 Host: macOS 14.5 arm64. Playwright 1.64.1 selects frozen WebKit revision 2251 for macOS 14 and explicitly warns that this browser receives no updates. Page creation fails with `Protocol error (Page.overrideSetting): Unknown setting: PushAPIEnabled`, before any HistoQuest code is loaded. A forced browser reinstall completed successfully; one bounded retry reproduced the same failure. The local WebKit result is therefore **not verified**, not a pass. Do not downgrade the shared test suite or skip WebKit in CI to disguise this host limitation. Supported-host CI results must be recorded separately after the workflow runs. Real iOS Safari and WebGPU remain untested.
 
 Automated axe results do not establish complete WCAG conformance. Pointer/touch fidelity, real iOS Safari, assistive-technology use, and hardware GPU performance require separate evidence. Headless browser timings are not representative laptop/phone benchmarks.
+
+### Supported-host result
+
+GitHub Actions Ubuntu run 42336608342 passed all gates, including all 129 browser tests across Chromium, Firefox and WebKit. This verifies the software in those engines; it does not substitute for real iOS Safari or hardware-performance measurements.

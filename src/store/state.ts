@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { WorkbenchSchema } from '../features/workbench/model'
+import { WorkbenchSchema } from '../features/workbench/schema'
 import { LabStateSchema, initialLabState } from './labSchema'
 
 export const SCHEMA_VERSION = 4

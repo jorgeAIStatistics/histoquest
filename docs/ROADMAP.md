@@ -2,7 +2,7 @@
 
 This tracks the full build brief. A phase is complete only when its acceptance checks and software gates pass. Learning milestones and synthetic simulation outcomes never establish professional competency, certification or experience.
 
-- [ ] **Phase 0 — Audit, foundations, fixes.** Read current documentation and models; formatter/lint; seeded choices and explicit decisions; route smoke tests; bundle baseline; deterministic core, units, event schema and parameter provenance; tested v4 migration.
+- [x] **Phase 0 — Audit, foundations, fixes.** Read current documentation and models; formatter/lint; seeded choices and explicit decisions; route smoke tests; bundle baseline; deterministic core, units, event schema and parameter provenance; tested v4 migration.
 - [ ] **Phase 1 — Specimen twin and procedural microscopy.** History-dependent twin; five or more phenotypes; absorbance optics; spatial artifacts; microscope with comparison/polarization; graded workbench; deterministic render tests.
 - [ ] **Phase 2 — 3D microtomy bench.** Lazy three/fiber/drei shell; generic procedural rig; camera/intent controls; adaptive quality; 2D equivalent; facing, sectioning, bath, pickup, drying, levels/deepers and safety.
 - [ ] **Phase 3 — Upstream stations.** LIS/identity, grossing, fixation, decalcification, processor editor, embedding geometry; consequential specimen-to-block workflow.
@@ -22,4 +22,4 @@ No planned feature is silently dropped. Implementation status, approximations an
 
 ## Current work
 
-Phase 0 in progress: baseline is commit a5d5fa4; work occurs on codex/histoquest-lab. Existing 19 lessons, 164 questions, 88 cards, 98 atlas entries, 12 pathway chapters and eight focused simulations are preserved.
+Phase 0 passed all software gates, including Chromium, Firefox and WebKit in Ubuntu CI run 42336608342. Baseline is commit a5d5fa4; work occurs on codex/histoquest-lab. Phase 1 is in progress. Existing 19 lessons, 164 questions, 88 cards, 98 atlas entries, 12 pathway chapters and eight focused simulations are preserved.
