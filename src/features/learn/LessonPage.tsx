@@ -165,7 +165,7 @@ export default function LessonPage() {
                 <p className="celebrate" role="status">Lesson finished. Its retrieval cards are scheduled for tomorrow.</p>
                 <div className="row">
                   {lesson.simulation && <Link className="btn btn-primary" to={`/lab/${lesson.simulation}${plan ? `?plan=sim:${lesson.simulation}` : ''}`}>Try it in the Virtual Lab: {SIM_TITLES[lesson.simulation]}</Link>}
-                  {plan ? <Link className="btn" to="/">Back to Today</Link> : next && <Link className="btn" to={`/learn/${next.id}`}>Next lesson: {next.title}</Link>}
+                  {plan ? <Link className="btn" to="/today">Back to Today</Link> : next && <Link className="btn" to={`/learn/${next.id}`}>Next lesson: {next.title}</Link>}
                 </div>
               </div>
             )}

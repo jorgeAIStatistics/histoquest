@@ -7,59 +7,64 @@ Generated from the content bank. Guideline: HT(ASCP), HT(ASCPi), HTL(ASCP), HTL(
 | Item | Count | Target |
 |---|---|---|
 | Lessons | 19 | ≥ 15 |
-| Questions | 140 | ≥ 120 |
+| Questions | 164 | ≥ 120 |
 | Retrieval cards | 88 | ≥ 60 |
 | Atlas entries | 98 | — |
-| Simulations working | 8 of 8 | 4 required |
+| Focused simulations working | 8 of 8 | 4 required |
+
+| Sequential pathway chapters | 12 | — |
+| Connected workbench cases | 3, each with 10 stations | — |
+| Stain comparisons | 10 | — |
+| Artifact investigations | 5 | — |
 
 ## Review status
 
 Every item is `author-checked`: written to match standard teaching, with textbook sources not page-verified. **Nothing is expert-reviewed.**
 
-- author-checked: 345
+- author-checked: 369
 
 ## Questions by content area
 
 | Area | Exam weight | Questions | Share of bank | Recall | Application | Case | Calculation | With schematic image |
 |---|---|---|---|---|---|---|---|---|
-| Fixation | 15–25% | 26 | 19% | 10 | 11 | 5 | 0 | 0 |
-| Processing | 10–20% | 20 | 14% | 8 | 6 | 6 | 0 | 0 |
-| Embedding/Microtomy | 15–25% | 26 | 19% | 2 | 10 | 14 | 0 | 6 |
-| Staining | 30–40% | 44 | 31% | 13 | 20 | 11 | 0 | 3 |
-| Laboratory Operations | 10–15% | 24 | 17% | 2 | 12 | 0 | 10 | 0 |
+| Fixation | 15–25% | 30 | 18% | 10 | 15 | 5 | 0 | 0 |
+| Processing | 10–20% | 24 | 15% | 8 | 10 | 6 | 0 | 0 |
+| Embedding/Microtomy | 15–25% | 30 | 18% | 2 | 14 | 14 | 0 | 6 |
+| Staining | 30–40% | 52 | 32% | 13 | 28 | 11 | 0 | 3 |
+| Laboratory Operations | 10–15% | 28 | 17% | 2 | 16 | 0 | 10 | 0 |
 
 ## Objective coverage
 
 | Objective | Title | Guideline codes | Questions | Cards | Lessons |
 |---|---|---|---|---|---|
 | FIX-01 | Explain how formaldehyde and other fixatives preserve tissue (cross-linking vs coagulation) | I.A.2, I.A.5, I.D.2, I.D.4 | 3 | 2 | L-01 |
-| FIX-02 | Distinguish penetration from fixation and apply size, volume, time and temperature parameters | I.C.1, I.C.2, I.C.3, I.C.4 | 5 | 2 | L-02 |
+| FIX-02 | Distinguish penetration from fixation and apply size, volume, time and temperature parameters | I.C.1, I.C.2, I.C.3, I.C.4 | 9 | 2 | L-02 |
 | FIX-03 | Select fixatives and transport media for downstream tests (IHC, EM, IF, enzymes, ISH, cytology) | I.B.2, I.B.5, I.B.6, I.B.7, I.B.10, I.B.11 | 4 | 2 | L-03 |
 | FIX-04 | Know composition, properties and limitations of listed fixatives (NBF, zinc formalin, Bouin, Carnoy, alcohol, acetone, glutaraldehyde, Zamboni, Michel) | I.D.1, I.D.2 | 6 | 3 | L-03 |
 | FIX-05 | Recognize and remove fixation pigments, precipitates and artifacts | I.B.8, I.D.3 | 4 | 2 | L-04 |
 | FIX-06 (HTL only) | Apply fixation chemistry and pH/buffer principles at scientist level | I.C.5, I.D.4 | 2 | 3 | L-01 |
 | FIX-07 | Use and troubleshoot fixation instrumentation and fixation QC | I.B.9, I.E.1, I.E.4, I.E.5 | 2 | 1 | L-04 |
-| PROC-01 | Sequence and explain dehydration, clearing and infiltration | II.B.1, II.D.2 | 3 | 1 | L-05 |
+| PROC-01 | Sequence and explain dehydration, clearing and infiltration | II.B.1, II.D.2 | 5 | 1 | L-05 |
 | PROC-02 | Troubleshoot incomplete dehydration, clearing and infiltration | II.C.4, II.D.3 | 3 | 2 | L-06 |
 | PROC-03 | Select and monitor decalcification methods and endpoints | II.B.4, II.D.1 | 5 | 3 | L-07 |
 | PROC-04 | Operate, maintain and QC tissue processors; manage reagent rotation | II.C.1, II.C.2, II.C.3, II.C.5 | 4 | 2 | L-06 |
-| PROC-05 | Adapt processing for frozen sections, enzymes, IHC, ISH and cytology specimens | II.B.2, II.B.3, II.B.5, II.B.8, II.B.9 | 3 | 2 | L-07 |
+| PROC-05 | Adapt processing for frozen sections, enzymes, IHC, ISH and cytology specimens | II.B.2, II.B.3, II.B.5, II.B.8, II.B.9 | 5 | 2 | L-07 |
 | PROC-06 (HTL only) | Explain solvent and paraffin chemistry (miscibility, polarity, melting point) | II.D.4 | 2 | 2 | L-05 |
-| EMB-01 | Orient tissues correctly during embedding | III.A.1, III.B.1 | 5 | 3 | L-08 |
-| EMB-02 | Diagnose sectioning artifacts and their causes | III.C.4, III.B.4 | 8 | 4 | L-09 |
+| EMB-01 | Orient tissues correctly during embedding | III.A.1, III.B.1 | 7 | 3 | L-08 |
+| EMB-02 | Diagnose sectioning artifacts and their causes | III.C.4, III.B.4 | 10 | 4 | L-09 |
 | EMB-03 | Operate and maintain microtome, flotation bath, ovens and embedding center | III.C.1, III.C.2, III.C.3 | 6 | 2 | L-09 |
 | EMB-04 | Perform and troubleshoot frozen sectioning with the cryostat | III.B.2, III.C.4 | 3 | 3 | L-10 |
 | EMB-05 | Use adhesives and charged slides appropriately | III.B.3 | 2 | 1 | L-09 |
 | EMB-06 (HTL only) | Prepare sections and scrolls for molecular testing while controlling contamination | III.B.5 | 2 | 1 | L-10 |
-| STAIN-01 | Explain H&E chemistry: mordants, oxidation, progressive vs regressive, bluing, differentiation | IV.B.1, IV.D.2, IV.D.4 | 4 | 4 | L-11 |
+| STAIN-01 | Explain H&E chemistry: mordants, oxidation, progressive vs regressive, bluing, differentiation | IV.B.1, IV.D.2, IV.D.4 | 8 | 4 | L-11 |
 | STAIN-02 | Demonstrate carbohydrates and mucins (PAS, PAS-D, Alcian blue, mucicarmine, colloidal iron) | IV.B.3 | 5 | 5 | L-12 |
 | STAIN-03 | Demonstrate connective tissue (trichromes, VVG, reticulin, Movat) and amyloid (Congo red) | IV.B.4, IV.B.9 | 6 | 4 | L-13 |
 | STAIN-04 | Demonstrate microorganisms (Gram, AFB methods, GMS, Giemsa, spirochete silver stains) | IV.B.6 | 4 | 4 | L-14 |
 | STAIN-05 | Demonstrate pigments and minerals (Prussian blue, Fontana-Masson, melanin bleach, von Kossa, rhodanine, bile) | IV.B.8 | 5 | 3 | L-15 |
 | STAIN-06 | Demonstrate lipids, nerve, and cell components (Oil red O, LFB, Bielschowsky, toluidine blue) | IV.B.5, IV.B.7, IV.B.9 | 3 | 2 | L-15 |
-| STAIN-07 | Select appropriate positive and negative controls for special stains | IV.B.12, IV.D.3 | 2 | 1 | L-12, L-14 |
+| STAIN-07 | Select appropriate positive and negative controls for special stains | IV.B.12, IV.D.3 | 4 | 1 | L-12, L-14 |
 | STAIN-08 (HTL only) | Explain IHC staining theory, antigen retrieval and detection systems | IV.B.11.a, IV.B.11.b, IV.B.11.c, IV.B.11.f | 4 | 2 | L-16 |
-| STAIN-09 (HTL only) | Select IHC controls, prepare antibodies and interpret failed runs | IV.B.11.d, IV.B.11.e | 3 | 1 | L-16 |
+| STAIN-09 (HTL only) | Select IHC controls, prepare antibodies and interpret failed runs | IV.B.11.d, IV.B.11.e | 5 | 1 | L-16 |
 | STAIN-10 (HTL only) | Explain enzyme histochemistry and in situ hybridization principles | IV.B.10, IV.B.14 | 3 | 2 | L-16 |
 | STAIN-11 | Select mounting media and coverslipping; apply refractive index | IV.E.1, IV.E.2, IV.E.3 | 1 | 1 | L-11 |
 | STAIN-12 | Operate, maintain and QC automated stainers; troubleshoot staining | IV.C.1, IV.C.4, IV.C.5 | 2 | 0 | — |
@@ -72,7 +77,7 @@ Every item is `author-checked`: written to match standard teaching, with textboo
 | OPS-05 | Use and maintain ancillary instruments (microscope, pH meter, balance, pipettes, recycler) | V.C.1, V.C.3, V.C.4 | 3 | 1 | L-19 |
 | OPS-06 (HTL only) | Apply basic management principles | V.D.1, V.D.2 | 1 | 1 | L-19 |
 | OPS-07 (HTL only) | Apply basic education principles | V.E.1, V.E.2 | 1 | 1 | L-19 |
-| OPS-08 | Apply regulations: QA, validation, proficiency testing, competency, HIPAA, procedures | V.F.1, V.F.2, V.F.3, V.F.4, V.F.5, V.F.6 | 3 | 4 | L-19 |
+| OPS-08 | Apply regulations: QA, validation, proficiency testing, competency, HIPAA, procedures | V.F.1, V.F.2, V.F.3, V.F.4, V.F.5, V.F.6 | 7 | 4 | L-19 |
 
 ## Lessons
 
@@ -111,6 +116,18 @@ Every item is `author-checked`: written to match standard teaching, with textboo
 
 | Source | Access for this build |
 |---|---|
+| Practical Guide to Specimen Handling in Surgical Pathology, version 12 (March 2025) | Not accessed (general reference only) |
+| Histology Guide: virtual microscopy laboratory and tissue chapters | Read |
+| An Introduction to Specimen Preparation | Read |
+| An Introduction to Specimen Processing | Read |
+| Introduction to Microtomy: Preparing & Sectioning Paraffin Embedded Tissue | Read |
+| H&E Staining Overview: A Guide to Best Practices | Read |
+| H&E Staining Overview: stain balance and troubleshooting | Read |
+| Special Stains: Which One, Why and How? Mucins and Glycogen | Read |
+| Immunohistochemistry: an overview and steps to better staining | Read |
+| An Introduction to Decalcification | Read |
+| The Art of Frozen Tissue Sectioning (further reading) | Not accessed (general reference only) |
+| Principles of Analytic Validation of Immunohistochemical Assays: 2024 guideline update | Read |
 | HT/HTL Examination Content Guideline (testing from Nov 1, 2026) | Read |
 | HTL - Scientist in Histotechnology (eligibility routes) | Read |
 | HTL(ASCP) Experience Documentation Form (Routes 2 and 3), revised Dec 9, 2025 | Read |
@@ -141,9 +158,22 @@ Every item is `author-checked`: written to match standard teaching, with textboo
 - hq-original: 20
 - lott-cap-nsh: 16
 - dabbs-6: 12
+- cap-nsh-2025: 12
 - garcia-mgmt: 11
 - osha-1048: 6
 - clia-493: 6
+- leica-processing: 6
+- leica-he: 4
+- cap-ihc: 4
 - osha-1200: 3
 - osha-1450: 2
+- histology-guide: 2
+- leica-fixation: 2
+- leica-microtomy: 2
+- leica-staining: 2
+- leica-special: 2
+- leica-ihc: 2
+- leica-decalcification: 2
+- leica-frozen: 2
+- ascp-htl-page: 2
 - osha-z1: 2

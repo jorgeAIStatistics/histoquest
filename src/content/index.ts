@@ -5,6 +5,7 @@ import * as fixProc from './data/fixation-processing'
 import * as staining from './data/staining'
 import * as microOps from './data/microtomy-operations'
 import * as atlasData from './data/atlas'
+import { pathwayQuestions } from './pathway'
 
 /** Parse once at startup so defaults are applied; invalid items are excluded and reported, never shown. */
 function parseAll<T>(schema: z.ZodType<T>, items: unknown[], label: string, problems: string[]): T[] {
@@ -19,7 +20,7 @@ function parseAll<T>(schema: z.ZodType<T>, items: unknown[], label: string, prob
 
 export const contentProblems: string[] = []
 
-const allQuestions = parseAll(QuestionSchema, [...fixProc.questions, ...staining.questions, ...microOps.questions], 'question', contentProblems)
+const allQuestions = parseAll(QuestionSchema, [...fixProc.questions, ...staining.questions, ...microOps.questions, ...pathwayQuestions], 'question', contentProblems)
 /** Retired items stay in the source for history but are never served. */
 export const QUESTIONS: Question[] = allQuestions.filter((q) => q.review.status !== 'retired')
 export const CARDS: Card[] = parseAll(CardSchema, [...fixProc.cards, ...staining.cards, ...microOps.cards], 'card', contentProblems)
@@ -49,6 +50,6 @@ export const SIMULATIONS: { id: string; title: string; station: string; status: 
   { id: 'ihc-room', title: 'IHC troubleshooting room', station: 'ihc', status: 'ready', objectives: ['STAIN-08', 'STAIN-09'], blurb: 'Six failed IHC runs: read the controls, decide if the run is interpretable, and choose what to investigate first.' },
   { id: 'lab-math', title: 'Laboratory mathematics', station: 'bench', status: 'ready', objectives: ['OPS-03', 'OPS-04'], blurb: 'Step-by-step solutions and dilutions, graded on number and unit.' },
 ]
-export const SIM_TITLES = Object.fromEntries(SIMULATIONS.map((s) => [s.id, s.title]))
+export const SIM_TITLES = { ...Object.fromEntries(SIMULATIONS.map((s) => [s.id, s.title])), 'specimen-workbench': 'Specimen workbench' } as Record<string, string>
 
 export const OBJECTIVE_TITLES = Object.fromEntries(OBJECTIVES.map((o) => [o.id, o.title]))

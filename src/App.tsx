@@ -2,7 +2,12 @@ import { lazy } from 'react'
 import { createBrowserRouter, Navigate, RouterProvider, useRouteError } from 'react-router-dom'
 import Shell from './ui/Shell'
 import { useApplyPrefs } from './ui/prefs'
-import TodayPage from './features/today/TodayPage'
+const TodayPage = lazy(() => import('./features/today/TodayPage'))
+const PathwayPage = lazy(() => import('./features/pathway/PathwayPage'))
+const ChapterPage = lazy(() => import('./features/pathway/PathwayPage').then(m => ({ default: m.ChapterPage })))
+const NotebookPage = lazy(() => import('./features/pathway/PathwayPage').then(m => ({ default: m.NotebookPage })))
+const WorkbenchPage = lazy(() => import('./features/workbench/WorkbenchPage'))
+const SlideLibrary = lazy(() => import('./features/pathway/SlideLibrary'))
 
 // Heavy modules load on demand.
 const LearnPage = lazy(() => import('./features/learn/LearnPage'))
@@ -25,7 +30,7 @@ function RouteError() {
         <h1>{err?.status === 404 ? 'That page does not exist' : 'This screen hit an error'}</h1>
         <p>Your progress is saved locally and was not affected.</p>
         {err?.message && <p className="small muted">{err.message}</p>}
-        <a className="btn btn-primary" href={import.meta.env.BASE_URL}>Go to Today</a>
+        <a className="btn btn-primary" href={import.meta.env.BASE_URL}>Return to the pathway</a>
       </div>
     </Shell>
   )
@@ -36,7 +41,12 @@ const router = createBrowserRouter([
     element: <Shell />,
     errorElement: <RouteError />,
     children: [
-      { path: '/', element: <TodayPage /> },
+      { path: '/', element: <PathwayPage /> },
+      { path: '/today', element: <TodayPage /> },
+      { path: '/pathway/:id', element: <ChapterPage /> },
+      { path: '/workbench', element: <WorkbenchPage /> },
+      { path: '/slides', element: <SlideLibrary /> },
+      { path: '/notebook', element: <NotebookPage /> },
       { path: '/learn', element: <LearnPage /> },
       { path: '/learn/:id', element: <LessonPage /> },
       { path: '/lab', element: <LabPage /> },

@@ -1,0 +1,289 @@
+/* The specimen studio extends HistoQuest's established paper / H&E system. */
+::selection { background: var(--hema); color: var(--paper); }
+input, textarea { caret-color: var(--hema); accent-color: var(--hema); }
+input::placeholder, textarea::placeholder { color: var(--ink-3); opacity: 1; }
+html { scrollbar-color: var(--ink-3) var(--ivory); }
+.rail { overflow-y: auto; }
+.rail-foot { margin-top: 24px; }
+.studio-top { display: flex; align-items: center; justify-content: space-between; gap: 18px; padding-bottom: 18px; margin-bottom: 30px; border-bottom: 1px solid var(--rule); font-size: .83rem; color: var(--ink-2); }
+.studio-top a { font-weight: 600; text-decoration: none; }
+.studio-top a:hover { text-decoration: underline; }
+.pathway-intro { display: grid; grid-template-columns: 1.05fr 1fr; align-items: center; gap: 32px; padding: 20px 0 36px; }
+.pathway-intro h1 { font-size: 3.15rem; line-height: 1.13; letter-spacing: -.035em; margin-bottom: 22px; }
+.pathway-intro .lede { font-size: 1.08rem; line-height: 1.7; max-width: 49ch; margin-bottom: 25px; }
+.pathway-intro .btn { font-size: .88rem; }
+.pathway-progress { font-size: .78rem; color: var(--ink-3); margin-top: 18px; }
+.specimen-story { background: var(--paper); padding: 32px 16px 20px; border-radius: 14px; border: 1px solid var(--rule); }
+.journey-overview { display: block; width: 100%; }
+.specimen-story p { text-align: center; font-size: .86rem; line-height: 1.7; margin: 2px auto 0; color: var(--ink-2); }
+.specimen-story strong { color: var(--hema); font-weight: 600; }
+.learning-promise { display: flex; gap: 36px; align-items: center; justify-content: space-between; border-block: 1px solid var(--rule); padding: 24px 0; margin: 8px 0 44px; }
+.learning-promise p { font-size: .92rem; max-width: 78ch; margin: 0; }
+.learning-promise a { flex: 0 0 170px; font-size: .9rem; font-weight: 600; }
+.pathway-layout { display: grid; grid-template-columns: minmax(0, 1fr) 260px; gap: 48px; }
+.pathway-layout .page-head { margin-bottom: 20px; }
+.pathway-layout .page-head h2 { margin: 0; }
+.pathway-search { margin-bottom: 28px; }
+.pathway-tier { margin: 8px 0 36px; }
+.tier-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding: 12px 0; }
+.tier-heading h3 { color: var(--hema); font-family: var(--font-body); font-size: .95rem; margin: 0; }
+.tier-heading > span { font-size: .74rem; color: var(--ink-3); }
+.chapter-list { padding: 0; margin: 0; list-style: none; }
+.chapter-link { display: grid; grid-template-columns: 37px minmax(0, 1fr) 70px; gap: 15px; align-items: start; padding: 24px 0; border-top: 1px solid var(--rule); color: var(--ink); text-decoration: none; transition: background 180ms, color 180ms; }
+.chapter-link:hover { color: var(--hema); background: var(--paper); }
+.chapter-number { font-size: .9rem; color: var(--ink-3); font-variant-numeric: tabular-nums; padding-top: 3px; }
+.chapter-number.complete { color: var(--teal); text-decoration: underline; text-underline-offset: 5px; }
+.chapter-link strong { display: block; font-family: var(--font-display); font-size: 1.13rem; line-height: 1.4; font-weight: 600; }
+.chapter-purpose { display: block; font-size: .83rem; color: var(--ink-2); margin-top: 8px; line-height: 1.6; }
+.chapter-meta { display: flex; flex-direction: column; align-items: end; gap: 12px; padding-top: 4px; font-size: .72rem; color: var(--ink-3); }
+.study-companion { border-left: 1px solid var(--rule); padding-left: 28px; }
+.study-companion h2 { font-size: 1.4rem; line-height: 1.35; }
+.study-companion > ol { padding-left: 21px; margin: 24px 0; }
+.study-companion li { padding-left: 5px; margin-bottom: 24px; font-size: .86rem; }
+.study-companion li p { color: var(--ink-2); margin: 8px 0 0; }
+.study-companion li::marker { color: var(--hema); }
+.study-companion > .btn { font-size: .83rem; width: 100%; }
+.companion-section { border-top: 1px solid var(--rule); padding-top: 24px; margin-top: 28px; }
+.companion-section a { font-size: .87rem; }
+.chapter-header { max-width: 840px; padding: 0 0 30px; }
+.chapter-header > p:first-child { font-size: .83rem; color: var(--ink-3); margin-bottom: 24px; }
+.chapter-header h1 { font-size: 2.65rem; line-height: 1.2; }
+.chapter-header .lede { margin: 18px 0; font-size: 1.1rem; }
+.chapter-layout { display: grid; grid-template-columns: 190px minmax(0, 1fr); gap: 40px; align-items: start; border-top: 1px solid var(--rule); padding-top: 32px; }
+.chapter-outline { position: sticky; top: 24px; display: grid; gap: 3px; font-size: .79rem; }
+.chapter-outline a { display: flex; gap: 10px; color: var(--ink-2); text-decoration: none; border-radius: 6px; padding: 9px; }
+.chapter-outline a span { color: var(--ink-3); width: 18px; flex: none; font-variant-numeric: tabular-nums; }
+.chapter-outline a:hover { background: var(--vellum); }
+.chapter-outline a[aria-current] { color: var(--hema); background: var(--hema-soft); font-weight: 600; }
+.chapter-body { max-width: 810px; min-width: 0; }
+.chapter-body > section { margin-bottom: 36px; }
+.chapter-body h2 { font-size: 1.5rem; margin-bottom: 15px; }
+.chapter-body p { line-height: 1.8; }
+.teaching-figure { margin: 30px 0 42px; padding: 26px; background: var(--paper); border: 1px solid var(--rule); border-radius: 14px; }
+.teaching-figure h3 { font-size: 1.1rem; margin-bottom: 12px; line-height: 1.45; }
+.teaching-svg { display: block; width: 100%; }
+.fig-label { fill: var(--ink-2); font-family: var(--font-body); font-size: 14px; }
+.figure-controls { display: flex; gap: 8px; flex-wrap: wrap; margin: 12px 0 20px; }
+.figure-controls .chip-btn { font-size: .8rem; }
+.figure-controls .btn { font-size: .8rem; margin-left: auto; }
+.teaching-figure figcaption { font-size: .85rem; line-height: 1.7; color: var(--ink-2); border-top: 1px solid var(--rule); padding-top: 16px; }
+.bench-reasoning { background: var(--teal-soft); padding: 26px; border-radius: 12px; }
+.bench-reasoning ol { padding-left: 22px; }
+.bench-reasoning li { padding-left: 5px; margin-bottom: 12px; }
+.bench-reasoning p { margin-bottom: 0; }
+.deeper { margin: 20px 0; border-block: 1px solid var(--rule); padding: 15px 0; }
+.deeper summary { cursor: pointer; color: var(--hema); font-weight: 600; font-size: .87rem; min-height: 28px; }
+.deeper p { margin: 14px 0 4px; font-size: .9rem; }
+.chapter-lab-link { background: var(--hema-soft); padding: 26px; border-radius: 12px; }
+.chapter-lab-link .row { margin-top: 18px; }
+.chapter-lab-link .btn { font-size: .8rem; }
+.chapter-checkpoint { border-top: 1px solid var(--rule); padding: 26px 0 18px; }
+.chapter-checkpoint .tag { white-space: normal; }
+.chapter-notes label { display: block; margin: 12px 0; font-size: .9rem; }
+.chapter-notes textarea { min-height: 150px; margin-bottom: 10px; }
+.chapter-finish { border-top: 1px solid var(--rule); padding-top: 24px; }
+.stain-table { min-width: 920px; font-size: .8rem; }
+.stain-table caption { text-align: left; margin-bottom: 12px; }
+.notebook-entry { padding: 30px 0; border-bottom: 1px solid var(--rule); }
+.note-text { white-space: pre-wrap; overflow-wrap: anywhere; }
+.empty-notebook { background: var(--paper); padding: 30px; margin-top: 30px; border-radius: 12px; }
+.workbench-invitation { background: var(--hema-soft); padding: 28px; border-radius: 14px; display: flex; align-items: center; justify-content: space-between; gap: 26px; margin: 20px 0 32px; }
+.workbench-invitation h2 { font-size: 1.45rem; }
+.workbench-invitation p { font-size: .88rem; margin-bottom: 0; }
+.workbench-invitation > .btn { flex-shrink: 0; font-size: .85rem; }
+.bench-boundary { font-size: .81rem; color: var(--ink-2); max-width: 94ch; margin-bottom: 28px; }
+.case-selection { border-top: 1px solid var(--rule); padding-top: 28px; }
+.case-option { display: grid; grid-template-columns: 38px minmax(0, 1fr) 200px; gap: 22px; padding: 28px 0; align-items: center; border-top: 1px solid var(--rule); }
+.case-option:first-of-type { margin-top: 25px; }
+.case-option p { font-size: .9rem; }
+.case-option h3 { font-size: 1.35rem; }
+.case-option .btn { font-size: .85rem; }
+.case-index { font-variant-numeric: tabular-nums; font-size: 1.2rem; color: var(--hema); align-self: start; }
+.specimen-passport { background: var(--paper); padding: 20px 24px; border: 1px solid var(--rule); border-radius: 12px; }
+.specimen-passport > div { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; }
+.specimen-passport > div > strong { font-family: var(--font-display); font-size: 1.2rem; }
+.specimen-passport > div > span { color: var(--hema); font-size: .82rem; }
+.specimen-passport p { margin: 10px 0 5px; font-size: .87rem; }
+.station-track { display: grid; grid-template-columns: repeat(10, minmax(0, 1fr)); list-style: none; padding: 0; margin: 26px 0 32px; }
+.station-track li { border-top: 2px solid var(--rule); padding: 12px 8px 0 0; color: var(--ink-3); font-size: .67rem; line-height: 1.5; }
+.station-track li span { display: block; font-size: .87rem; font-variant-numeric: tabular-nums; margin-bottom: 5px; }
+.station-track li.past { border-color: var(--teal); color: var(--teal); }
+.station-track li.current { border-color: var(--hema); color: var(--hema); font-weight: 700; }
+.workbench-heading { display: flex; justify-content: space-between; align-items: center; gap: 24px; }
+.workbench-heading h2 { margin-top: 7px; font-size: 1.85rem; }
+.workbench-heading a { font-size: .84rem; }
+.workbench-heading h2:focus, .run-debrief h2:focus { outline: none; }
+.bench-task { max-width: 88ch; margin: 6px 0 26px; color: var(--ink-2); }
+.workbench-grid { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(300px, 1fr); gap: 28px; align-items: start; }
+.inspection-stage { background: var(--paper); border: 1px solid var(--rule); border-radius: 14px; padding: 24px; position: sticky; top: 24px; min-width: 0; }
+.inspection-header { display: flex; justify-content: space-between; gap: 15px; padding-bottom: 16px; margin-bottom: 12px; border-bottom: 1px solid var(--rule); font-size: .85rem; }
+.inspection-header > span { color: var(--ink-3); font-size: .75rem; }
+.inspection-stage > p, .inspection-stage .section-observation p { font-size: .85rem; line-height: 1.7; margin: 16px 0; }
+.inspection-stage .deeper { margin-bottom: 0; }
+.bench-console { min-width: 0; }
+.bench-options { border: 0; padding: 0; margin: 0 0 22px; min-width: 0; }
+.bench-options legend { font-weight: 600; margin-bottom: 12px; font-size: .93rem; }
+.bench-choice { display: flex; align-items: start; gap: 11px; margin: 0 0 9px; padding: 13px 15px; border: 1px solid var(--rule); border-radius: 9px; background: var(--paper); cursor: pointer; font-size: .87rem; line-height: 1.55; }
+.bench-choice:hover { border-color: var(--hema); }
+.bench-choice.selected { border-color: var(--hema); background: var(--hema-soft); }
+.bench-choice input { margin: 5px 0 0; width: 16px; height: 16px; flex-shrink: 0; }
+.bench-choice strong { font-weight: 600; }
+.bench-choice span span { display: block; font-size: .77rem; color: var(--ink-2); margin-top: 5px; }
+.bench-toggle { display: flex; align-items: start; gap: 12px; font-size: .86rem; line-height: 1.6; min-height: 44px; padding: 12px 0; cursor: pointer; }
+.bench-toggle input { width: 18px; height: 18px; flex-shrink: 0; margin: 4px 0 0; }
+.bench-range { padding: 4px 0 20px; }
+.bench-range label { display: flex; justify-content: space-between; gap: 16px; font-size: .88rem; font-weight: 600; }
+.bench-range output { color: var(--hema); font-variant-numeric: tabular-nums; }
+.bench-range input { width: 100%; margin-top: 14px; min-height: 26px; }
+.teaching-protocol { background: var(--vellum); padding: 17px; border-radius: 9px; font-size: .83rem; margin: 0 0 23px; }
+.teaching-protocol p { margin: 8px 0 0; line-height: 1.7; }
+.commit-station { border-top: 1px solid var(--rule); padding-top: 20px; margin-top: 24px; }
+.commit-station .btn { width: 100%; font-size: .86rem; }
+.receipt-comparison { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; padding: 14px 0; }
+.receipt-comparison h3 { font-family: var(--font-body); font-size: .92rem; padding-bottom: 10px; border-bottom: 1px solid var(--rule); }
+.receipt-comparison dl { font-size: .82rem; }
+.receipt-comparison dt { color: var(--ink-3); margin-top: 15px; }
+.receipt-comparison dd { margin: 3px 0 0; font-weight: 600; }
+.receipt-comparison .discrepancy { color: var(--danger); text-decoration: underline; text-underline-offset: 4px; }
+.receipt-comparison > p { grid-column: 1 / -1; }
+.cassette-fragments { display: flex; gap: 10px; flex-wrap: wrap; padding: 18px; background: var(--vellum); border-radius: 8px; min-height: 65px; }
+.cassette-fragments span { display: grid; place-items: center; width: 34px; height: 24px; background: var(--eosin-soft); color: var(--eosin); border: 1px solid var(--eosin); border-radius: 5px; font-size: .75rem; }
+.reagent-order { list-style: none; padding: 0; }
+.reagent-order li { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 9px 0; border-bottom: 1px solid var(--rule); font-size: .85rem; }
+.reagent-order li > div { display: flex; gap: 5px; }
+.reagent-order .btn { font-size: .7rem; min-height: 36px; padding: 5px 9px; }
+.exchange-trail { display: flex; flex-wrap: wrap; gap: 8px; }
+.exchange-trail span { border: 1px solid var(--rule); padding: 6px 9px; font-size: .8rem; border-radius: 6px; }
+.section-observation { border-top: 1px solid var(--rule); margin-top: 20px; padding-top: 20px; font-size: .87rem; }
+.control-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.control-observation { border-radius: 9px; padding: 15px; font-size: .8rem; }
+.control-observation strong, .control-observation span { display: block; }
+.control-observation span { margin-top: 8px; }
+.pass { background: var(--teal-soft); }
+.fail { background: var(--eosin-soft); }
+.last-finding { padding: 20px 24px; border-radius: 12px; margin: 30px 0; font-size: .88rem; }
+.last-finding p { margin: 10px 0 0; max-width: 90ch; }
+.specimen-record { border-top: 1px solid var(--rule); margin-top: 42px; padding-top: 28px; }
+.specimen-record > ol { list-style: none; padding: 0; }
+.specimen-record li { padding: 20px 0; border-bottom: 1px solid var(--rule); }
+.record-heading { display: flex; justify-content: space-between; align-items: center; gap: 15px; margin-bottom: 12px; }
+.specimen-record p { font-size: .87rem; line-height: 1.7; max-width: 92ch; }
+.run-debrief { padding: 30px; background: var(--hema-soft); border-radius: 14px; margin: 24px 0; }
+.run-debrief h2 { font-size: 2rem; }
+.run-debrief .row { margin-top: 22px; }
+.bench-sources { margin-top: 34px; font-size: .83rem; }
+.bench-sources summary { cursor: pointer; color: var(--hema); padding: 12px 0; font-weight: 600; }
+.slide-library > h1 { max-width: 25ch; font-size: 2.6rem; line-height: 1.2; }
+.slide-library > .lede { margin: 20px 0 28px; font-size: 1.05rem; }
+.slide-selector { margin-bottom: 24px; }
+.slide-viewer-layout { display: grid; grid-template-columns: minmax(0, 1fr) 270px; gap: 30px; align-items: start; }
+.micrograph-figure { margin: 0; min-width: 0; }
+.micrograph-toolbar { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; background: var(--paper); border: 1px solid var(--rule); padding: 12px 14px; border-radius: 10px 10px 0 0; font-size: .75rem; }
+.micrograph-toolbar > span { margin-right: auto; color: var(--hema); font-weight: 600; }
+.micrograph-toolbar output { font-variant-numeric: tabular-nums; }
+.micrograph-toolbar input { width: 90px; }
+.micrograph-toolbar .btn { font-size: .75rem; min-height: 32px; padding: 4px 8px; }
+.micrograph-window { height: 440px; overflow: auto; background: #f0e9e5; border-radius: 0 0 10px 10px; scrollbar-color: #786b80 #e4d9e2; }
+.micrograph-window img { display: block; max-width: none; height: auto; margin-inline: auto; }
+.micrograph-window > p { padding: 25px; color: #292332; }
+.micrograph-figure figcaption { color: var(--ink-2); font-size: .76rem; line-height: 1.65; padding: 18px 0; }
+.slide-observation { border-top: 2px solid var(--hema); padding-top: 20px; }
+.slide-observation h2 { font-size: 1.3rem; }
+.slide-observation ol { font-size: .88rem; padding-left: 20px; }
+.slide-observation li { margin-bottom: 16px; padding-left: 4px; }
+.slide-observation .btn { font-size: .8rem; margin-bottom: 22px; }
+.slide-observation > a { font-size: .85rem; }
+.observation-answer { background: var(--teal-soft); padding: 18px; border-radius: 10px; font-size: .86rem; margin-bottom: 22px; }
+.observation-answer p:last-child { margin-bottom: 0; }
+.artifact-laboratory { border-top: 1px solid var(--rule); margin-top: 40px; padding-top: 36px; }
+.artifact-exercise { display: grid; grid-template-columns: minmax(0, 1fr) minmax(280px, 1fr); gap: 30px; margin-top: 26px; }
+.artifact-exercise svg { width: 100%; }
+.artifact-exercise > div > p { font-size: .85rem; margin-top: 12px; }
+@media (max-width: 1200px) {
+  .pathway-intro { grid-template-columns: 1fr; gap: 12px; }
+  .pathway-intro > div:first-child { max-width: 720px; }
+  .pathway-intro h1 br { display: none; }
+  .specimen-story { max-width: 720px; padding: 5px 20px 20px; }
+  .journey-overview { max-height: 235px; }
+  .pathway-layout { grid-template-columns: minmax(0, 1fr) 230px; gap: 26px; }
+  .study-companion { padding-left: 20px; }
+  .workbench-grid { gap: 20px; grid-template-columns: minmax(0, 1fr); }
+  .inspection-stage { position: static; }
+  .inspection-stage > svg { max-height: 320px; }
+  .bench-console { max-width: 760px; }
+  .slide-viewer-layout { grid-template-columns: minmax(0, 1fr); }
+  .slide-observation ol { display: flex; gap: 30px; flex-wrap: wrap; }
+  .slide-observation ol li { flex: 1 1 170px; }
+  .chapter-layout { grid-template-columns: 165px minmax(0, 1fr); gap: 22px; }
+}
+@media (max-width: 860px) {
+  .studio-top { margin-top: 5px; margin-bottom: 22px; gap: 12px; }
+  .pathway-intro { padding-top: 4px; padding-bottom: 18px; }
+  .pathway-intro h1 { font-size: 2.5rem; max-width: 18ch; }
+  .pathway-intro .lede { font-size: 1rem; }
+  .pathway-intro .row { gap: 10px; }
+  .pathway-layout { grid-template-columns: 1fr; }
+  .study-companion { padding: 24px 0 0; border-left: 0; border-top: 1px solid var(--rule); }
+  .study-companion > .btn { width: auto; }
+  .learning-promise { margin-bottom: 30px; gap: 18px; align-items: start; flex-direction: column; }
+  .learning-promise a { flex: auto; }
+  .chapter-header h1 { font-size: 2rem; }
+  .chapter-layout { grid-template-columns: 1fr; padding-top: 20px; }
+  .chapter-outline { position: static; display: flex; overflow-x: auto; padding-bottom: 14px; border-bottom: 1px solid var(--rule); }
+  .chapter-outline a { flex: none; white-space: nowrap; }
+  .chapter-outline a:first-child { display: none; }
+  .chapter-body h2 { font-size: 1.4rem; }
+  .teaching-figure { padding: 20px 14px; margin-block: 25px 32px; }
+  .figure-controls { gap: 6px; }
+  .figure-controls .chip-btn { padding: 7px 12px; min-height: 40px; }
+  .figure-controls .btn { margin-left: 0; }
+  .workbench-invitation { flex-direction: column; align-items: start; padding: 24px; }
+  .case-option { grid-template-columns: 30px minmax(0, 1fr); gap: 15px; }
+  .case-option .btn { grid-column: 2; justify-self: start; }
+  .station-track { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 14px 0; }
+  .workbench-heading { align-items: start; }
+  .workbench-heading a { padding-top: 6px; font-size: .78rem; }
+  .specimen-passport { padding: 18px; }
+  .specimen-passport > div { flex-wrap: wrap; gap: 6px; }
+  .inspection-stage { padding: 20px 14px; }
+  .record-heading { align-items: start; }
+  .record-heading .tag { font-size: .72rem; }
+  .run-debrief { padding: 24px 18px; }
+  .run-debrief h2 { font-size: 1.6rem; }
+  .slide-library > h1 { font-size: 2rem; }
+  .micrograph-window { height: 340px; }
+  .artifact-exercise { grid-template-columns: 1fr; }
+}
+@media (max-width: 480px) {
+  .studio-top { font-size: .75rem; }
+  .pathway-intro h1 { font-size: 2.18rem; }
+  .pathway-intro .btn { width: 100%; }
+  .pathway-progress { font-size: .72rem; }
+  .specimen-story { padding: 8px 3px 16px; }
+  .specimen-story p { font-size: .78rem; }
+  .tier-heading { display: block; }
+  .tier-heading > span { display: block; margin-top: 6px; }
+  .chapter-link { grid-template-columns: 26px minmax(0, 1fr); gap: 10px; padding-block: 20px; }
+  .chapter-meta { grid-column: 2; flex-direction: row; align-items: center; justify-content: space-between; padding: 0; }
+  .chapter-link strong { font-size: 1.05rem; }
+  .chapter-purpose { font-size: .8rem; }
+  .chapter-header h1 { font-size: 1.85rem; }
+  .chapter-header .lede { font-size: 1rem; }
+  .chapter-header > .row { font-size: .74rem; }
+  .chapter-body p { font-size: .95rem; }
+  .bench-reasoning, .chapter-lab-link { padding: 22px 18px; }
+  .chapter-lab-link .btn { width: 100%; }
+  .control-pair { grid-template-columns: 1fr; }
+  .receipt-comparison { gap: 12px; }
+  .receipt-comparison dd { font-size: .75rem; }
+  .station-track li { font-size: .59rem; overflow-wrap: anywhere; }
+  .micrograph-window { height: 280px; }
+  .slide-selector .chip-btn { width: 100%; text-align: left; }
+}
+@media print {
+  .rail, .topbar-mobile, .tabbar, .chapter-outline, .figure-controls, .studio-top, .bench-console, .chapter-checkpoint, .chapter-finish, .btn { display: none !important; }
+  .shell, .chapter-layout, .workbench-grid { display: block; }
+  .main { padding: 0; }
+  .chapter-body { max-width: none; }
+  .teaching-figure, .specimen-record li { break-inside: avoid; }
+}

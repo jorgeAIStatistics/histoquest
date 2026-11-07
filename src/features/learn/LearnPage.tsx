@@ -16,7 +16,7 @@ export default function LearnPage() {
     <div className="page">
       <div className="page-head">
         <div>
-          <h1>Learn</h1>
+          <h1>Topic lessons</h1>
           <p className="lede">
             {LESSONS.length} lessons across the five content areas of the guideline for tests from {g.validFrom}. Each lesson starts with a bench question and ends with a troubleshooting problem.
           </p>
@@ -24,6 +24,7 @@ export default function LearnPage() {
         <a className="btn btn-quiet" href={g.url} target="_blank" rel="noreferrer">Official content guideline (PDF)</a>
       </div>
 
+      <div className="workbench-invitation"><div><h2>Prefer a guided sequence?</h2><p>The specimen-to-slide pathway connects these topics from foundations through advanced reasoning.</p></div><Link className="btn btn-primary" to="/">Open the learning pathway</Link></div>
       {g.domains.map((d) => {
         const lessons = LESSONS.filter((l) => l.domain === d.id)
         const objectives = OBJECTIVES.filter((o) => o.domain === d.id)

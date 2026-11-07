@@ -4,6 +4,8 @@ import { describe, it } from 'vitest'
 import { ATLAS, CARDS, LESSONS, QUESTIONS, SIMULATIONS } from '.'
 import { ACTIVE_GUIDELINE, OBJECTIVES } from './curriculum'
 import { SOURCES } from './sources'
+import { PATHWAY, STAIN_COMPARISONS, ARTIFACTS } from './pathway'
+import { CASES, STATIONS } from '../features/workbench/model'
 
 describe.runIf(!!process.env.GEN_INVENTORY)('inventory', () => {
   it('writes docs/CONTENT_INVENTORY.md', () => {
@@ -11,7 +13,8 @@ describe.runIf(!!process.env.GEN_INVENTORY)('inventory', () => {
     const L: string[] = []
     L.push('# Content inventory', '', `Generated from the content bank. Guideline: ${ACTIVE_GUIDELINE.title}, revised ${ACTIVE_GUIDELINE.revised}, for tests from ${ACTIVE_GUIDELINE.validFrom}.`, '')
     L.push('## Totals', '', '| Item | Count | Target |', '|---|---|---|')
-    L.push(`| Lessons | ${LESSONS.length} | ≥ 15 |`, `| Questions | ${QUESTIONS.length} | ≥ 120 |`, `| Retrieval cards | ${CARDS.length} | ≥ 60 |`, `| Atlas entries | ${ATLAS.length} | — |`, `| Simulations working | ${SIMULATIONS.filter((s) => s.status === 'ready').length} of ${SIMULATIONS.length} | 4 required |`, '')
+    L.push(`| Lessons | ${LESSONS.length} | ≥ 15 |`, `| Questions | ${QUESTIONS.length} | ≥ 120 |`, `| Retrieval cards | ${CARDS.length} | ≥ 60 |`, `| Atlas entries | ${ATLAS.length} | — |`, `| Focused simulations working | ${SIMULATIONS.filter((s) => s.status === 'ready').length} of ${SIMULATIONS.length} | 4 required |`, '')
+    L.push(`| Sequential pathway chapters | ${PATHWAY.length} | — |`, `| Connected workbench cases | ${CASES.length}, each with ${STATIONS.length} stations | — |`, `| Stain comparisons | ${STAIN_COMPARISONS.length} | — |`, `| Artifact investigations | ${ARTIFACTS.length} | — |`, '')
     const statuses = count([...QUESTIONS, ...CARDS, ...LESSONS, ...ATLAS], (x) => x.review.status)
     L.push('## Review status', '', 'Every item is `author-checked`: written to match standard teaching, with textbook sources not page-verified. **Nothing is expert-reviewed.**', '', ...Object.entries(statuses).map(([k, v]) => `- ${k}: ${v}`), '')
     L.push('## Questions by content area', '', '| Area | Exam weight | Questions | Share of bank | Recall | Application | Case | Calculation | With schematic image |', '|---|---|---|---|---|---|---|---|---|')

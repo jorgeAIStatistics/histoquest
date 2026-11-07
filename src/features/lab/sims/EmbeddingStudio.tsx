@@ -91,7 +91,7 @@ export default function EmbeddingStudio({ finish }: SimProps) {
       <SimNotice>Schematic geometry. Orientation decides which structures fall in the plane of section; the drawings show that relationship, not real tissue.</SimNotice>
       <div className="row" style={{ margin: '12px 0 18px' }} role="tablist" aria-label="Tissues">
         {TISSUES.map((x, i) => (
-          <button key={x.id} role="tab" aria-selected={i === idx} className="chip-btn" aria-pressed={i === idx} onClick={() => { setIdx(i); setOrient('flat'); setTurn(0); setLocked(!!results[x.id]) }}>
+          <button key={x.id} role="tab" aria-selected={i === idx} className="chip-btn" aria-pressed={i === idx} onClick={() => { setIdx(i); setOrient(results[x.id] ?? 'flat'); setTurn(0); setLocked(!!results[x.id]) }}>
             {x.name} {results[x.id] && (results[x.id] === x.best ? '✓' : '·')}
           </button>
         ))}
