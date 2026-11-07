@@ -12,6 +12,7 @@ const SlideLibrary = lazy(() => import('./features/pathway/SlideLibrary'))
 // Heavy modules load on demand.
 const LearnPage = lazy(() => import('./features/learn/LearnPage'))
 const LessonPage = lazy(() => import('./features/learn/LessonPage'))
+const LabWorkspace = lazy(() => import('./features/lab3d/LabWorkspace'))
 const LabPage = lazy(() => import('./features/lab/LabPage'))
 const SimPage = lazy(() => import('./features/lab/SimPage'))
 const PracticePage = lazy(() => import('./features/practice/PracticePage'))
@@ -42,6 +43,8 @@ const router = createBrowserRouter([
     errorElement: <RouteError />,
     children: [
       { path: '/', element: <PathwayPage /> },
+      { path: '/pathway', element: <PathwayPage /> },
+      { path: '/lab3d', element: <LabWorkspace /> },
       { path: '/today', element: <TodayPage /> },
       { path: '/pathway/:id', element: <ChapterPage /> },
       { path: '/workbench', element: <WorkbenchPage /> },

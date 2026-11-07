@@ -1,0 +1,121 @@
+.lab-scene {
+  border: 1px solid var(--rule);
+  overflow: hidden;
+  border-radius: 12px;
+  background: var(--paper);
+}
+.scene-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.65rem 0.8rem;
+  border-bottom: 1px solid var(--rule);
+}
+.scene-render-label {
+  margin-right: auto;
+  font-size: 0.85rem;
+  color: var(--ink);
+}
+.scene-camera-button {
+  min-height: 36px;
+  padding: 0.3rem 0.7rem;
+  border: 1px solid var(--rule);
+  border-radius: 5px;
+  background: var(--paper);
+  color: var(--ink);
+  font: inherit;
+  font-size: 0.84rem;
+  cursor: pointer;
+}
+.scene-camera-button:hover {
+  background: var(--hema-soft);
+}
+.scene-camera-button:focus-visible,
+.scene-station-link:focus-visible {
+  outline: 3px solid #584297;
+  outline-offset: 3px;
+}
+.lab-scene-viewport {
+  position: relative;
+  height: clamp(350px, 52vw, 580px);
+  min-width: 0;
+  isolation: isolate;
+  content-visibility: auto;
+  contain-intrinsic-size: auto none auto 480px;
+  background: #e4e5df;
+  color: #26343a;
+  cursor: grab;
+}
+.lab-scene-viewport:active {
+  cursor: grabbing;
+}
+.lab-scene-viewport canvas {
+  touch-action: none;
+}
+.scene-label {
+  display: block;
+  max-width: 240px;
+  width: max-content;
+  padding: 3px 7px;
+  border-radius: 3px;
+  background: #f8f5ec;
+  color: #26343a;
+  font-size: 13px;
+  line-height: 1.3;
+  font-variant-numeric: tabular-nums;
+  pointer-events: none;
+  user-select: none;
+  text-align: center;
+  box-shadow: 0 2px 8px #23383e20;
+}
+.scene-station-link {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: max-content;
+  max-width: 170px;
+  min-height: 32px;
+  padding: 5px 8px;
+  border: 1px solid #9eaba7;
+  border-radius: 4px;
+  background: #f8f5ec;
+  color: #26343a;
+  font: inherit;
+  font-size: 12px;
+  line-height: 1.25;
+  cursor: pointer;
+}
+.scene-station-link span {
+  color: #554687;
+  font-variant-numeric: tabular-nums;
+}
+.scene-station-link:hover {
+  background: #e9e2f2;
+}
+.scene-caption {
+  padding: 0.7rem 0.9rem;
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+.scene-caption p {
+  margin: 0;
+  max-width: 75ch;
+}
+.scene-caption [role='status']:not(:empty) {
+  display: block;
+  padding-top: 0.4rem;
+}
+@media (max-width: 600px) {
+  .lab-scene-viewport {
+    height: 370px;
+  }
+  .scene-render-label {
+    flex-basis: 100%;
+  }
+  .scene-camera-button {
+    flex-grow: 1;
+    min-height: 42px;
+    padding-inline: 0.4rem;
+  }
+}

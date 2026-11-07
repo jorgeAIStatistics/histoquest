@@ -1,4 +1,5 @@
 import { average, clamp, degreesToRadians, micrometersToMillimeters } from '../core/units'
+import { MECHANICS as M } from '../params/mechanics'
 import { PROCESS as P } from '../params/process'
 import type { Section, Twin } from '../specimen/types'
 import { createIhcState, createMountingState, createStainingState } from '../specimen/initial'
@@ -34,11 +35,39 @@ export function representation(t: Twin) {
   )
 }
 
+/** Remaining tissue sampled over the mold face. Empty cells are empty paraffin, not hidden tissue. */
+export function updateBlockFace(t: Twin) {
+  const width = Math.round(Math.sqrt(t.block.face.length))
+  const span = Math.max(M['mechanics.mold-span'], t.scenario.dimensions[0])
+  const cutDepth = micrometersToMillimeters(t.block.trimmed)
+  t.block.face = t.block.face.map((_, index) => {
+    const x = ((index % width) / (width - 1) - 0.5) * span
+    const y = (Math.floor(index / width) / (width - 1) - 0.5) * span
+    return Math.max(
+      0,
+      ...t.embedding.pieces.map((piece) => {
+        const angle = degreesToRadians(piece.rz)
+        const dx = x - piece.x,
+          dy = y - piece.y
+        const u = dx * Math.cos(angle) + dy * Math.sin(angle),
+          v = -dx * Math.sin(angle) + dy * Math.cos(angle)
+        const length = t.scenario.dimensions[0],
+          breadth = Math.max(M['mechanics.minimum-width'], t.scenario.dimensions[1])
+        if ((u / (length / 2)) ** 2 + (v / (breadth / 2)) ** 2 > 1) return 0
+        const front =
+          piece.z +
+          u * Math.sin(degreesToRadians(piece.ry)) +
+          v * Math.sin(degreesToRadians(piece.rx))
+        return Math.max(0, Math.min(piece.thickness, front + piece.thickness - cutDepth)) * 1000
+      }),
+    )
+  })
+}
 export function trim(t: Twin, microns: number) {
   const used = Math.min(Math.max(0, microns), t.block.remaining)
   t.block.trimmed += used
   t.block.remaining -= used
-  t.block.face = t.block.face.map(() => t.block.remaining)
+  updateBlockFace(t)
   t.embedding.representation = representation(t)
 }
 
@@ -46,10 +75,22 @@ export function trim(t: Twin, microns: number) {
 export function cut(t: Twin, purpose = 'routine', level = 1): Section {
   startNewSlide(t)
   const m = t.instrument
+  const referenceTemperature = t.frozen.prepared
+    ? t.scenario.family === 'fat'
+      ? M['mechanics.fat-frozen-temperature']
+      : t.scenario.family === 'neural'
+        ? M['mechanics.neural-frozen-temperature']
+        : P['frozen.temperature']
+    : P['microtomy.block-temperature']
   const warmth =
-    Math.max(0, t.block.temperature - P['microtomy.block-temperature']) /
-    P['microtomy.temperature-scale']
-  const cold = Math.max(0, -t.block.temperature) / P['microtomy.temperature-scale']
+    Math.max(0, t.block.temperature - referenceTemperature) / P['microtomy.temperature-scale']
+  const cold =
+    Math.max(
+      0,
+      referenceTemperature -
+        (t.frozen.prepared ? 0 : M['mechanics.cold-margin']) -
+        t.block.temperature,
+    ) / P['microtomy.temperature-scale']
   const speed = Math.max(0, m.speed - P['microtomy.speed'])
   const angle = Math.abs(m.angle - P['microtomy.angle']) / P['microtomy.angle-scale']
   const support = average(t.regions.map((r) => r.wax))
@@ -64,7 +105,9 @@ export function cut(t: Twin, purpose = 'routine', level = 1): Section {
   const chatter = clamp(
     1 -
       m.clamp +
-      t.processing.brittleness * P['microtomy.chatter-brittleness-weight'] +
+      t.processing.brittleness *
+        (1 - t.block.hydration * M['mechanics.hydration-benefit']) *
+        P['microtomy.chatter-brittleness-weight'] +
       cold * P['microtomy.chatter-cold-weight'] +
       angle * P['microtomy.chatter-angle-weight'] +
       speed * P['microtomy.chatter-speed-weight'],
@@ -75,6 +118,14 @@ export function cut(t: Twin, purpose = 'routine', level = 1): Section {
       P['microtomy.wear'] +
       (damaged ? P['microtomy.wear'] * P['microtomy.damaged-wear-gain'] : 0),
   )
+  const staticRisk = clamp(
+    (P['microtomy.static-humidity'] - m.humidity) / M['mechanics.static-scale'],
+  )
+  const variation = clamp(
+    (1 - m.consistency) * M['mechanics.consistency-weight'] +
+      (1 - m.clamp) * M['mechanics.clamp-variation'],
+  )
+  const curling = clamp((staticRisk + warmth) * M['mechanics.curl-weight'])
   const section: Section = {
     id: `${t.scenario.accession}-S${t.block.sections.length + 1}`,
     depth: t.block.trimmed,
@@ -84,6 +135,12 @@ export function cut(t: Twin, purpose = 'routine', level = 1): Section {
     slideId: '',
     compression,
     chatter,
+    curling,
+    ribbonContinuity: clamp(1 - compression - curling - variation),
+    thicknessVariation: variation,
+    thicknessMap: t.block.face.map(
+      (_, i) => m.thickness * (1 + variation * Math.sin((i * Math.PI) / 2)),
+    ),
     knifeLines: damaged
       ? [
           P['microtomy.first-nick-position'] + usedSlot * P['microtomy.nick-slot-spacing'],
@@ -91,12 +148,13 @@ export function cut(t: Twin, purpose = 'routine', level = 1): Section {
         ]
       : [],
     holes: clamp(
-      (1 - support) * P['microtomy.hole-support-weight'] +
+      Math.max(0, t.block.hydration - M['mechanics.excess-hydration']) +
+        (1 - support) * P['microtomy.hole-support-weight'] +
         mineral * P['microtomy.hole-mineral-weight'] +
         t.embedding.bubbles * P['microtomy.hole-bubble-weight'],
     ),
     folds: 0,
-    wrinkles: 0,
+    wrinkles: curling,
     bubbles: 0,
     ice: t.frozen.ice,
     floaters: [],
@@ -106,7 +164,7 @@ export function cut(t: Twin, purpose = 'routine', level = 1): Section {
     labelCorrect: false,
     dried: 0,
   }
-  if (t.block.remaining <= 0) section.holes = 1
+  if (t.block.remaining <= 0 || (t.embedding.pieces.length > 0 && t.block.face.every(value => value <= 0))) section.holes = 1
   trim(t, m.thickness)
   t.block.sections.push(section)
   return section

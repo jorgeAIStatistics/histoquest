@@ -116,6 +116,7 @@ export function createTwin(scenario: Scenario): Twin {
       guarded: true,
       thickness: parameterValue('section.thickness'),
       speed: P['microtomy.speed'],
+      consistency: 1,
       angle: P['microtomy.angle'],
       clamp: scenario.faults.includes('loose-clamp') ? P['microtomy.fault-clamp'] : 1,
       sharpness: scenario.faults.includes('nick') ? P['microtomy.fault-sharpness'] : 1,

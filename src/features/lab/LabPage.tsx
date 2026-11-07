@@ -45,6 +45,7 @@ export default function LabPage() {
         <Segmented label="View" value={view} onChange={setView} options={[{ value: 'map', label: 'Lab map' }, { value: 'list', label: 'List' }]} />
       </div>
 
+      <section className="workbench-invitation"><div><h2>Work at the bench. Inspect what you make.</h2><p>Prepare a fictional specimen, manipulate generic instruments and follow the resulting slide under a procedural microscope. The 2D work surface uses the same specimen model.</p></div><Link className="btn btn-primary" to="/lab3d">Enter HistoQuest Lab</Link></section>
       <section className="workbench-invitation"><div><h2>Follow one specimen all the way through.</h2><p>Three cases. Ten connected stations. Reconcile labels, plan sampling, prepare tissue, inspect a ribbon, build stains, and make a technical handoff.</p></div><Link className="btn btn-primary" to="/workbench">Enter the specimen workbench</Link></section>
       {view === 'map' && (
         <svg className="labmap" viewBox="0 0 750 340" role="group" aria-label="Lab floor plan. Each station opens a simulation; the same stations are in the list view.">

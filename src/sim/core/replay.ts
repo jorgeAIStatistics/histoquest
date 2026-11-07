@@ -8,7 +8,7 @@ import { createTwin } from '../specimen/initial'
 import type { ModelIssue, Twin } from '../specimen/types'
 import { fix, decalcify } from '../models/preservation'
 import { processStep } from '../models/processing'
-import { cut, dry, floatSection, representation, trim } from '../models/sectioning'
+import { cut, dry, floatSection, representation, updateBlockFace, trim } from '../models/sectioning'
 import { specialStep, specialControls } from '../models/special'
 import { stainStep, mount } from '../models/staining'
 import { retrieve, primary, detect, evaluateControls } from '../models/ihc'
@@ -52,6 +52,14 @@ export function reduceEvent(previous: Twin, event: SimEvent): Twin {
   const s = (key: string, fallback = '') => text(event, key, fallback)
   const b = (key: string) => yes(event, key)
   switch (event.intent) {
+    case 'practice.evidence':
+      if (s('text').trim())
+        t.documentation.push({
+          station: event.station,
+          text: `${s('checkId')}: ${s('text').trim()}`,
+          t: t.time,
+        })
+      break
     case 'document':
       if (s('text').trim())
         t.documentation.push({ station: event.station, text: s('text').trim(), t: t.time })
@@ -168,6 +176,7 @@ export function reduceEvent(previous: Twin, event: SimEvent): Twin {
       t.embedding.bubbles = clamp(n('bubbles'))
       t.embedding.temperature = n('temperature', P['embedding.wax-temperature'])
       t.embedding.representation = representation(t)
+      updateBlockFace(t)
       break
     }
     case 'embedding.cool':
@@ -183,6 +192,7 @@ export function reduceEvent(previous: Twin, event: SimEvent): Twin {
       for (const key of [
         'thickness',
         'speed',
+        'consistency',
         'angle',
         'clamp',
         'sharpness',
@@ -193,7 +203,11 @@ export function reduceEvent(previous: Twin, event: SimEvent): Twin {
           t.instrument[key] = clamp(
             n(key, t.instrument[key]),
             0,
-            key === 'humidity' ? 100 : key === 'clamp' || key === 'sharpness' ? 1 : 50,
+            key === 'humidity'
+              ? 100
+              : key === 'clamp' || key === 'sharpness' || key === 'consistency'
+                ? 1
+                : 50,
           )
       }
       if ('locked' in event.params) t.instrument.locked = b('locked')
@@ -241,7 +255,7 @@ export function reduceEvent(previous: Twin, event: SimEvent): Twin {
         section.pickedUp = true
         section.charged = b('charged')
         section.slideId = s('label')
-        section.labelCorrect = s('label').startsWith(t.scenario.accession)
+        section.labelCorrect = s('label') === `${t.scenario.accession}-A1-L${section.level}`
         section.bubbles = clamp(n('bubbles'))
       }
       if (section && !section.labelCorrect) {
@@ -275,13 +289,28 @@ export function reduceEvent(previous: Twin, event: SimEvent): Twin {
       specialControls(t, b('positive'), b('negative'))
       break
     case 'ihc.marker': {
-      const marker = MARKERS.find(m => m.id === s('marker'))
-      if (marker) { t.ihc.marker = marker.label; t.ihc.location = marker.localization.includes('nuclear') ? 'nuclear' : marker.localization.includes('membranous') ? 'membranous' : 'cytoplasmic'; t.ihc.valid = false }
+      const marker = MARKERS.find((m) => m.id === s('marker'))
+      if (marker) {
+        t.ihc.marker = marker.label
+        t.ihc.location = marker.localization.includes('nuclear')
+          ? 'nuclear'
+          : marker.localization.includes('membranous')
+            ? 'membranous'
+            : 'cytoplasmic'
+        t.ihc.valid = false
+      }
       break
     }
-    case 'ish.hybridize': hybridize(t, s('probe'), n('minutes'), n('temperature'), n('protease')); t.time += Math.max(0,n('minutes')); break
-    case 'ish.wash': stringencyWash(t, n('stringency')); break
-    case 'ish.controls': ishControls(t, b('positive'), b('negative')); break
+    case 'ish.hybridize':
+      hybridize(t, s('probe'), n('minutes'), n('temperature'), n('protease'))
+      t.time += Math.max(0, n('minutes'))
+      break
+    case 'ish.wash':
+      stringencyWash(t, n('stringency'))
+      break
+    case 'ish.controls':
+      ishControls(t, b('positive'), b('negative'))
+      break
     case 'ihc.retrieve':
       retrieve(
         t,
@@ -327,10 +356,15 @@ export function reduceEvent(previous: Twin, event: SimEvent): Twin {
         biohazardChecked: b('biohazard'),
         prepared: true,
       }
+      if (!t.embedding.pieces.length)
+        t.embedding.pieces = [
+          { id: 'A1-1', x: 0, y: 0, z: 0, rx: 0, ry: 0, rz: 0, thickness: t.gross.thickness },
+        ]
+      updateBlockFace(t)
       t.embedding.representation = 1
       t.regions.forEach((r) => {
         r.wax = 1
-        r.fixed = 1
+        r.fixed = 0
         r.water = 0
         r.alcohol = 0
         r.clearant = 0

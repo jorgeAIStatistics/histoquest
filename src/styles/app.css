@@ -26,6 +26,7 @@ img, svg { max-width: 100%; }
 .skip:focus { top: 8px; }
 
 /* ---------- shell ---------- */
+.shell > div { min-width: 0; }
 .shell { display: grid; grid-template-columns: 232px minmax(0, 1fr); min-height: 100vh; }
 .rail { position: sticky; top: 0; height: 100vh; display: flex; flex-direction: column; gap: 4px; padding: 22px 14px; border-right: 1px solid var(--rule); background: var(--paper); }
 .brand { display: flex; align-items: center; gap: 10px; padding: 4px 10px 22px; color: var(--ink); text-decoration: none; font-family: var(--font-display); font-weight: 700; font-size: var(--t-2); }
@@ -42,7 +43,7 @@ img, svg { max-width: 100%; }
 .topbar-mobile { display: none; }
 
 @media (max-width: 860px) {
-  .shell { grid-template-columns: 1fr; }
+  .shell { grid-template-columns: minmax(0, 1fr); }
   .rail { display: none; }
   .main { padding: 18px 16px 104px; }
   .topbar-mobile { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 10px 16px; border-bottom: 1px solid var(--rule); background: var(--paper); position: sticky; top: 0; z-index: 20; }
