@@ -2,7 +2,23 @@
 
 Software verification and scientific verification are separate. **Passing tests does not establish educational accuracy.**
 
-## Software tests (2026-11-04)
+## Specimen-to-slide upgrade (2026-11-06)
+
+`npm test` passes **46 tests**, with two environment-gated helpers skipped. `npm run build` passes TypeScript and creates the production bundle; `npm run inventory` regenerates the bank inventory. No new runtime dependencies were added.
+
+The ten new tests cover all three complete specimen paths, restore at every station, early identity failures, IHC control/localization failures, fragment reconciliation, processing order, cutting safety, malformed drafts, v2 migration, notes/backup round-trips, and chapter references. These verify encoded behavior, not clinical validity.
+
+Browser checks against the local Vite app:
+- Desktop and phone layouts, including 1440×1000 and 390×844, plus the initial narrow 319px overview; light and dark themes.
+- Full ten-station skin case, including an incorrect sampling decision carried into a correct final hold (9/10 supported decisions), save and reload.
+- Repeat case, keyboard-operated thickness/fragment sliders, saved uncommitted controls after reload, correct sampling feedback, processing reordering, embedding selection, animated ribbon, H&E contrast and IHC repeat controls.
+- Both chapter checkpoints, confidence and explanations, completion gating, field-note saving, and completed status on the pathway.
+- Real H&E and SOX10 images, image selection, zoom, guided observations, and fit-to-window sizing.
+- Reduced-motion preference and page titles. New content remains usable without animations.
+
+The new chapter text, qualitative case rules and diagrams are author-checked, **not independently expert-reviewed**. See [SPECIMEN_STUDIO.md](SPECIMEN_STUDIO.md) for boundaries. Browser checks are manual; there is no automated end-to-end UI suite. No full clinical protocol, physical skill competency or exam eligibility claim is inferred from a simulation result.
+
+## Earlier software tests (2026-11-04)
 
 `npm run typecheck` is clean. `npm test` passes 36 tests; 2 env-gated helpers are skipped. (Rerun 2026-11-05 after adding Fixation detective and the IHC room.)
 
@@ -90,7 +106,7 @@ Checked with the in-app browser against the Vite dev server, at 1440×900, 1280�
 
 ## Scientific verification status
 
-- All 345 content items are `author-checked`: 140 questions, 88 cards, 19 lessons and 98 atlas entries. **No item is expert-reviewed.**
+- All 369 bank content items are `author-checked`: 164 questions, 88 cards, 19 lessons and 98 atlas entries. **No item is expert-reviewed.**
 - The four content authors (Claude subagents) wrote from standard histotechnology knowledge.
 - Textbooks on the ASCP reading list were **not accessed**. Citations to them are chapter-level and say "not page-verified".
 - Read and used directly: the ASCP guideline, the HTL eligibility page, the Route 2/3 form, the reading list, OSHA 1910.1048 (formaldehyde limits) and OSHA Table Z-1 (xylene PEL).
@@ -122,10 +138,10 @@ Facts the authors deliberately softened to ranges or qualitative wording, which 
 1. **Expert review.** A qualified HTL(ASCP) reviewer should review all items, starting with the softened facts above and the HTL-only chemistry. Record `reviewer` and `reviewedOn`.
 2. **Thin objectives.** STAIN-11 (mounting and refractive index), STAIN-13 (dye chemistry) and STAIN-14 (Romanowsky and Pap) have one question each. Several FIX, PROC and EMB objectives have two. Add more original questions here first.
 3. **Simulation depth.** Fixation detective has 5 cases and the IHC room has 6 runs. Both are rule-based and qualitative, and their content is author-checked like everything else. Add more cases, for example zinc formalin for flow-like markers, under-fixed breast tissue for predictive markers, and ISH runs.
-4. **Licensed micrographs.** None are bundled. Image questions use original schematics only. Add a sourced, licensed asset registry, with verified annotations, before any photomicrograph questions.
+4. **Micrograph breadth.** Two CC0 photographs are bundled in the slide library with source attribution. The bank’s image questions still use schematics. Broader organ coverage, calibrated whole-slide images and expert-reviewed annotations remain future work.
 5. **Older guideline comparison.** The guideline for exams through Oct 31, 2026 was not diffed against the current one. This only matters for someone who tested before Nov 1, 2026.
 6. **Optional grounded AI tutor.** Not built. The app has a structured hint ladder and says plainly that no AI tutor is connected. A future tutor needs a small server for credentials, retrieval over the atlas and lessons, and citation of the passages it used.
 7. **Stain studio breadth.** Interactive sequencing covers H&E and PAS/PAS-D only. Other stains are taught through the atlas (target, principle, reagents, expected result, control, failures, comparisons).
-8. **Bank size and difficulty calibration.** At 140 questions, a full-length exam reuses most of the bank, so the exam is mainly useful for pacing. Difficulty values are author estimates only.
+8. **Bank size and difficulty calibration.** At 164 questions, a full-length exam reuses most of the bank, so the exam is mainly useful for pacing. Difficulty values are author estimates only.
 9. **End-to-end automated UI tests.** Playwright is installed but no specs are written. The browser checks above were done by hand with an agent.
 10. **Minor lint warnings.** For example, a React "fast refresh" export notice and one setState-in-effect in the sequence demo.

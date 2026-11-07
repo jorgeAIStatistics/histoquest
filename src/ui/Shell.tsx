@@ -5,8 +5,8 @@ import { storageError } from '../store/store'
 import { Disclaimer } from './components'
 
 const PRIMARY = [
-  { to: '/', label: 'Today', icon: IconToday, end: true },
-  { to: '/learn', label: 'Learn', icon: IconLearn },
+  { to: '/', label: 'Pathway', icon: IconToday, end: true },
+  { to: '/learn', label: 'Lessons', icon: IconLearn },
   { to: '/lab', label: 'Virtual Lab', short: 'Lab', icon: IconLab },
   { to: '/practice', label: 'Practice', icon: IconPractice },
   { to: '/progress', label: 'Progress', icon: IconProgress },
@@ -37,6 +37,11 @@ export default function Shell({ children }: { children?: ReactNode }) {
   const mainRef = useRef<HTMLElement>(null)
   // Move focus to the page on navigation so keyboard and screen-reader users land on new content.
   useEffect(() => {
+    const route = loc.pathname.split('/').filter(Boolean)
+    const name = [...PRIMARY, ...SECONDARY].find(item => item.to === `/${route[0] ?? ''}`)?.label
+      ?? ({ pathway: 'Learning chapter', workbench: 'Specimen workbench', slides: 'Slide library', notebook: 'Field notebook', today: 'Daily plan' } as Record<string, string>)[route[0]]
+      ?? 'Study lab'
+    document.title = `${name} · HistoQuest`
     mainRef.current?.focus({ preventScroll: true })
     window.scrollTo(0, 0)
   }, [loc.pathname])
@@ -50,6 +55,10 @@ export default function Shell({ children }: { children?: ReactNode }) {
           <NavLink key={to} to={to} end={end} className="nav-link"><I /> {label}</NavLink>
         ))}
         <div className="rail-sep" role="separator" />
+        <NavLink to="/workbench" className="nav-link"><IconLab /> Specimen workbench</NavLink>
+        <NavLink to="/slides" className="nav-link"><IconAtlas /> Slide library</NavLink>
+        <NavLink to="/notebook" className="nav-link"><IconLearn /> Field notebook</NavLink>
+        <NavLink to="/today" className="nav-link"><IconToday /> Daily plan</NavLink>
         {SECONDARY.map(({ to, label, icon: I }) => (
           <NavLink key={to} to={to} className="nav-link"><I /> {label}</NavLink>
         ))}

@@ -64,7 +64,7 @@ function Results({ session, plan }: { session: Session; plan: string | null }) {
         </table>
       </div>
       <div className="row" style={{ marginBottom: 18 }}>
-        <Link className="btn btn-primary" to={plan ? '/' : '/practice'}>{plan ? 'Back to Today' : 'Back to Practice'}</Link>
+        <Link className="btn btn-primary" to={plan ? '/today' : '/practice'}>{plan ? 'Back to Today' : 'Back to Practice'}</Link>
         <Link className="btn" to="/practice/review">Go to review queue</Link>
       </div>
       <h2>Explanations</h2>
@@ -124,7 +124,7 @@ export default function SessionPage() {
         <h1>Set complete</h1>
         <p className="lede">{correct} of {session.revealed.length} answered correctly. Missed and low-confidence answers are now in your review schedule.</p>
         <div className="row">
-          <Link className="btn btn-primary" to={plan ? '/' : '/practice'}>{plan ? 'Back to Today' : 'More practice'}</Link>
+          <Link className="btn btn-primary" to={plan ? '/today' : '/practice'}>{plan ? 'Back to Today' : 'More practice'}</Link>
           <button className="btn" onClick={() => nav('/progress')}>See progress</button>
         </div>
       </div>

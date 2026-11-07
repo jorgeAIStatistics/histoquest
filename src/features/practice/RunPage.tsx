@@ -93,7 +93,7 @@ export default function RunPage({ review = false }: { review?: boolean }) {
   if (error)
     return (
       <div className="page-narrow">
-        <Empty title={error} action={<div className="row"><Link className="btn btn-primary" to="/">Back to Today</Link><Link className="btn" to="/practice">Other practice</Link></div>}>
+        <Empty title={error} action={<div className="row"><Link className="btn btn-primary" to="/today">Back to Today</Link><Link className="btn" to="/practice">Other practice</Link></div>}>
           Reviews appear here as items come due. Answering new questions or finishing a lesson adds items to the schedule.
         </Empty>
       </div>

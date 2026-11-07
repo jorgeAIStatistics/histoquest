@@ -1,6 +1,7 @@
 import { z } from 'zod'
+import { WorkbenchSchema } from '../features/workbench/model'
 
-export const SCHEMA_VERSION = 2
+export const SCHEMA_VERSION = 3
 
 const Srs = z.object({
   ease: z.number(),
@@ -128,6 +129,12 @@ export const StateSchema = z.object({
   xp: z.array(z.object({ at: z.string(), amount: z.number(), reason: z.string() })),
   activeDays: z.array(z.string()),
   route2: Route2,
+  pathway: z.object({
+    completed: z.array(z.string()).default([]),
+    notes: z.record(z.string(), z.string()).default({}),
+    lastChapter: z.string().default('tissue-language'),
+  }).default({ completed: [], notes: {}, lastChapter: 'tissue-language' }),
+  workbench: WorkbenchSchema.optional(),
 })
 export type AppState = z.infer<typeof StateSchema>
 
@@ -146,6 +153,7 @@ export function initialState(now = new Date()): AppState {
     sessions: [],
     xp: [],
     activeDays: [],
+    pathway: { completed: [], notes: {}, lastChapter: 'tissue-language' },
     route2: {
       degree: { title: '', major: '', institution: '', conferred: '', accredited: 'unknown', bioChemHours: '', transcript: 'none' },
       jobs: [],
@@ -159,6 +167,7 @@ export function initialState(now = new Date()): AppState {
  * v1 → v2: v1 stored `settings.minutes`; renamed to `sessionMinutes`, and added `tutorDepth`.
  */
 const MIGRATIONS: Record<number, (s: Record<string, unknown>) => Record<string, unknown>> = {
+  2: (s) => ({ ...s, version: 3, pathway: { completed: [], notes: {}, lastChapter: 'tissue-language' } }),
   1: (s) => {
     const settings = { ...(s.settings as Record<string, unknown>) }
     settings.sessionMinutes = settings.minutes ?? 20

@@ -60,7 +60,7 @@ const STAGES: Stage[] = [
     id: 'stain', station: 'Staining', art: 'slide',
     situation: 'The pathologist also ordered PAS-D to look for fungi in the stratum corneum.',
     choices: [
-      { id: 'a', text: 'Run PAS-D with a glycogen-containing control cut for PAS and PAS-D', best: true, now: 'Control included. Glycogen is present on PAS and absent after diastase, so the enzyme worked.' },
+      { id: 'a', text: 'Run PAS-D with known fungal-positive tissue and a glycogen-containing control cut for PAS and PAS-D', best: true, now: 'Controls included. Fungal structures demonstrate the stain reaction; loss of glycogen in the paired digested control supports enzyme performance.' },
       { id: 'b', text: 'Run PAS-D on the patient slide only; fungi are diastase-resistant anyway', best: false, flag: 'no-control', now: 'Stained without a control.' },
     ],
   },

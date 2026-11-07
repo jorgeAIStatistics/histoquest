@@ -44,7 +44,7 @@ export default function SimPage() {
           <p className="lede" style={{ marginBottom: 6 }}>{meta.blurb}</p>
           <p className="small muted">Objectives: {meta.objectives.map((o) => OBJECTIVE_BY_ID[o]?.title).join('; ')}</p>
         </div>
-        {plan && <Link className="btn" to="/">Back to Today</Link>}
+        {plan && <Link className="btn" to="/today">Back to Today</Link>}
       </div>
       <Comp finish={finish} />
     </div>

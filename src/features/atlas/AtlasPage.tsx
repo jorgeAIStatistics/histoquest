@@ -83,7 +83,7 @@ function Entry({ e }: { e: AtlasEntry }) {
       <h3 style={{ marginTop: 24 }}>Sources</h3>
       <References refs={e.references} />
       <p style={{ marginTop: 8 }}><ReviewBadge status={e.review.status} /></p>
-      <p className="small muted">The atlas uses schematic drawings only. No licensed photomicrographs are bundled yet.</p>
+      <p className="small muted"><Link to="/slides">Explore the slide library</Link> for attributed real micrographs and schematic artifact exercises.</p>
     </article>
   )
 }
@@ -109,6 +109,7 @@ export default function AtlasPage() {
         </div>
       </div>
       {id && !entry && <p className="notice">No atlas entry called “{id}”.</p>}
+      <div className="workbench-invitation"><div><h2>Connect the reference to the image</h2><p>Explore real H&E and IHC micrographs and compare preparation artifacts.</p></div><Link className="btn btn-primary" to="/slides">Open the slide library</Link></div>
       <form role="search" onSubmit={(e) => { e.preventDefault(); if (results[0]) nav(`/atlas/${results[0].e.id}`) }} className="stack" style={{ marginBottom: 20 }}>
         <div className="field" style={{ maxWidth: 520 }}>
           <label htmlFor="atlas-q">Search</label>
