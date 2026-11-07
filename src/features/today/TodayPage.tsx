@@ -11,10 +11,21 @@ import { Segmented } from '../../ui/components'
 import { useReducedMotion } from '../../ui/prefs'
 import { forgivingStreak, totalXp } from '../shared/derived'
 
-const KIND_LABEL: Record<PlanItem['kind'], string> = { review: 'Review', weak: 'Weak spot', new: 'New lesson', challenge: 'Apply it' }
-const KIND_TISSUE: Record<PlanItem['kind'], string> = { review: 'var(--hema)', weak: 'var(--eosin)', new: 'var(--amber)', challenge: 'var(--teal)' }
+const KIND_LABEL: Record<PlanItem['kind'], string> = {
+  review: 'Review',
+  weak: 'Weak spot',
+  new: 'New lesson',
+  challenge: 'Apply it',
+}
+const KIND_TISSUE: Record<PlanItem['kind'], string> = {
+  review: 'var(--hema)',
+  weak: 'var(--eosin)',
+  new: 'var(--amber)',
+  challenge: 'var(--teal)',
+}
 
-export const withPlan = (item: PlanItem) => `${item.href}${item.href.includes('?') ? '&' : '?'}plan=${encodeURIComponent(item.id)}`
+const withPlan = (item: PlanItem) =>
+  `${item.href}${item.href.includes('?') ? '&' : '?'}plan=${encodeURIComponent(item.id)}`
 
 function GlassSlide({ item, index, reduced }: { item: PlanItem; index: number; reduced: boolean }) {
   const today = localDate().slice(5).replace('-', '/')
@@ -25,7 +36,11 @@ function GlassSlide({ item, index, reduced }: { item: PlanItem; index: number; r
       transition={{ delay: reduced ? 0 : 0.06 * index, duration: 0.35, ease: [0.2, 0.7, 0.2, 1] }}
       style={{ listStyle: 'none' }}
     >
-      <Link to={withPlan(item)} className={`glass ${item.done ? 'done' : ''} ${item.skipped ? 'skipped' : ''}`} aria-describedby={`why-${item.id}`}>
+      <Link
+        to={withPlan(item)}
+        className={`glass ${item.done ? 'done' : ''} ${item.skipped ? 'skipped' : ''}`}
+        aria-describedby={`why-${item.id}`}
+      >
         <span className="glass-label">
           <b>{KIND_LABEL[item.kind]}</b>
           <span>HQ · {today}</span>
@@ -33,16 +48,37 @@ function GlassSlide({ item, index, reduced }: { item: PlanItem; index: number; r
         </span>
         <span className="glass-body">
           <span style={{ fontWeight: 700, paddingRight: 70 }}>{item.title}</span>
-          <span id={`why-${item.id}`} className="small muted" style={{ paddingRight: 70 }}>{item.done ? 'Done' : item.skipped ? 'Skipped for today' : item.why}</span>
+          <span id={`why-${item.id}`} className="small muted" style={{ paddingRight: 70 }}>
+            {item.done ? 'Done' : item.skipped ? 'Skipped for today' : item.why}
+          </span>
           <svg className="tissue" viewBox="0 0 56 40" aria-hidden="true">
-            <path d="M8 20c2-12 20-16 32-10s10 20-4 24-30 2-28-14z" fill={KIND_TISSUE[item.kind]} opacity={item.done ? 0.65 : 0.18} stroke="var(--ink-3)" strokeWidth="0.8" strokeDasharray={item.done ? undefined : '3 2'} />
-            {item.done && <path d="M18 21l6 6 13-13" stroke="var(--paper)" strokeWidth="3" fill="none" strokeLinecap="round" />}
+            <path
+              d="M8 20c2-12 20-16 32-10s10 20-4 24-30 2-28-14z"
+              fill={KIND_TISSUE[item.kind]}
+              opacity={item.done ? 0.65 : 0.18}
+              stroke="var(--ink-3)"
+              strokeWidth="0.8"
+              strokeDasharray={item.done ? undefined : '3 2'}
+            />
+            {item.done && (
+              <path
+                d="M18 21l6 6 13-13"
+                stroke="var(--paper)"
+                strokeWidth="3"
+                fill="none"
+                strokeLinecap="round"
+              />
+            )}
           </svg>
         </span>
       </Link>
       {!item.done && (
         <div className="row" style={{ justifyContent: 'flex-end', gap: 4, marginTop: 2 }}>
-          <button className="btn btn-quiet small" style={{ minHeight: 32 }} onClick={() => markPlanItem(item.id, { skipped: !item.skipped })}>
+          <button
+            className="btn btn-quiet small"
+            style={{ minHeight: 32 }}
+            onClick={() => markPlanItem(item.id, { skipped: !item.skipped })}
+          >
             {item.skipped ? 'Restore' : 'Skip'}
           </button>
         </div>
@@ -65,18 +101,37 @@ function ExamDatePrompt() {
     >
       <div className="field" style={{ flex: '1 1 220px' }}>
         <label htmlFor="examdate">When do you expect to test? (optional)</label>
-        <input id="examdate" className="input" type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+        <input
+          id="examdate"
+          className="input"
+          type="date"
+          value={date}
+          onChange={(e) => setDate(e.target.value)}
+        />
         <span className="small muted">
-          {g ? `This date uses the guideline revised ${g.revised}.` : 'HistoQuest uses the guideline for tests from Nov 1, 2026 unless you pick an earlier date.'}
+          {g
+            ? `This date uses the guideline revised ${g.revised}.`
+            : 'HistoQuest uses the guideline for tests from Nov 1, 2026 unless you pick an earlier date.'}
         </span>
       </div>
-      <button className="btn" type="submit">Save</button>
-      <button className="btn btn-quiet" type="button" onClick={() => setState((s) => ({ ...s, onboarded: true }))}>Not sure yet</button>
+      <button className="btn" type="submit">
+        Save
+      </button>
+      <button
+        className="btn btn-quiet"
+        type="button"
+        onClick={() => setState((s) => ({ ...s, onboarded: true }))}
+      >
+        Not sure yet
+      </button>
     </form>
   )
 }
 
 export default function TodayPage() {
+  const [dateLabel] = useState(() =>
+    new Date().toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' }),
+  )
   const nav = useNavigate()
   const reduced = useReducedMotion()
   const minutes = useAppState((s) => s.settings.sessionMinutes)
@@ -86,7 +141,9 @@ export default function TodayPage() {
   const streaksOn = useAppState((s) => s.settings.streaks)
   const activeDays = useAppState((s) => s.activeDays)
   const xp = useAppState(totalXp)
-  const activeSession = useAppState((s) => s.sessions.find((x) => x.id === s.activeSessionId && !x.submittedAt))
+  const activeSession = useAppState((s) =>
+    s.sessions.find((x) => x.id === s.activeSessionId && !x.submittedAt),
+  )
 
   useEffect(() => ensurePlan(minutes), [minutes])
 
@@ -100,7 +157,11 @@ export default function TodayPage() {
   const g = examDate ? guidelineForExamDate(examDate) : ACTIVE_GUIDELINE
   const allDone = items.length > 0 && open.length === 0
 
-  const heading = allDone ? "Today's session is complete" : doneCount ? 'Pick up where you left off' : 'Your study session'
+  const heading = allDone
+    ? "Today's session is complete"
+    : doneCount
+      ? 'Pick up where you left off'
+      : 'Your study session'
   const why =
     items.length === 0
       ? ''
@@ -112,14 +173,24 @@ export default function TodayPage() {
     <div className="page">
       {examDate && g && g.id !== ACTIVE_GUIDELINE.id && (
         <p className="notice" role="note">
-          Your exam date ({examDate}) falls under the older guideline. HistoQuest's question mapping follows the guideline for tests from {ACTIVE_GUIDELINE.validFrom}. Check differences on the official site.
+          Your exam date ({examDate}) falls under the older guideline. HistoQuest's question mapping
+          follows the guideline for tests from {ACTIVE_GUIDELINE.validFrom}. Check differences on
+          the official site.
         </p>
       )}
-      {contentProblems.length > 0 && <p className="notice">{contentProblems.length} content items failed validation and are hidden.</p>}
+      {contentProblems.length > 0 && (
+        <p className="notice">
+          {contentProblems.length} content items failed validation and are hidden.
+        </p>
+      )}
       <div className="today-grid">
         <section aria-labelledby="today-h">
-          <p className="muted" style={{ marginBottom: 6 }}>{new Date().toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' })}</p>
-          <h1 id="today-h" style={{ fontSize: 'var(--t-6)' }}>{heading}</h1>
+          <p className="muted" style={{ marginBottom: 6 }}>
+            {dateLabel}
+          </p>
+          <h1 id="today-h" style={{ fontSize: 'var(--t-6)' }}>
+            {heading}
+          </h1>
           <p className="lede">
             {allDone
               ? 'Everything planned for today is done or skipped. Extra practice is always open, and it does not change tomorrow’s plan much.'
@@ -131,8 +202,14 @@ export default function TodayPage() {
             <Segmented
               label="Session length"
               value={minutes}
-              options={[{ value: 10, label: '10 min' }, { value: 20, label: '20 min' }, { value: 45, label: '45 min' }]}
-              onChange={(m) => setState((s) => ({ ...s, settings: { ...s.settings, sessionMinutes: m } }))}
+              options={[
+                { value: 10, label: '10 min' },
+                { value: 20, label: '20 min' },
+                { value: 45, label: '45 min' },
+              ]}
+              onChange={(m) =>
+                setState((s) => ({ ...s, settings: { ...s.settings, sessionMinutes: m } }))
+              }
             />
           </div>
           {!allDone && !deferred && open[0] && (
@@ -140,10 +217,17 @@ export default function TodayPage() {
               <button className="btn btn-primary btn-big" onClick={() => nav(withPlan(open[0]))}>
                 {doneCount ? 'Resume today’s session' : 'Start today’s session'}
               </button>
-              <p className="small muted" style={{ margin: 0 }}>About {est} minutes · {open.length} {open.length === 1 ? 'activity' : 'activities'} left · first: {open[0].title}</p>
+              <p className="small muted" style={{ margin: 0 }}>
+                About {est} minutes · {open.length} {open.length === 1 ? 'activity' : 'activities'}{' '}
+                left · first: {open[0].title}
+              </p>
             </div>
           )}
-          {deferred && <button className="btn" onClick={undeferPlan}>Study today after all</button>}
+          {deferred && (
+            <button className="btn" onClick={undeferPlan}>
+              Study today after all
+            </button>
+          )}
           {why && !deferred && (
             <p style={{ marginTop: 22 }}>
               <strong>Why these?</strong> {why}
@@ -151,8 +235,12 @@ export default function TodayPage() {
           )}
           {!allDone && !deferred && (
             <div className="row">
-              <button className="btn btn-quiet" onClick={deferPlan}>Move today to tomorrow</button>
-              <button className="btn btn-quiet" onClick={() => ensurePlan(minutes, true)}>Rebuild plan</button>
+              <button className="btn btn-quiet" onClick={deferPlan}>
+                Move today to tomorrow
+              </button>
+              <button className="btn btn-quiet" onClick={() => ensurePlan(minutes, true)}>
+                Rebuild plan
+              </button>
             </div>
           )}
           {activeSession && (
@@ -164,13 +252,20 @@ export default function TodayPage() {
         </section>
 
         <section aria-labelledby="rack-h">
-          <h2 id="rack-h" className="sr-only">Today's plan</h2>
+          <h2 id="rack-h" className="sr-only">
+            Today's plan
+          </h2>
           <div className="rack">
             <ol className="rack-slots" style={{ padding: 0, margin: 0 }}>
-              {items.map((item, i) => <GlassSlide key={item.id} item={item} index={i} reduced={reduced} />)}
+              {items.map((item, i) => (
+                <GlassSlide key={item.id} item={item} index={i} reduced={reduced} />
+              ))}
             </ol>
           </div>
-          <div className="row small muted" style={{ marginTop: 16, justifyContent: 'space-between' }}>
+          <div
+            className="row small muted"
+            style={{ marginTop: 16, justifyContent: 'space-between' }}
+          >
             <span>{xp} XP from first-try answers, finished lessons and lab reasoning</span>
             {streaksOn && streak.length > 0 && (
               <span>
@@ -179,7 +274,9 @@ export default function TodayPage() {
             )}
           </div>
           <p className="small muted" style={{ marginTop: 18 }}>
-            {LESSONS.length} lessons and {QUESTIONS.length} questions mapped to the {ACTIVE_GUIDELINE.domains.length} HTL content areas. <Link to="/learn">Browse the curriculum</Link>
+            {LESSONS.length} lessons and {QUESTIONS.length} questions mapped to the{' '}
+            {ACTIVE_GUIDELINE.domains.length} HTL content areas.{' '}
+            <Link to="/learn">Browse the curriculum</Link>
           </p>
         </section>
       </div>

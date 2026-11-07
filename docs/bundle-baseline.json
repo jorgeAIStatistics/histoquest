@@ -1,0 +1,16 @@
+{
+  "entryGzipBytes": 128167,
+  "entryChunks": [
+    {
+      "file": "assets/index-VlF4CTSj.js",
+      "gzipBytes": 124838
+    },
+    {
+      "file": "assets/jsx-runtime-DyZJNswf.js",
+      "gzipBytes": 3329
+    }
+  ],
+  "deployedBytes": 2083169,
+  "largestFileBytes": 652136,
+  "allJavaScriptGzipBytes": 400580
+}

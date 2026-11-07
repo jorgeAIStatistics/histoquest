@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Segmented } from '../../../ui/components'
-import QuestionView, { isCorrect, type Answer } from '../../practice/QuestionView'
+import QuestionView from '../../practice/QuestionView'
+import { isCorrect, type Answer } from '../../practice/answers'
 import type { SimProps } from '../SimPage'
 import { generate, MATH_KINDS, type MathKind } from './mathProblems'
 
@@ -39,21 +40,44 @@ export default function LabMath({ finish }: SimProps) {
       <div className="field" style={{ marginBottom: 16 }}>
         <span className="label">Problem type</span>
         <div style={{ overflowX: 'auto' }}>
-          <Segmented label="Problem type" value={kind} onChange={restart} options={MATH_KINDS.map((m) => ({ value: m.kind, label: m.label }))} />
+          <Segmented
+            label="Problem type"
+            value={kind}
+            onChange={restart}
+            options={MATH_KINDS.map((m) => ({ value: m.kind, label: m.label }))}
+          />
         </div>
       </div>
       {roundDone ? (
         <div className="panel">
-          <p className="celebrate">Round complete: {score} of {ROUND}</p>
+          <p className="celebrate">
+            Round complete: {score} of {ROUND}
+          </p>
           <p className="small">Values and units both had to be right.</p>
           <div className="row">
-            <button className="btn btn-primary" onClick={() => { finish(score, ROUND, `${MATH_KINDS.find((m) => m.kind === kind)?.label}: ${score}/${ROUND}`); restart(kind) }}>Record and start a new round</button>
-            <button className="btn" onClick={() => restart(kind)}>New round without recording</button>
+            <button
+              className="btn btn-primary"
+              onClick={() => {
+                finish(
+                  score,
+                  ROUND,
+                  `${MATH_KINDS.find((m) => m.kind === kind)?.label}: ${score}/${ROUND}`,
+                )
+                restart(kind)
+              }}
+            >
+              Record and start a new round
+            </button>
+            <button className="btn" onClick={() => restart(kind)}>
+              New round without recording
+            </button>
           </div>
         </div>
       ) : (
         <div className="panel">
-          <p className="small muted">Problem {n + 1} of {ROUND} · generated with fresh numbers each time</p>
+          <p className="small muted">
+            Problem {n + 1} of {ROUND} · generated with fresh numbers each time
+          </p>
           <QuestionView
             key={`${kind}-${seed}-${n}`}
             q={q}
@@ -69,14 +93,31 @@ export default function LabMath({ finish }: SimProps) {
           />
           {!revealed && (
             <div style={{ marginTop: 14 }}>
-              {stepsShown > 0 && <ol className="small">{q.steps.slice(0, stepsShown).map((s, i) => <li key={i}>{s}</li>)}</ol>}
-              {stepsShown < q.steps.length - 1 && <button className="btn btn-quiet" onClick={() => setStepsShown(stepsShown + 1)}>Show the next step</button>}
+              {stepsShown > 0 && (
+                <ol className="small">
+                  {q.steps.slice(0, stepsShown).map((s, i) => (
+                    <li key={i}>{s}</li>
+                  ))}
+                </ol>
+              )}
+              {stepsShown < q.steps.length - 1 && (
+                <button className="btn btn-quiet" onClick={() => setStepsShown(stepsShown + 1)}>
+                  Show the next step
+                </button>
+              )}
             </div>
           )}
-          {revealed && <button className="btn btn-primary" style={{ marginTop: 14 }} onClick={next}>{n + 1 >= ROUND ? 'See round result' : 'Next problem'}</button>}
+          {revealed && (
+            <button className="btn btn-primary" style={{ marginTop: 14 }} onClick={next}>
+              {n + 1 >= ROUND ? 'See round result' : 'Next problem'}
+            </button>
+          )}
         </div>
       )}
-      <p className="small muted" style={{ marginTop: 14 }}>Generated problems aren’t stored as bank questions. Their results count only toward this simulation’s record.</p>
+      <p className="small muted" style={{ marginTop: 14 }}>
+        Generated problems aren’t stored as bank questions. Their results count only toward this
+        simulation’s record.
+      </p>
     </div>
   )
 }

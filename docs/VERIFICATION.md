@@ -145,3 +145,11 @@ Facts the authors deliberately softened to ranges or qualitative wording, which 
 8. **Bank size and difficulty calibration.** At 164 questions, a full-length exam reuses most of the bank, so the exam is mainly useful for pacing. Difficulty values are author estimates only.
 9. **End-to-end automated UI tests.** Playwright is installed but no specs are written. The browser checks above were done by hand with an agent.
 10. **Minor lint warnings.** For example, a React "fast refresh" export notice and one setState-in-effect in the sequence demo.
+
+## HistoQuest Lab — Phase 0 checkpoint (2026-11-06)
+
+Version 4 adds a validated, deterministic event-log storage boundary while preserving version 1–3 migration paths and all existing progress. The Workbench now requires explicit choices and uses stable seeded option ordering with equal-detail labels. Shared grading helpers and touched UI lint defects are corrected. All existing routes remain available.
+
+Local software gates: 57 unit/content tests passed, two inventory helpers skipped; typecheck, warning-free lint, production build and bundle budget passed. Browser gates: 86 tests passed across Chromium and Firefox, including thirteen automated accessibility scans per browser, keyboard-only accessioning and a real migration/export/import round trip. Local WebKit cannot create a page because the host's frozen macOS 14 runtime rejects PushAPIEnabled. All three browsers remain required in the Ubuntu deployment workflow; its result is pending this checkpoint.
+
+Initial JavaScript grew from 128,167 to 129,349 gzip bytes (+1,182); total deployment is 2,086,974 bytes. Dependency justifications, screenshots and exact coverage are in [BASELINE.md](BASELINE.md). No laptop/phone frame-rate claim or new scientific validation is made. Content counts remain 164 original questions, 88 cards, 19 lessons and 98 atlas entries; all are author-checked, none expert-reviewed. Next: causal specimen fields and procedural microscopy.

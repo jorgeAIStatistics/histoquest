@@ -1,7 +1,8 @@
 import { z } from 'zod'
 import { WorkbenchSchema } from '../features/workbench/model'
+import { LabStateSchema, initialLabState } from './labSchema'
 
-export const SCHEMA_VERSION = 3
+export const SCHEMA_VERSION = 4
 
 const Srs = z.object({
   ease: z.number(),
@@ -135,12 +136,14 @@ export const StateSchema = z.object({
     lastChapter: z.string().default('tissue-language'),
   }).default({ completed: [], notes: {}, lastChapter: 'tissue-language' }),
   workbench: WorkbenchSchema.optional(),
+  lab: LabStateSchema.default(initialLabState),
 })
 export type AppState = z.infer<typeof StateSchema>
 
 export function initialState(now = new Date()): AppState {
   return {
     version: SCHEMA_VERSION,
+    lab: initialLabState(),
     createdAt: now.toISOString(),
     onboarded: false,
     profile: { name: '', examDate: '', focus: [] },
@@ -167,6 +170,7 @@ export function initialState(now = new Date()): AppState {
  * v1 → v2: v1 stored `settings.minutes`; renamed to `sessionMinutes`, and added `tutorDepth`.
  */
 const MIGRATIONS: Record<number, (s: Record<string, unknown>) => Record<string, unknown>> = {
+  3: (s) => ({ ...s, version: 4, lab: initialLabState() }),
   2: (s) => ({ ...s, version: 3, pathway: { completed: [], notes: {}, lastChapter: 'tissue-language' } }),
   1: (s) => {
     const settings = { ...(s.settings as Record<string, unknown>) }

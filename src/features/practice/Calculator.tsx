@@ -1,7 +1,7 @@
 import { useState } from 'react'
 
 /** Minimal arithmetic calculator: + − × ÷ and parentheses. Parsed by a tiny recursive-descent parser, never eval(). */
-export function evaluate(expr: string): number | undefined {
+function evaluate(expr: string): number | undefined {
   const s = expr.replace(/×/g, '*').replace(/÷/g, '/').replace(/\s+/g, '')
   let i = 0
   const num = (): number | undefined => {
@@ -50,17 +50,34 @@ export default function Calculator() {
   const [open, setOpen] = useState(false)
   const [expr, setExpr] = useState('')
   const result = expr ? evaluate(expr) : undefined
-  if (!open) return <button className="btn btn-quiet" type="button" onClick={() => setOpen(true)}>Calculator</button>
+  if (!open)
+    return (
+      <button className="btn btn-quiet" type="button" onClick={() => setOpen(true)}>
+        Calculator
+      </button>
+    )
   return (
     <div className="inset" style={{ flex: '1 1 100%' }}>
       <div className="field">
         <label htmlFor="calc">Calculator (type an expression, e.g. 70*500/100)</label>
-        <input id="calc" className="input" value={expr} onChange={(e) => setExpr(e.target.value)} autoComplete="off" />
+        <input
+          id="calc"
+          className="input"
+          value={expr}
+          onChange={(e) => setExpr(e.target.value)}
+          autoComplete="off"
+        />
       </div>
       <p className="small" style={{ margin: '8px 0 0' }} aria-live="polite">
-        {expr ? (result === undefined ? 'Incomplete expression' : `= ${Number(result.toPrecision(10))}`) : 'Units are not tracked here. Write them down as you go.'}
+        {expr
+          ? result === undefined
+            ? 'Incomplete expression'
+            : `= ${Number(result.toPrecision(10))}`
+          : 'Units are not tracked here. Write them down as you go.'}
       </p>
-      <button className="btn btn-quiet small" type="button" onClick={() => setOpen(false)}>Close calculator</button>
+      <button className="btn btn-quiet small" type="button" onClick={() => setOpen(false)}>
+        Close calculator
+      </button>
     </div>
   )
 }

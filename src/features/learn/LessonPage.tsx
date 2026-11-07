@@ -9,13 +9,29 @@ import { markPlanItem } from '../../store/planActions'
 import { completeLesson, lessonStep, recordAttempt, setState, useAppState } from '../../store/store'
 import { Empty, References, ReviewBadge } from '../../ui/components'
 import { chime } from '../../ui/prefs'
-import QuestionView, { isCorrect, type Answer } from '../practice/QuestionView'
+import QuestionView from '../practice/QuestionView'
+import { isCorrect, type Answer } from '../practice/answers'
 import type { Confidence } from '../../engine/srs'
 import LessonDemo from './demos'
 
-const STEPS = ['Bench question', 'Explanation', 'Demonstration', 'Predict', 'Worked example', 'Retrieval', 'Troubleshoot', 'Takeaway'] as const
+const STEPS = [
+  'Bench question',
+  'Explanation',
+  'Demonstration',
+  'Predict',
+  'Worked example',
+  'Retrieval',
+  'Troubleshoot',
+  'Takeaway',
+] as const
 
-function ChoiceBlock({ block, onAnswered }: { block: Lesson['prediction']; onAnswered?: (correct: boolean) => void }) {
+function ChoiceBlock({
+  block,
+  onAnswered,
+}: {
+  block: Lesson['prediction']
+  onAnswered?: (correct: boolean) => void
+}) {
   const [sel, setSel] = useState<string>()
   const [shown, setShown] = useState(false)
   return (
@@ -24,17 +40,33 @@ function ChoiceBlock({ block, onAnswered }: { block: Lesson['prediction']; onAns
       <ul className="options">
         {block.options.map((o) => (
           <li key={o.id}>
-            <button className={`option ${shown ? (o.id === block.answer ? 'is-correct' : sel === o.id ? 'is-wrong' : '') : ''}`} aria-pressed={sel === o.id} disabled={shown} onClick={() => setSel(o.id)}>
+            <button
+              className={`option ${shown ? (o.id === block.answer ? 'is-correct' : sel === o.id ? 'is-wrong' : '') : ''}`}
+              aria-pressed={sel === o.id}
+              disabled={shown}
+              onClick={() => setSel(o.id)}
+            >
               <span>{o.text}</span>
             </button>
           </li>
         ))}
       </ul>
       {!shown ? (
-        <button className="btn btn-primary" disabled={!sel} onClick={() => { setShown(true); onAnswered?.(sel === block.answer) }}>Commit and reveal</button>
+        <button
+          className="btn btn-primary"
+          disabled={!sel}
+          onClick={() => {
+            setShown(true)
+            onAnswered?.(sel === block.answer)
+          }}
+        >
+          Commit and reveal
+        </button>
       ) : (
         <div className={`feedback ${sel === block.answer ? 'ok' : 'no'}`} role="status">
-          <p style={{ fontWeight: 700, marginBottom: 6 }}>{sel === block.answer ? 'Your prediction holds.' : 'Not what happens. Here is why.'}</p>
+          <p style={{ fontWeight: 700, marginBottom: 6 }}>
+            {sel === block.answer ? 'Your prediction holds.' : 'Not what happens. Here is why.'}
+          </p>
           <p style={{ margin: 0 }}>{block.reveal}</p>
         </div>
       )}
@@ -51,7 +83,9 @@ function Retrieval({ lesson }: { lesson: Lesson }) {
   if (!q) return <p className="muted">Retrieval questions are missing for this lesson.</p>
   return (
     <div>
-      <p className="small muted">Question {i + 1} of {ids.length}. These count toward your schedule like any other answer.</p>
+      <p className="small muted">
+        Question {i + 1} of {ids.length}. These count toward your schedule like any other answer.
+      </p>
       <QuestionView
         key={q.id}
         q={q}
@@ -61,11 +95,21 @@ function Retrieval({ lesson }: { lesson: Lesson }) {
         revealed={revealed.includes(q.id)}
         onAnswer={(a) => setAnswers({ ...answers, [q.id]: a })}
         onCheck={(a) => {
-          recordAttempt(q.id, q.version, isCorrect(q, a), (a.confidence || 1) as Confidence, 'lesson')
+          recordAttempt(
+            q.id,
+            q.version,
+            isCorrect(q, a),
+            (a.confidence || 1) as Confidence,
+            'lesson',
+          )
           setRevealed([...revealed, q.id])
         }}
       />
-      {revealed.includes(q.id) && i < ids.length - 1 && <button className="btn btn-primary" style={{ marginTop: 14 }} onClick={() => setI(i + 1)}>Next retrieval question</button>}
+      {revealed.includes(q.id) && i < ids.length - 1 && (
+        <button className="btn btn-primary" style={{ marginTop: 14 }} onClick={() => setI(i + 1)}>
+          Next retrieval question
+        </button>
+      )}
     </div>
   )
 }
@@ -75,7 +119,8 @@ function scheduleCards(lesson: Lesson) {
   const tomorrow = addDays(localDate(), 1)
   setState((s) => {
     const srs = { ...s.srs }
-    for (const c of CARDS.filter((c) => lesson.objectives.includes(c.objective))) srs[`c:${c.id}`] ??= { ease: 2.5, interval: 0, reps: 0, lapses: 0, due: tomorrow }
+    for (const c of CARDS.filter((c) => lesson.objectives.includes(c.objective)))
+      srs[`c:${c.id}`] ??= { ease: 2.5, interval: 0, reps: 0, lapses: 0, due: tomorrow }
     return { ...s, srs }
   })
 }
@@ -87,10 +132,24 @@ export default function LessonPage() {
   const sound = useAppState((s) => s.settings.sound)
   const lesson = id ? LESSON_BY_ID[id] : undefined
   const progress = useAppState((s) => (id ? s.lessons[id] : undefined))
-  const completedIds = useAppState((s) => Object.keys(s.lessons).filter((k) => s.lessons[k].completedAt).join(','))
+  const completedIds = useAppState((s) =>
+    Object.keys(s.lessons)
+      .filter((k) => s.lessons[k].completedAt)
+      .join(','),
+  )
   const [step, setStepLocal] = useState(() => Math.min(progress?.step ?? 0, STEPS.length - 1))
 
-  if (!lesson) return <Empty title="Lesson not found" action={<Link className="btn" to="/learn">All lessons</Link>} />
+  if (!lesson)
+    return (
+      <Empty
+        title="Lesson not found"
+        action={
+          <Link className="btn" to="/learn">
+            All lessons
+          </Link>
+        }
+      />
+    )
 
   const setStep = (n: number) => {
     setStepLocal(n)
@@ -113,11 +172,26 @@ export default function LessonPage() {
       case 0:
         return (
           <>
-            <p className="lede" style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--t-3)', color: 'var(--ink)' }}>{lesson.labQuestion}</p>
+            <p
+              className="lede"
+              style={{
+                fontFamily: 'var(--font-display)',
+                fontSize: 'var(--t-3)',
+                color: 'var(--ink)',
+              }}
+            >
+              {lesson.labQuestion}
+            </p>
             {lesson.dermConnection && (
-              <div className="inset"><p style={{ margin: 0 }}><strong>From the dermatopathology bench.</strong> {lesson.dermConnection}</p></div>
+              <div className="inset">
+                <p style={{ margin: 0 }}>
+                  <strong>From the dermatopathology bench.</strong> {lesson.dermConnection}
+                </p>
+              </div>
             )}
-            <p className="small muted" style={{ marginTop: 16 }}>Objectives: {lesson.objectives.map((o) => OBJECTIVE_BY_ID[o]?.title).join('; ')}</p>
+            <p className="small muted" style={{ marginTop: 16 }}>
+              Objectives: {lesson.objectives.map((o) => OBJECTIVE_BY_ID[o]?.title).join('; ')}
+            </p>
           </>
         )
       case 1:
@@ -126,25 +200,46 @@ export default function LessonPage() {
             {lesson.basics.length > 0 && (
               <details className="basics" style={{ marginBottom: 18 }}>
                 <summary>Explain the basics first</summary>
-                {lesson.basics.map((p, i) => <p key={i}>{p}</p>)}
+                {lesson.basics.map((p, i) => (
+                  <p key={i}>{p}</p>
+                ))}
               </details>
             )}
-            {lesson.explanation.map((p, i) => <p key={i}>{p}</p>)}
+            {lesson.explanation.map((p, i) => (
+              <p key={i}>{p}</p>
+            ))}
             {lesson.keyPoints.length > 0 && (
-              <ul>{lesson.keyPoints.map((k, i) => <li key={i}>{k}</li>)}</ul>
+              <ul>
+                {lesson.keyPoints.map((k, i) => (
+                  <li key={i}>{k}</li>
+                ))}
+              </ul>
             )}
           </>
         )
       case 2:
         return <LessonDemo demo={lesson.demo} />
       case 3:
-        return <ChoiceBlock block={lesson.prediction} onAnswered={(c) => lessonStep(lesson.id, 3, { predictionCorrect: c })} />
+        return (
+          <ChoiceBlock
+            block={lesson.prediction}
+            onAnswered={(c) => lessonStep(lesson.id, 3, { predictionCorrect: c })}
+          />
+        )
       case 4:
         return (
           <>
             <p style={{ fontWeight: 600 }}>{lesson.workedExample.problem}</p>
-            <ol>{lesson.workedExample.steps.map((s, i) => <li key={i} style={{ marginBottom: 6 }}>{s}</li>)}</ol>
-            <div className="inset"><strong>Result.</strong> {lesson.workedExample.result}</div>
+            <ol>
+              {lesson.workedExample.steps.map((s, i) => (
+                <li key={i} style={{ marginBottom: 6 }}>
+                  {s}
+                </li>
+              ))}
+            </ol>
+            <div className="inset">
+              <strong>Result.</strong> {lesson.workedExample.result}
+            </div>
           </>
         )
       case 5:
@@ -154,18 +249,48 @@ export default function LessonPage() {
       default:
         return (
           <>
-            <p className="lede" style={{ color: 'var(--ink)' }}>{lesson.takeaway}</p>
+            <p className="lede" style={{ color: 'var(--ink)' }}>
+              {lesson.takeaway}
+            </p>
             <h3 style={{ marginTop: 24 }}>Sources</h3>
             <References refs={lesson.references} />
-            <p style={{ marginTop: 10 }}><ReviewBadge status={lesson.review.status} /> <span className="small muted">{lesson.review.verification}</span></p>
+            <p style={{ marginTop: 10 }}>
+              <ReviewBadge status={lesson.review.status} />{' '}
+              <span className="small muted">{lesson.review.verification}</span>
+            </p>
             {!done ? (
-              <button className="btn btn-primary btn-big" style={{ marginTop: 18 }} onClick={finish}>Finish lesson</button>
+              <button
+                className="btn btn-primary btn-big"
+                style={{ marginTop: 18 }}
+                onClick={finish}
+              >
+                Finish lesson
+              </button>
             ) : (
               <div className="stack" style={{ marginTop: 18 }}>
-                <p className="celebrate" role="status">Lesson finished. Its retrieval cards are scheduled for tomorrow.</p>
+                <p className="celebrate" role="status">
+                  Lesson finished. Its retrieval cards are scheduled for tomorrow.
+                </p>
                 <div className="row">
-                  {lesson.simulation && <Link className="btn btn-primary" to={`/lab/${lesson.simulation}${plan ? `?plan=sim:${lesson.simulation}` : ''}`}>Try it in the Virtual Lab: {SIM_TITLES[lesson.simulation]}</Link>}
-                  {plan ? <Link className="btn" to="/today">Back to Today</Link> : next && <Link className="btn" to={`/learn/${next.id}`}>Next lesson: {next.title}</Link>}
+                  {lesson.simulation && (
+                    <Link
+                      className="btn btn-primary"
+                      to={`/lab/${lesson.simulation}${plan ? `?plan=sim:${lesson.simulation}` : ''}`}
+                    >
+                      Try it in the Virtual Lab: {SIM_TITLES[lesson.simulation]}
+                    </Link>
+                  )}
+                  {plan ? (
+                    <Link className="btn" to="/today">
+                      Back to Today
+                    </Link>
+                  ) : (
+                    next && (
+                      <Link className="btn" to={`/learn/${next.id}`}>
+                        Next lesson: {next.title}
+                      </Link>
+                    )
+                  )}
                 </div>
               </div>
             )}
@@ -176,18 +301,30 @@ export default function LessonPage() {
 
   return (
     <div className="page-narrow">
-      <p className="small"><Link to="/learn">Learn</Link> / {lesson.id}</p>
+      <p className="small">
+        <Link to="/learn">Learn</Link> / {lesson.id}
+      </p>
       <h1>{lesson.title}</h1>
       {missingPrereqs.length > 0 && (
         <p className="notice small">
-          Suggested first: {missingPrereqs.map((p) => <Link key={p} to={`/learn/${p}`} style={{ marginRight: 8 }}>{LESSON_BY_ID[p]?.title ?? p}</Link>)}. You can continue anyway.
+          Suggested first:{' '}
+          {missingPrereqs.map((p) => (
+            <Link key={p} to={`/learn/${p}`} style={{ marginRight: 8 }}>
+              {LESSON_BY_ID[p]?.title ?? p}
+            </Link>
+          ))}
+          . You can continue anyway.
         </p>
       )}
       <nav aria-label="Lesson steps">
         <ol className="lesson-steps">
           {STEPS.map((s, i) => (
             <li key={s}>
-              <button aria-current={i === step ? 'step' : undefined} className={i <= (progress?.step ?? 0) ? 'visited' : ''} onClick={() => setStep(i)}>
+              <button
+                aria-current={i === step ? 'step' : undefined}
+                className={i <= (progress?.step ?? 0) ? 'visited' : ''}
+                onClick={() => setStep(i)}
+              >
                 {i + 1}. {s}
               </button>
             </li>
@@ -195,12 +332,20 @@ export default function LessonPage() {
         </ol>
       </nav>
       <Swap id={step} as="section" aria-labelledby="step-h">
-        <h2 id="step-h" style={{ fontSize: 'var(--t-3)' }}>{STEPS[step]}</h2>
+        <h2 id="step-h" style={{ fontSize: 'var(--t-3)' }}>
+          {STEPS[step]}
+        </h2>
         {body}
       </Swap>
       <div className="row" style={{ marginTop: 32, justifyContent: 'space-between' }}>
-        <button className="btn" disabled={step === 0} onClick={() => setStep(step - 1)}>Back</button>
-        {step < STEPS.length - 1 && <button className="btn btn-primary" onClick={() => setStep(step + 1)}>Continue to {STEPS[step + 1].toLowerCase()}</button>}
+        <button className="btn" disabled={step === 0} onClick={() => setStep(step - 1)}>
+          Back
+        </button>
+        {step < STEPS.length - 1 && (
+          <button className="btn btn-primary" onClick={() => setStep(step + 1)}>
+            Continue to {STEPS[step + 1].toLowerCase()}
+          </button>
+        )}
       </div>
     </div>
   )
