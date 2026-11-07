@@ -42,7 +42,15 @@ function submitExam(session: Session) {
   updateSession(session.id, (x) => ({ ...x, submittedAt: new Date().toISOString() }))
 }
 
-function Results({ session, plan }: { session: Session; plan: string | null }) {
+function Results({
+  session,
+  plan,
+  course,
+}: {
+  session: Session
+  plan: string | null
+  course: boolean
+}) {
   const qs = session.questionIds.map((id) => QUESTION_BY_ID[id]).filter(Boolean)
   const correct = qs.filter((q) => isCorrect(q, session.answers[q.id])).length
   const byDomain = Object.entries(DOMAIN_NAMES)
@@ -92,8 +100,8 @@ function Results({ session, plan }: { session: Session; plan: string | null }) {
         </table>
       </div>
       <div className="row" style={{ marginBottom: 18 }}>
-        <Link className="btn btn-primary" to={plan ? '/today' : '/practice'}>
-          {plan ? 'Back to Today' : 'Back to Practice'}
+        <Link className="btn btn-primary" to={course ? '/' : plan ? '/today' : '/practice'}>
+          {course ? 'Continue learning path' : plan ? 'Back to Today' : 'Back to Practice'}
         </Link>
         <Link className="btn" to="/practice/review">
           Go to review queue
@@ -131,6 +139,7 @@ export default function SessionPage() {
   const { id } = useParams()
   const [params] = useSearchParams()
   const plan = params.get('plan')
+  const course = ['mixed', 'exam'].includes(params.get('course') ?? '')
   const nav = useNavigate()
   const session = useAppState((s) => s.sessions.find((x) => x.id === id))
   const exam = session?.mode === 'exam'
@@ -157,7 +166,7 @@ export default function SessionPage() {
         It may have been cleared, or the link is from another device.
       </Empty>
     )
-  if (session.submittedAt && exam) return <Results session={session} plan={plan} />
+  if (session.submittedAt && exam) return <Results session={session} plan={plan} course={course} />
 
   const qid = session.questionIds[session.index]
   const q = QUESTION_BY_ID[qid]
@@ -188,8 +197,8 @@ export default function SessionPage() {
           answers are now in your review schedule.
         </p>
         <div className="row">
-          <Link className="btn btn-primary" to={plan ? '/today' : '/practice'}>
-            {plan ? 'Back to Today' : 'More practice'}
+          <Link className="btn btn-primary" to={course ? '/' : plan ? '/today' : '/practice'}>
+            {course ? 'Continue learning path' : plan ? 'Back to Today' : 'More practice'}
           </Link>
           <button className="btn" onClick={() => nav('/progress')}>
             See progress

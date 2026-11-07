@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import { LESSON_BY_ID, QUESTION_BY_ID } from '../../content'
 import { ACTIVE_GUIDELINE } from '../../content/curriculum'
 import { PATHWAY, STAIN_COMPARISONS, type Chapter } from '../../content/pathway'
@@ -229,12 +229,12 @@ function Checkpoint({ id }: { id: string }) {
 }
 
 function ChapterContent({ chapter }: { chapter: Chapter }) {
+  const navigate = useNavigate()
   const state = useAppState((s) => s)
   const note = state.pathway.notes[chapter.id] ?? ''
   const completed = state.pathway.completed.includes(chapter.id)
   const checked = chapter.checks.every((id) => state.attempts.some((a) => a.qid === id))
   const index = PATHWAY.indexOf(chapter)
-  const [saved, setSaved] = useState(false)
   useEffect(() => {
     setState((s) => ({ ...s, pathway: { ...s.pathway, lastChapter: chapter.id } }))
   }, [chapter.id])
@@ -243,13 +243,13 @@ function ChapterContent({ chapter }: { chapter: Chapter }) {
       ...s,
       pathway: { ...s.pathway, completed: [...new Set([...s.pathway.completed, chapter.id])] },
     }))
-    setSaved(true)
+    navigate('/')
   }
   return (
     <>
       <div className="chapter-header">
         <p>
-          <Link to="/">Learning pathway</Link> / {chapter.tier} / Chapter {index + 1}
+          <Link to="/">Learning path</Link> / {chapter.tier} / Chapter {index + 1}
         </p>
         <h1>{chapter.title}</h1>
         <p className="lede">{chapter.purpose}</p>
@@ -260,21 +260,20 @@ function ChapterContent({ chapter }: { chapter: Chapter }) {
         </div>
       </div>
       <div className="chapter-layout">
-        <nav className="chapter-outline" aria-label="Chapters">
-          <Link to="/">All chapters</Link>
-          {PATHWAY.map((c, i) => (
-            <Link
-              key={c.id}
-              to={`/pathway/${c.id}`}
-              aria-current={c.id === chapter.id ? 'page' : undefined}
-            >
-              <span>{i + 1}</span>
-              {c.short}
-            </Link>
-          ))}
+        <nav className="chapter-outline" aria-label="In this chapter">
+          <Link to="/">View learning path</Link>
+          <a href="#chapter-read">
+            <span>1</span>Read and explore
+          </a>
+          <a href="#chapter-check">
+            <span>2</span>Check understanding
+          </a>
+          <a href="#chapter-finish">
+            <span>3</span>Complete and continue
+          </a>
         </nav>
         <article className="chapter-body">
-          <section>
+          <section id="chapter-read">
             <h2>{chapter.sections[0].title}</h2>
             <p>{chapter.sections[0].text}</p>
           </section>
@@ -341,13 +340,11 @@ function ChapterContent({ chapter }: { chapter: Chapter }) {
               </div>
             </section>
           )}
-          <section className="chapter-lab-link">
-            <div>
-              <h2>Put the idea to work</h2>
-              <p>Try the focused activity, or connect this decision to a complete specimen.</p>
-            </div>
+          <details className="deeper">
+            <summary>Optional practice for this chapter</summary>
+            <p>Explore these activities now or follow the practicals in your learning path.</p>
             <div className="row">
-              <Link className="btn btn-primary" to={`/lab/${chapter.sim}`}>
+              <Link className="btn" to={`/lab/${chapter.sim}`}>
                 Open the focused lab
               </Link>
               <Link className="btn" to="/workbench">
@@ -359,8 +356,8 @@ function ChapterContent({ chapter }: { chapter: Chapter }) {
                 </Link>
               )}
             </div>
-          </section>
-          <section>
+          </details>
+          <section id="chapter-check">
             <h2>Check your understanding</h2>
             <p className="muted">
               Explain your choice before revealing the answer. These original questions also enter
@@ -370,8 +367,8 @@ function ChapterContent({ chapter }: { chapter: Chapter }) {
               <Checkpoint key={id} id={id} />
             ))}
           </section>
-          <section className="chapter-notes">
-            <h2>Your field notes</h2>
+          <details className="chapter-notes deeper">
+            <summary>Your field notes (optional)</summary>
             <label htmlFor="chapter-notes">
               What would you check, and what still needs supervised practice?
             </label>
@@ -392,9 +389,9 @@ function ChapterContent({ chapter }: { chapter: Chapter }) {
               Saved on this browser and included in Settings → Export. Use fictional examples; do
               not enter patient information.
             </p>
-          </section>
-          <section>
-            <h2>Continue your study</h2>
+          </details>
+          <details className="deeper">
+            <summary>Related lessons and sources</summary>
             <ul>
               {chapter.lessons.map((id) => (
                 <li key={id}>
@@ -403,33 +400,27 @@ function ChapterContent({ chapter }: { chapter: Chapter }) {
               ))}
             </ul>
             <References refs={chapter.sources.map((sourceId) => ({ sourceId }))} />
-          </section>
-          <div className="chapter-finish">
+          </details>
+          <div className="chapter-finish" id="chapter-finish">
+            <h2>{completed ? 'Chapter completed' : 'Finish this chapter'}</h2>
             <p className="small muted">
               Chapter completion records study, not bench competency. Review both checkpoints to
               complete the chapter.
             </p>
             <div className="row">
-              <button
-                className="btn btn-primary"
-                disabled={!checked || completed}
-                onClick={complete}
-              >
-                {completed ? 'Chapter completed' : 'Complete this chapter'}
-              </button>
-              {PATHWAY[index + 1] ? (
-                <Link className="btn" to={`/pathway/${PATHWAY[index + 1].id}`}>
-                  Next: {PATHWAY[index + 1].short}
+              {completed ? (
+                <Link className="btn btn-primary" to="/">
+                  Continue learning path
                 </Link>
               ) : (
-                <Link className="btn" to="/workbench">
-                  Apply the whole workflow
-                </Link>
+                <button className="btn btn-primary" disabled={!checked} onClick={complete}>
+                  Complete chapter and continue
+                </button>
               )}
             </div>
-            <p role="status" className="small">
-              {saved ? 'Completion saved. Your next chapter is ready.' : ''}
-            </p>
+            {!checked && (
+              <p className="small">Answer and review both checkpoints above to continue.</p>
+            )}
           </div>
         </article>
       </div>

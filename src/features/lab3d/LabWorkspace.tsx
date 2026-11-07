@@ -61,6 +61,7 @@ export default function LabWorkspace() {
   const requestedShift = search.get('shift') ?? ''
   const requestedCase = search.get('case') ?? ''
   const requestedLevel = CAREER_LEVELS.find((level) => level.practical.id === requestedPractical)
+  const focusedEntry = !!(requestedPractical || requestedReplay || requestedShift || requestedCase)
   const replayRecord = archive.runs.find((r) => r.id === requestedReplay)
   const availability = practicalAvailability(requestedPractical, lab.passedPracticals, archive.runs)
   const reducedMotion = useReducedMotion()
@@ -236,11 +237,24 @@ export default function LabWorkspace() {
           </p>
         )}
         <div className="lab-entry-header">
-          <p className="eyebrow">HistoQuest Lab · specimen to slide</p>
-          <h1>A laboratory for deliberate practice.</h1>
+          {!focusedEntry && <p className="eyebrow">HistoQuest Lab · specimen to slide</p>}
+          <h1>
+            {requestedReplay
+              ? 'Resume your laboratory case'
+              : requestedLevel
+                ? 'Your guided practical'
+                : requestedShift && requestedCase
+                  ? 'Your assigned shift case'
+                  : 'A laboratory for deliberate practice.'}
+          </h1>
           <p className="lede">
-            Make the preparation. See the consequences. Follow one fictional specimen through an
-            entire technical workflow.
+            {requestedReplay
+              ? 'Continue from the saved specimen and its recorded decisions.'
+              : requestedLevel
+                ? 'Your specimen and starting conditions are prepared. Review the task, then begin.'
+                : requestedShift && requestedCase
+                  ? 'Open the assigned specimen and continue its technical workflow.'
+                  : 'Make the preparation. See the consequences. Follow one fictional specimen through an entire technical workflow.'}
           </p>
         </div>
         {archive.loading && <p role="status">Reading saved laboratory history…</p>}
@@ -258,9 +272,8 @@ export default function LabWorkspace() {
             <Link to="/career">Choose a practical</Link>.
           </p>
         )}
-        {requestedLevel && PRACTICAL_BY_ID[requestedPractical] && (
+        {!requestedReplay && requestedLevel && PRACTICAL_BY_ID[requestedPractical] && (
           <section className="practical-launch panel">
-            <p className="eyebrow">{requestedLevel.id} · Guided practical</p>
             <h2>{requestedLevel.practical.title}</h2>
             <p>{requestedLevel.practical.scenario}</p>
             <ul>
@@ -282,12 +295,11 @@ export default function LabWorkspace() {
             >
               Start assessed practical
             </button>{' '}
-            <Link to="/career">Learning ladder</Link>
+            <Link to="/">Return to learning path</Link>
           </section>
         )}
-        {requestedShift && requestedCase && (
+        {!requestedReplay && !requestedLevel && requestedShift && requestedCase && (
           <section className="panel">
-            <p className="eyebrow">Shift {requestedShift}</p>
             <h2>Dispatch {requestedCase} case</h2>
             <p>
               Switching retains the current case and records a pause. Secure the handwheel and blade
@@ -319,118 +331,130 @@ export default function LabWorkspace() {
             <Link to="/settings">Settings</Link> to replay it.
           </p>
         )}
-        <div className="row">
-          <Link className="btn" to="/career">
-            Learning ladder & practicals
-          </Link>
-          <Link className="btn" to="/shift">
-            Start a simulated shift
-          </Link>
-        </div>
-        <div className="lab-entry-grid">
-          <section className="lab-entry-setup">
-            <h2>Set up your bench</h2>
-            <label className="lab-field">
-              Specimen
-              <select
-                className="input"
-                value={archetype}
-                onChange={(e) => setArchetype(e.target.value)}
-              >
-                {ARCHETYPES.map((a) => (
-                  <option key={a.id} value={a.id}>
-                    {a.label}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label className="lab-field">
-              Replay seed
-              <input
-                className="input"
-                value={seed}
-                maxLength={100}
-                onChange={(e) => setSeed(e.target.value)}
-              />
-            </label>
-            <label className="lab-field">
-              Scenario complexity
-              <select
-                className="input"
-                value={difficulty}
-                onChange={(e) => setDifficulty(Number(e.target.value) as 1 | 2 | 3)}
-              >
-                <option value={1}>One decision at a time</option>
-                <option value={2}>Interacting preparation variables</option>
-                <option value={3}>Three interacting faults</option>
-              </select>
-            </label>
-            <div className="lab-start-actions">
-              <button className="btn btn-primary" onClick={() => start('bottle')}>
-                Begin at specimen receipt
-              </button>
-              <button className="btn" onClick={() => start('block')}>
-                Practice on a prepared block
-              </button>
-              {draft && (
-                <button className="btn" onClick={() => setChoosing(false)}>
-                  Resume current specimen
-                </button>
-              )}
+        {focusedEntry && (
+          <p className="small">
+            <Link to="/lab3d" onClick={() => setChoosing(true)}>
+              Explore the free laboratory
+            </Link>
+          </p>
+        )}
+        {notice && !requestedShift && <p role="status">{notice}</p>}
+        {!focusedEntry && (
+          <>
+            <div className="row">
+              <Link className="btn" to="/career">
+                Learning ladder & practicals
+              </Link>
+              <Link className="btn" to="/shift">
+                Start a simulated shift
+              </Link>
             </div>
-            <p className="small muted">
-              Starting another case keeps the existing event log in your run history. All cases are
-              fictional; never enter patient information.
-            </p>
-          </section>
-          <aside className="lab-entry-note">
-            <span className="entry-orbit" aria-hidden="true">
-              A1
-            </span>
-            <h2>Understanding comes from the whole chain.</h2>
-            <ol>
-              <li>
-                <strong>Prepare</strong>
-                <span>Control geometry, preservation and reagent access.</span>
-              </li>
-              <li>
-                <strong>Make</strong>
-                <span>Orient, face, section, float, stain and mount.</span>
-              </li>
-              <li>
-                <strong>Investigate</strong>
-                <span>Compare your slide, trace its artifacts and replay the decisions.</span>
-              </li>
-            </ol>
-            <p className="small">
-              Educational models use illustrative settings. They rehearse technical reasoning and
-              handling sequences; they do not establish professional competency or replace
-              supervised practice.
-            </p>
-            <Link to="/pathway">Open the reference pathway</Link>
-          </aside>
-        </div>
-        {archive.runs.length > 0 && (
-          <section className="lab-history">
-            <h2>Recent practice</h2>
-            <ul className="list">
-              {archive.runs
-                .toReversed()
-                .slice(0, 12)
-                .map((r) => (
-                  <li key={r.id}>
-                    <button className="list-row" onClick={() => launchRecord(r)}>
-                      <span>
-                        <strong>{r.title}</strong>
-                        <br />
-                        {r.seed} · {r.events.length} recorded actions
-                      </span>
-                      <span>Resume / replay →</span>
+            <div className="lab-entry-grid">
+              <section className="lab-entry-setup">
+                <h2>Set up your bench</h2>
+                <label className="lab-field">
+                  Specimen
+                  <select
+                    className="input"
+                    value={archetype}
+                    onChange={(e) => setArchetype(e.target.value)}
+                  >
+                    {ARCHETYPES.map((a) => (
+                      <option key={a.id} value={a.id}>
+                        {a.label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label className="lab-field">
+                  Replay seed
+                  <input
+                    className="input"
+                    value={seed}
+                    maxLength={100}
+                    onChange={(e) => setSeed(e.target.value)}
+                  />
+                </label>
+                <label className="lab-field">
+                  Scenario complexity
+                  <select
+                    className="input"
+                    value={difficulty}
+                    onChange={(e) => setDifficulty(Number(e.target.value) as 1 | 2 | 3)}
+                  >
+                    <option value={1}>One decision at a time</option>
+                    <option value={2}>Interacting preparation variables</option>
+                    <option value={3}>Three interacting faults</option>
+                  </select>
+                </label>
+                <div className="lab-start-actions">
+                  <button className="btn btn-primary" onClick={() => start('bottle')}>
+                    Begin at specimen receipt
+                  </button>
+                  <button className="btn" onClick={() => start('block')}>
+                    Practice on a prepared block
+                  </button>
+                  {draft && (
+                    <button className="btn" onClick={() => setChoosing(false)}>
+                      Resume current specimen
                     </button>
+                  )}
+                </div>
+                <p className="small muted">
+                  Starting another case keeps the existing event log in your run history. All cases
+                  are fictional; never enter patient information.
+                </p>
+              </section>
+              <aside className="lab-entry-note">
+                <span className="entry-orbit" aria-hidden="true">
+                  A1
+                </span>
+                <h2>Understanding comes from the whole chain.</h2>
+                <ol>
+                  <li>
+                    <strong>Prepare</strong>
+                    <span>Control geometry, preservation and reagent access.</span>
                   </li>
-                ))}
-            </ul>
-          </section>
+                  <li>
+                    <strong>Make</strong>
+                    <span>Orient, face, section, float, stain and mount.</span>
+                  </li>
+                  <li>
+                    <strong>Investigate</strong>
+                    <span>Compare your slide, trace its artifacts and replay the decisions.</span>
+                  </li>
+                </ol>
+                <p className="small">
+                  Educational models use illustrative settings. They rehearse technical reasoning
+                  and handling sequences; they do not establish professional competency or replace
+                  supervised practice.
+                </p>
+                <Link to="/pathway">Open the reference pathway</Link>
+              </aside>
+            </div>
+            {archive.runs.length > 0 && (
+              <section className="lab-history">
+                <h2>Recent practice</h2>
+                <ul className="list">
+                  {archive.runs
+                    .toReversed()
+                    .slice(0, 12)
+                    .map((r) => (
+                      <li key={r.id}>
+                        <button className="list-row" onClick={() => launchRecord(r)}>
+                          <span>
+                            <strong>{r.title}</strong>
+                            <br />
+                            {r.seed} · {r.events.length} recorded actions
+                          </span>
+                          <span>Resume / replay →</span>
+                        </button>
+                      </li>
+                    ))}
+                </ul>
+              </section>
+            )}
+          </>
         )}
       </div>
     )
@@ -453,7 +477,11 @@ export default function LabWorkspace() {
         </div>
         <div className="row">
           <button className="btn" onClick={() => setChoosing(true)}>
-            Cases & history
+            {focusedEntry
+              ? requestedLevel
+                ? 'Practical overview'
+                : 'Case overview'
+              : 'Cases & history'}
           </button>
           <button className="btn" aria-pressed={paused} onClick={() => setPaused(!paused)}>
             {paused ? 'Resume actions' : 'Pause and think'}

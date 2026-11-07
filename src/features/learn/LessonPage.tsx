@@ -1,7 +1,7 @@
 import { useState } from 'react'
-import { Link, useParams, useSearchParams } from 'react-router-dom'
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import Swap from '../../ui/Swap'
-import { CARDS, LESSON_BY_ID, LESSONS, QUESTION_BY_ID, SIM_TITLES } from '../../content'
+import { CARDS, LESSON_BY_ID, QUESTION_BY_ID, SIM_TITLES } from '../../content'
 import { OBJECTIVE_BY_ID } from '../../content/curriculum'
 import type { Lesson } from '../../content/schema'
 import { addDays, localDate } from '../../engine/dates'
@@ -127,6 +127,12 @@ function scheduleCards(lesson: Lesson) {
 
 export default function LessonPage() {
   const { id } = useParams()
+  return <LessonContent key={id} />
+}
+
+function LessonContent() {
+  const { id } = useParams()
+  const navigate = useNavigate()
   const [params] = useSearchParams()
   const plan = params.get('plan')
   const sound = useAppState((s) => s.settings.sound)
@@ -155,8 +161,6 @@ export default function LessonPage() {
     setStepLocal(n)
     lessonStep(lesson.id, n)
   }
-  const idx = LESSONS.findIndex((l) => l.id === lesson.id)
-  const next = LESSONS[idx + 1]
   const missingPrereqs = lesson.prerequisites.filter((p) => !completedIds.split(',').includes(p))
   const done = !!progress?.completedAt
 
@@ -165,6 +169,7 @@ export default function LessonPage() {
     scheduleCards(lesson)
     markPlanItem(plan, { done: true })
     chime(sound)
+    navigate('/')
   }
 
   const body = (() => {
@@ -264,35 +269,37 @@ export default function LessonPage() {
                 style={{ marginTop: 18 }}
                 onClick={finish}
               >
-                Finish lesson
+                Finish lesson and continue
               </button>
             ) : (
               <div className="stack" style={{ marginTop: 18 }}>
                 <p className="celebrate" role="status">
-                  Lesson finished. Its retrieval cards are scheduled for tomorrow.
+                  Lesson finished. Continue along your learning path, or revisit any part above.
                 </p>
-                <div className="row">
+                <Link className="btn btn-primary" to="/">
+                  Continue learning path
+                </Link>
+              </div>
+            )}
+            {(lesson.simulation || plan) && (
+              <details className="deeper" style={{ marginTop: 24 }}>
+                <summary>Optional practice and study tools</summary>
+                <div className="row" style={{ marginTop: 12 }}>
                   {lesson.simulation && (
                     <Link
-                      className="btn btn-primary"
+                      className="btn"
                       to={`/lab/${lesson.simulation}${plan ? `?plan=sim:${lesson.simulation}` : ''}`}
                     >
                       Try it in the Virtual Lab: {SIM_TITLES[lesson.simulation]}
                     </Link>
                   )}
-                  {plan ? (
+                  {plan && (
                     <Link className="btn" to="/today">
                       Back to Today
                     </Link>
-                  ) : (
-                    next && (
-                      <Link className="btn" to={`/learn/${next.id}`}>
-                        Next lesson: {next.title}
-                      </Link>
-                    )
                   )}
                 </div>
-              </div>
+              </details>
             )}
           </>
         )
@@ -302,7 +309,7 @@ export default function LessonPage() {
   return (
     <div className="page-narrow">
       <p className="small">
-        <Link to="/learn">Learn</Link> / {lesson.id}
+        <Link to="/">Learning path</Link> / Topic lesson
       </p>
       <h1>{lesson.title}</h1>
       {missingPrereqs.length > 0 && (

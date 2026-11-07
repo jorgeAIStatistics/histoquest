@@ -4,6 +4,7 @@ import { v3Progress } from './fixtures'
 const routes = [
   '',
   'today',
+  'library',
   'career',
   'clinic',
   'pathway',
@@ -64,11 +65,11 @@ test('phone overview has no page overflow and preserves primary navigation', asy
 }, testInfo) => {
   await page.setViewportSize({ width: 390, height: 844 })
   await page.goto('./')
-  await expect(page.getByRole('heading', { name: 'Practice through the laboratory' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Your histology learning path' })).toBeVisible()
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
   await expect(
     page.getByRole('navigation', { name: 'Primary' }).last().getByRole('link'),
-  ).toHaveCount(5)
+  ).toHaveCount(4)
   if (process.env.CAPTURE_SCREENS && testInfo.project.name === 'chromium') {
     await page.screenshot({ path: 'docs/screens/phase0-home-phone.png', fullPage: true })
   }
@@ -80,6 +81,26 @@ test('the 3D engine is absent from the non-3D entry', async ({ page }) => {
     if (/\.js(?:\?|$)/.test(response.url())) scripts.push(response.url())
   })
   await page.goto('./')
-  await expect(page.getByRole('heading', { name: 'Practice through the laboratory' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Your histology learning path' })).toBeVisible()
   expect(scripts.filter((url) => /three|fiber|drei|render3d|lab3d/i.test(url))).toEqual([])
+})
+
+test('the library keeps optional tools findable and the course one click away', async ({
+  page,
+}) => {
+  await page.goto('library')
+  await expect(page.getByRole('heading', { name: 'Library', exact: true })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Read and look things up' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Explore the laboratory' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Keep records and plan' })).toBeVisible()
+  await page
+    .getByRole('main')
+    .getByRole('link', { name: /Topic lessons/ })
+    .click()
+  await expect(page.getByRole('heading', { name: 'Topic lessons' })).toBeVisible()
+  await expect(
+    page.locator('.rail').getByRole('link', { name: 'Library', exact: true }),
+  ).toHaveAttribute('aria-current', 'location')
+  await page.locator('.rail').getByRole('link', { name: 'Learning path', exact: true }).click()
+  await expect(page.getByRole('heading', { name: 'Your histology learning path' })).toBeVisible()
 })

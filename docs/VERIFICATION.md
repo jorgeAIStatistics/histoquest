@@ -2,9 +2,19 @@
 
 Software verification and scientific verification are separate. **Passing tests does not establish educational accuracy.**
 
-## Current Lab release — verification (2026-11-07)
+## Guided learning course — verification (2026-11-07)
 
-This is the current status. Older dated checkpoints below are retained as an audit trail; their smaller content counts and missing-feature lists describe those earlier versions.
+The default homepage now presents one course with eight stages and 47 ordered activities, a single start/continue action and explicit completion. Existing chapter, lesson, practical, archived run and exam records determine the next unfinished activity. All 12 chapters, 23 lessons and seven practicals are included, followed by integrated practice and final review. The four primary destinations are Learning path, Practice, Library and Progress. The former `/pathway` index redirects to the course; `/career` remains available for practical rubrics and evidence.
+
+Chapter and lesson completion return to the course. Guided laboratory and exam launchers show the assigned activity; free tools remain accessible in Library. Course position is visible during activities. No stored schema changed, no progress was reset, and recorded plans still require qualified review.
+
+Local validation: TypeScript, lint, production build, bundle budget and **285 unit/content/model tests** pass (two opt-in generation helpers skipped). Fourteen course-model tests include a nonmocked 47/47 ending with actual shift, clinic and planning events. **22 focused browser checks pass across Chromium and Firefox**, covering actual chapter checks, full safety lesson completion, reload, existing progress, later-stage preview, guided practical/replay launches, exam creation/resume, mobile layout and light/dark accessibility. Local WebKit cannot create a page on the frozen macOS runtime (`PushAPIEnabled`); the unchanged three-browser GitHub gate supplies supported-host verification before deployment. Desktop and phone captures are in `docs/screens/journey-*.png`.
+
+The first browser pass caught and fixed root navigation losing the Pages trailing slash on reload, and a course-wrapper remount when leaving a practical for free practice. Their regressions pass. Initial JavaScript is 134,946 gzip bytes, within the existing budget; no 3D engine is loaded on the course homepage.
+
+## Lab expansion release — verification (2026-11-07)
+
+This section records the preceding Lab expansion release. Older checkpoints are retained as an audit trail; their route organization and feature lists describe those earlier versions.
 
 ### What is implemented
 
