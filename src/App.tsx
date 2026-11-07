@@ -7,7 +7,8 @@ const CareerPage = lazy(() => import('./features/career/CareerPage'))
 const ShiftPage = lazy(() => import('./features/shift/ShiftPage'))
 const ReviewPage = lazy(() => import('./features/review/ReviewPage'))
 const TodayPage = lazy(() => import('./features/today/TodayPage'))
-const PathwayPage = lazy(() => import('./features/pathway/PathwayPage'))
+const JourneyPage = lazy(() => import('./features/journey/JourneyPage'))
+const LibraryPage = lazy(() => import('./features/library/LibraryPage'))
 const ChapterPage = lazy(() =>
   import('./features/pathway/PathwayPage').then((m) => ({ default: m.ChapterPage })),
 )
@@ -53,12 +54,13 @@ const router = createBrowserRouter(
       element: <Shell />,
       errorElement: <RouteError />,
       children: [
-        { path: '/', element: <CareerPage /> },
+        { path: '/', element: <JourneyPage /> },
+        { path: '/library', element: <LibraryPage /> },
         { path: '/clinic', element: <ClinicPage /> },
         { path: '/career', element: <CareerPage /> },
         { path: '/shift', element: <ShiftPage /> },
         { path: '/review', element: <ReviewPage /> },
-        { path: '/pathway', element: <PathwayPage /> },
+        { path: '/pathway', element: <Navigate to="/" replace /> },
         { path: '/lab3d', element: <LabWorkspace /> },
         { path: '/today', element: <TodayPage /> },
         { path: '/pathway/:id', element: <ChapterPage /> },
@@ -82,7 +84,7 @@ const router = createBrowserRouter(
       ],
     },
   ],
-  { basename: import.meta.env.BASE_URL.replace(/\/$/, '') || '/' },
+  { basename: import.meta.env.BASE_URL },
 )
 
 export default function App() {

@@ -1,30 +1,34 @@
-import { Suspense, useEffect, useRef, type ReactNode } from 'react'
-import { NavLink, Outlet, useLocation } from 'react-router-dom'
-import {
-  IconAtlas,
-  IconLab,
-  IconLearn,
-  IconPractice,
-  IconProgress,
-  IconRoute,
-  IconSettings,
-  IconToday,
-} from '../art/icons'
+import { lazy, Suspense, useEffect, useRef, type ReactNode } from 'react'
+import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
+import { IconLearn, IconPractice, IconProgress, IconSettings, IconToday } from '../art/icons'
 import { storageError } from '../store/store'
 import { Disclaimer } from './components'
+import './shell.css'
+
+const JourneyFrame = lazy(() => import('../features/journey/JourneyFrame'))
 
 const PRIMARY = [
-  { to: '/', label: 'Career', icon: IconToday, end: true },
-  { to: '/learn', label: 'Lessons', icon: IconLearn },
-  { to: '/lab', label: 'Virtual Lab', short: 'Lab', icon: IconLab },
-  { to: '/practice', label: 'Practice', icon: IconPractice },
-  { to: '/progress', label: 'Progress', icon: IconProgress },
+  {
+    to: '/',
+    label: 'Learning path',
+    description: 'Begin here. Follow each step.',
+    icon: IconToday,
+  },
+  {
+    to: '/practice',
+    label: 'Practice',
+    description: 'Questions and exam review',
+    icon: IconPractice,
+  },
+  {
+    to: '/library',
+    label: 'Library',
+    description: 'Lessons, labs and references',
+    icon: IconLearn,
+  },
+  { to: '/progress', label: 'Progress', description: 'Your learning record', icon: IconProgress },
 ]
-const SECONDARY = [
-  { to: '/atlas', label: 'Reference atlas', icon: IconAtlas },
-  { to: '/route2', label: 'Route 2 tracker', icon: IconRoute },
-  { to: '/settings', label: 'Settings', icon: IconSettings },
-]
+const SETTINGS = { to: '/settings', label: 'Settings', icon: IconSettings }
 
 function Mark() {
   return (
@@ -65,15 +69,32 @@ export function Loading({ label = 'Loading' }: { label?: string }) {
 
 export default function Shell({ children }: { children?: ReactNode }) {
   const loc = useLocation()
+  const activeSection =
+    loc.pathname === '/' || /^\/(pathway|learn)\//.test(loc.pathname)
+      ? '/'
+      : loc.pathname.startsWith('/practice')
+        ? '/practice'
+        : loc.pathname === '/progress'
+          ? '/progress'
+          : loc.pathname === '/settings'
+            ? null
+            : '/library'
+  const currentSection = (to: string) =>
+    activeSection === to ? (loc.pathname === to ? 'page' : 'location') : undefined
   const mainRef = useRef<HTMLElement>(null)
+  const activityQuery = ['/lab3d', '/practice'].includes(loc.pathname) ? loc.search : ''
   // Move focus to the page on navigation so keyboard and screen-reader users land on new content.
   useEffect(() => {
     const route = loc.pathname.split('/').filter(Boolean)
     const name =
-      [...PRIMARY, ...SECONDARY].find((item) => item.to === `/${route[0] ?? ''}`)?.label ??
+      [...PRIMARY, SETTINGS].find((item) => item.to === `/${route[0] ?? ''}`)?.label ??
       (
         {
           pathway: 'Learning chapter',
+          learn: 'Topic lessons',
+          lab: 'Concept simulations',
+          atlas: 'Reference atlas',
+          route2: 'Route 2 tracker',
           workbench: 'Specimen workbench',
           slides: 'Slide library',
           notebook: 'Field notebook',
@@ -89,7 +110,7 @@ export default function Shell({ children }: { children?: ReactNode }) {
     document.title = `${name} · HistoQuest`
     mainRef.current?.focus({ preventScroll: true })
     window.scrollTo(0, 0)
-  }, [loc.pathname])
+  }, [loc.pathname, activityQuery])
   const err = storageError()
   return (
     <div className="shell">
@@ -100,38 +121,24 @@ export default function Shell({ children }: { children?: ReactNode }) {
         <NavLink to="/" className="brand">
           <Mark /> HistoQuest
         </NavLink>
-        {PRIMARY.map(({ to, label, icon: I, end }) => (
-          <NavLink key={to} to={to} end={end} className="nav-link">
-            <I /> {label}
-          </NavLink>
+        {PRIMARY.map(({ to, label, description, icon: I }) => (
+          <Link
+            key={to}
+            to={to}
+            aria-current={currentSection(to)}
+            aria-label={label}
+            className="nav-link"
+          >
+            <I />
+            <span className="nav-label">
+              {label}
+              <small>{description}</small>
+            </span>
+          </Link>
         ))}
-        <div className="rail-sep" role="separator" />
-        <NavLink to="/pathway" className="nav-link">
-          <IconLearn /> Specimen pathway
+        <NavLink to={SETTINGS.to} className="nav-link nav-utility">
+          <IconSettings /> {SETTINGS.label}
         </NavLink>
-        <NavLink to="/shift" className="nav-link">
-          <IconLab /> Simulated shift
-        </NavLink>
-        <NavLink to="/clinic" className="nav-link">
-          <IconLab /> Troubleshooting clinic
-        </NavLink>
-        <NavLink to="/workbench" className="nav-link">
-          <IconLab /> Specimen workbench
-        </NavLink>
-        <NavLink to="/slides" className="nav-link">
-          <IconAtlas /> Slide library
-        </NavLink>
-        <NavLink to="/notebook" className="nav-link">
-          <IconLearn /> Field notebook
-        </NavLink>
-        <NavLink to="/today" className="nav-link">
-          <IconToday /> Daily plan
-        </NavLink>
-        {SECONDARY.map(({ to, label, icon: I }) => (
-          <NavLink key={to} to={to} className="nav-link">
-            <I /> {label}
-          </NavLink>
-        ))}
         <div className="rail-foot">
           <Disclaimer />
         </div>
@@ -141,13 +148,9 @@ export default function Shell({ children }: { children?: ReactNode }) {
           <NavLink to="/" className="brand" style={{ padding: 0 }}>
             <Mark /> HistoQuest
           </NavLink>
-          <div className="row" style={{ gap: 4 }}>
-            {SECONDARY.map(({ to, label, icon: I }) => (
-              <NavLink key={to} to={to} className="icon-btn" aria-label={label} title={label}>
-                <I width={18} height={18} />
-              </NavLink>
-            ))}
-          </div>
+          <NavLink to={SETTINGS.to} className="icon-btn" aria-label="Settings" title="Settings">
+            <IconSettings width={18} height={18} />
+          </NavLink>
         </header>
         <main id="main" className="main" ref={mainRef} tabIndex={-1} style={{ outline: 'none' }}>
           {err && (
@@ -155,17 +158,26 @@ export default function Shell({ children }: { children?: ReactNode }) {
               {err}
             </p>
           )}
-          <Suspense fallback={<Loading />}>{children ?? <Outlet />}</Suspense>
+          <Suspense fallback={<Loading />}>
+            {children ??
+              (/^\/(pathway\/|learn\/|lab3d|workbench|clinic|shift|practice)/.test(loc.pathname) ? (
+                <JourneyFrame>
+                  <Outlet />
+                </JourneyFrame>
+              ) : (
+                <Outlet />
+              ))}
+          </Suspense>
           <div className="page footer-disclaimer" style={{ marginTop: 64 }}>
             <Disclaimer />
           </div>
         </main>
       </div>
       <nav className="tabbar" aria-label="Primary">
-        {PRIMARY.map(({ to, label, short, icon: I, end }) => (
-          <NavLink key={to} to={to} end={end}>
-            <I /> {short ?? label}
-          </NavLink>
+        {PRIMARY.map(({ to, label, icon: I }) => (
+          <Link key={to} to={to} aria-current={currentSection(to)}>
+            <I /> {label}
+          </Link>
         ))}
       </nav>
     </div>

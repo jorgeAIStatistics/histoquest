@@ -4,7 +4,7 @@ A specimen-to-slide learning platform and interactive study lab for the **Scient
 
 > HistoQuest is an independent study tool. It is not affiliated with, endorsed by, or reviewed by the ASCP Board of Certification. Questions are original and do not reproduce exam items. Content is author-checked, **not expert-reviewed**. See [docs/VERIFICATION.md](docs/VERIFICATION.md).
 
-Start with the **L0–L6 career pathway**, then rehearse a specimen journey in the interactive **3D or 2D laboratory**. The shared specimen model carries identity, preparation history, tissue loss, artifacts and analytical controls from bottle to slide. A procedural microscope shows the consequences of your decisions.
+Start with **Learning path → Start from the beginning**. One eight-stage course connects all 12 chapters, 23 lessons and seven practicals with integrated specimen practice and final exam review. The next activity updates from existing saved progress. Use the **Library** for optional tools and free exploration, including the interactive **3D or 2D laboratory**. The shared specimen model carries identity, preparation history, tissue loss, artifacts and analytical controls from bottle to slide. A procedural microscope shows the consequences of your decisions.
 
 Practice includes 21 specimen archetypes, a five-case shift, six troubleshooting investigations, 25 conceptual special-stain graphs (22 with target-bearing synthetic comparators), and an IHC academy with ten exercises and 71 marker references. The study library includes 12 chapters, 23 lessons, eight focused simulations, 304 original questions, 88 retrieval cards and 98 atlas entries, alongside the preserved daily planner and exam engine. Six attributed real micrographs are clearly separated from synthetic slide renderings.
 
@@ -32,6 +32,8 @@ No account, server or API key is needed. Progress stays in this browser: current
 
 | Area                                                                                                    | Where                                   |
 | ------------------------------------------------------------------------------------------------------- | --------------------------------------- |
+| Guided course: eight stages, 47 ordered activities, preserved progress and clear next steps             | `src/features/journey`                  |
+| Library: grouped access to optional lessons, labs, references and planning tools                        | `src/features/library`                  |
 | Career: seven learning levels, practical rubrics and separate practice evidence                         | `src/features/career`                   |
 | Interactive laboratory: sixteen stations, replay and debrief                                            | `src/features/lab3d`                    |
 | Simulated shift: priorities, interruptions, processor recovery, IHC controls and levels                 | `src/features/shift`                    |

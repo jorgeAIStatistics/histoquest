@@ -35,12 +35,12 @@ async function scan(page: Page) {
   ).toEqual([])
 }
 
-test('home learning milestones remain visible and accessible on desktop and phone', async ({
+test('practical milestones remain visible and accessible on desktop and phone', async ({
   page,
 }, testInfo) => {
   await start(page, 'light')
   await page.setViewportSize({ width: 1280, height: 900 })
-  await page.goto('./')
+  await page.goto('career')
   await expect(page.getByRole('heading', { name: 'Practice through the laboratory' })).toBeVisible()
   await expect(page.locator('.career-journey')).toBeVisible()
   await scan(page)
