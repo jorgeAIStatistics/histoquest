@@ -31,26 +31,49 @@ jobs:
       - run: npm test
       - run: npm run build
       - run: npm run bundle:check
-      - run: npx playwright install --with-deps chromium firefox webkit
+      - uses: actions/upload-artifact@v4
+        with:
+          name: verified-build
+          path: dist
+          retention-days: 1
+      - uses: actions/upload-pages-artifact@v3
+        if: github.event_name != 'pull_request'
+        with:
+          path: dist
+  browser:
+    needs: build
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        engine: [chromium, firefox, webkit]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - uses: actions/download-artifact@v4
+        with:
+          name: verified-build
+          path: dist
+      - run: npx playwright install --with-deps ${{ matrix.engine }}
       - run: sudo apt-get install -y xvfb libgl1-mesa-dri libegl1
-      - run: xvfb-run --auto-servernum --server-args="-screen 0 1280x1024x24" npm run test:e2e
+      - run: xvfb-run --auto-servernum --server-args="-screen 0 1280x1024x24" npm run test:e2e -- --project=${{ matrix.engine }}
         env:
           LIBGL_ALWAYS_SOFTWARE: '1'
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
-          name: browser-test-report
+          name: browser-test-report-${{ matrix.engine }}
           path: |
             playwright-report/
             test-results/
           retention-days: 7
-      - uses: actions/upload-pages-artifact@v3
-        if: github.event_name != 'pull_request'
-        with:
-          path: dist
   deploy:
     if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
-    needs: build
+    needs: [build, browser]
     runs-on: ubuntu-latest
     environment:
       name: github-pages

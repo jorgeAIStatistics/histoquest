@@ -1,3 +1,6 @@
+.review-page {
+  color: var(--ink);
+}
 .review-page header {
   max-width: 76ch;
   margin-bottom: 2rem;
