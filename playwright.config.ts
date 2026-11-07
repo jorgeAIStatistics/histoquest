@@ -20,7 +20,17 @@ export default defineConfig({
   },
   projects: [
     { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
-    { name: 'firefox', use: { ...devices['Desktop Firefox'] } },
+    {
+      name: 'firefox',
+      use: {
+        ...devices['Desktop Firefox'],
+        // GPU-less Linux CI otherwise blocklists WebGL2 (AllowWebgl2:false).
+        // Exercise the actual software renderer; the separate unavailable-WebGL test covers fallback.
+        launchOptions: process.env.CI
+          ? { firefoxUserPrefs: { 'webgl.force-enabled': true, 'webgl.forbid-software': false } }
+          : {},
+      },
+    },
     { name: 'webkit', use: { ...devices['Desktop Safari'] } },
   ],
   webServer: {
