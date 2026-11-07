@@ -217,6 +217,51 @@ test('3D scene mounts, navigates, disposes and preserves its specimen on actual 
   expect(errors).toEqual([])
 })
 
+test('offscreen station labels reflow on phone resize while GPU rendering stays paused', async ({
+  page,
+}) => {
+  await startBlock(page, '3d')
+  const canvas = page.locator('.lab-scene canvas[data-station-model=microtomy]')
+  await canvas.scrollIntoViewIfNeeded()
+  await expect(page.getByText('Drag or tap handwheel', { exact: true })).toBeVisible()
+  await page.getByText('Specimen passport & causal history', { exact: true }).click()
+  await page.evaluate(() => scrollTo(0, document.documentElement.scrollHeight))
+  await expect
+    .poll(() => canvas.evaluate((element) => element.getBoundingClientRect().bottom < -150))
+    .toBe(true)
+  // Let the observer pause the offscreen renderer before measuring the resize path.
+  await page.waitForTimeout(200)
+  const frames = () =>
+    page.evaluate(
+      () =>
+        (
+          window as unknown as {
+            __histoquestRenderMetrics: { frames: number }
+          }
+        ).__histoquestRenderMetrics.frames,
+    )
+  const before = await frames()
+  await page.setViewportSize({ width: 390, height: 844 })
+  await expect
+    .poll(() =>
+      page.locator('.lab-scene-viewport').evaluate((viewport) => {
+        const bounds = viewport.getBoundingClientRect()
+        const labels = Array.from(viewport.querySelectorAll('.scene-projected-label')).filter(
+          (label) => getComputedStyle(label).visibility !== 'hidden',
+        )
+        return (
+          labels.length > 0 &&
+          labels.every((label) => {
+            const box = label.getBoundingClientRect()
+            return box.left >= bounds.left && box.right <= bounds.right
+          })
+        )
+      }),
+    )
+    .toBe(true)
+  expect(await frames()).toBe(before)
+})
+
 test('lab controls, provenance and 2D view pass automated accessibility rules', async ({
   page,
 }) => {

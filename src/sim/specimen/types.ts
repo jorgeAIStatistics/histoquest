@@ -41,6 +41,8 @@ export interface Scenario {
   target: string
   targetLocalization: 'nuclear' | 'cytoplasmic' | 'membranous'
   targetPresent: boolean
+  instruction?: string
+  generatorVersion?: 2
   tat: number
 }
 export interface Region {
@@ -103,7 +105,27 @@ export interface SlideAppearance {
   bluing: number
   special: string
   specialIntensity: number
+  specialGlycogen?: number
+  specialBackground?: number
   localization: 'nuclear' | 'cytoplasmic' | 'membranous'
+  /** Additive pseudocolor emission, never a DAB proxy or measured copy-number field. */
+  fluorescence?: {
+    signal: number
+    background: number
+    counterstain: number
+    targetType: 'rna' | 'dna' | 'protein'
+    secondary?: {
+      signal: number
+      background: number
+      localizations: SlideAppearance['localization'][]
+    }
+  }
+  localizations?: SlideAppearance['localization'][]
+  secondaryChromogen?: {
+    signal: number
+    background: number
+    localizations: SlideAppearance['localization'][]
+  }
   thickness: number
   preservation: number
   centerPreservation: number
@@ -149,6 +171,7 @@ export interface Twin {
     crowding: number
     ink: string
     key: string
+    approach?: string
     sampled: boolean
   }
   fixation: {
@@ -157,18 +180,34 @@ export interface Twin {
     temperature: number
     ratio: number
     ischemia: number
+    effectiveDose?: number
+    aldehydeHours?: number
+    aldehydeDose?: number
+    history?: { fixative: string; hours: number; temperature: number; ratio: number }[]
     crosslink: number
     pigment: number
   }
   regions: Region[]
-  decal: { agent: string; hours: number; endpoint: string; damage: number }
+  decal: {
+    agent: string
+    hours: number
+    endpoint: string
+    damage: number
+    temperature?: number
+    agitation?: boolean
+    result?: string
+  }
   processing: {
+    exhaustedAlcohol?: boolean
+    reagentChanges?: { reagent: string; lot: string; t: number }[]
     history: {
       reagent: string
       minutes: number
       temperature: number
       concentration: number
       exhaustion: number
+      vacuum?: boolean
+      agitation?: boolean
     }[]
     hardness: number
     brittleness: number
@@ -206,7 +245,7 @@ export interface Twin {
     protocol: string
     reactionRetention: number
     controls: { positive: number | null; negative: number | null; valid: boolean }
-    history: { reagent: string; minutes: number; lot: string }[]
+    history: { reagent: string; minutes: number; lot: string; freshness?: number }[]
     dewax: number
     hydrated: number
     hematoxylin: number
@@ -217,6 +256,8 @@ export interface Twin {
     clearing: number
     special: string
     specialIntensity: number
+    specialGlycogen?: number
+    specialBackground?: number
     completedSteps: string[]
   }
   ihc: {
@@ -227,6 +268,10 @@ export interface Twin {
     damage: number
     primary: number
     detection: number
+    /** Any completed detection attempt requires a new section for reoptimization. */
+    detectionApplied?: boolean
+    /** Binding/coverage background retained separately from removable unwashed reagent. */
+    persistentBackground?: number
     dab: number
     background: number
     edge: number
@@ -235,7 +280,16 @@ export interface Twin {
     negative: number | null
     internal: number | null
     location: 'nuclear' | 'cytoplasmic' | 'membranous'
+    locations?: SlideAppearance['localization'][]
     valid: boolean
+    ish?: {
+      modality: 'CISH' | 'FISH'
+      targetType: 'rna' | 'dna'
+      reactionSignal: number
+      signal: number
+      background: number
+      integritySignal: number | null
+    }
   }
   frozen: {
     temperature: number

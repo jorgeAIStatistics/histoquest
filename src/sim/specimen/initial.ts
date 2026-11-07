@@ -18,6 +18,8 @@ export function createStainingState(): Twin['staining'] {
     clearing: 0,
     special: '',
     specialIntensity: 0,
+    specialGlycogen: 1,
+    specialBackground: 0,
     completedSteps: [],
   }
 }
@@ -31,6 +33,8 @@ export function createIhcState(scenario: Scenario): Twin['ihc'] {
     damage: 0,
     primary: 0,
     detection: 0,
+    detectionApplied: false,
+    persistentBackground: 0,
     dab: 0,
     background: 0,
     edge: 0,
@@ -94,7 +98,15 @@ export function createTwin(scenario: Scenario): Twin {
       wax: 0,
     })),
     decal: { agent: 'none', hours: 0, endpoint: 'none', damage: 0 },
-    processing: { history: [], hardness: 0, brittleness: 0, heatDamage: 0 },
+    processing: {
+      exhaustedAlcohol:
+        scenario.generatorVersion === 2 && scenario.faults.includes('exhausted-alcohol'),
+      reagentChanges: [],
+      history: [],
+      hardness: 0,
+      brittleness: 0,
+      heatDamage: 0,
+    },
     embedding: {
       pieces: [],
       temperature: P['embedding.wax-temperature'],

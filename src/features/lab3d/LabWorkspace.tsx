@@ -1,14 +1,35 @@
 import { lazy, Suspense, useCallback, useMemo, useRef, useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { setState, useAppState } from '../../store/store'
+import { archiveRun, mergeLabRuns, useAllLabRuns } from '../../store/labArchive'
+import { applyLabLearning } from '../../store/labLearning'
 import type { LabRecord } from '../../store/labSchema'
 import { useReducedMotion } from '../../ui/prefs'
-import { EventLogSchema, type SimEvent, type StationId } from '../../sim/core/events'
+import {
+  EventLogSchema,
+  MAX_RUN_EVENTS,
+  type SimEvent,
+  type StationId,
+} from '../../sim/core/events'
 import { createScenario } from '../../sim/core/scenarios'
 import { replayRun } from '../../sim/core/replay'
 import { referenceTwin } from '../../sim/core/reference'
 import { slideAppearance } from '../../sim/specimen/appearance'
-import { assessTwin } from '../../sim/scoring/assess'
+import {
+  createPracticalRecord,
+  gradePractical,
+  practicalAvailability,
+  PRACTICAL_BY_ID,
+} from '../../sim/scoring/practicals'
+import {
+  createShiftCase,
+  assessShift,
+  latestShiftCase,
+  shiftRecordIdentity,
+} from '../../sim/core/shifts'
+import { CAREER_LEVELS } from '../../content/lab/curriculum'
+import PracticalBrief from '../career/PracticalBrief'
+import Debrief from './Debrief'
 import { ARCHETYPES } from '../../content/lab/archetypes'
 import { STATIONS, STATION_BY_ID } from './stations'
 import { ActionForm, T, type Intent } from './fields'
@@ -16,6 +37,8 @@ import MicrotomyControls from './MicrotomyControls'
 import PreparationControls from './PreparationControls'
 import ChemistryControls from './ChemistryControls'
 import TwoDStation from './TwoDStation'
+import StationTutorial from '../../render3d/StationTutorial'
+import { appendShiftTransition, prepareLabLaunch } from './shiftTransitions'
 import './lab.css'
 const LabScene = lazy(() => import('../../render3d/LabScene'))
 const Microscope = lazy(() => import('../../render2d/Microscope'))
@@ -31,12 +54,24 @@ const SECTIONING: StationId[] = ['microtomy', 'bath', 'drying']
 
 export default function LabWorkspace() {
   const lab = useAppState((s) => s.lab)
+  const archive = useAllLabRuns()
+  const [search] = useSearchParams()
+  const requestedPractical = search.get('practical') ?? ''
+  const requestedReplay = search.get('replay') ?? ''
+  const requestedShift = search.get('shift') ?? ''
+  const requestedCase = search.get('case') ?? ''
+  const requestedLevel = CAREER_LEVELS.find((level) => level.practical.id === requestedPractical)
+  const replayRecord = archive.runs.find((r) => r.id === requestedReplay)
+  const availability = practicalAvailability(requestedPractical, lab.passedPracticals, archive.runs)
   const reducedMotion = useReducedMotion()
   const draft = lab.draft
   const [station, setStation] = useState<StationId | 'overview'>(
     () => draft?.events.at(-1)?.station ?? 'overview',
   )
-  const [choosing, setChoosing] = useState(!draft)
+  const requestKey = [requestedPractical, requestedReplay, requestedShift, requestedCase].join('|')
+  const [openedRequest, setOpenedRequest] = useState('')
+  const [manualChoosing, setChoosing] = useState(!draft)
+  const choosing = manualChoosing || (requestKey !== '|||' && requestKey !== openedRequest)
   const [archetype, setArchetype] = useState('skin-ellipse')
   const [seed, setSeed] = useState('TRAIN-SKIN-01')
   const [difficulty, setDifficulty] = useState<1 | 2 | 3>(1)
@@ -53,7 +88,6 @@ export default function LabWorkspace() {
   )
   const scenario = twin?.scenario
   const ideal = useMemo(() => (scenario ? referenceTwin(scenario) : null), [scenario])
-  const assessment = useMemo(() => (current ? assessTwin(current) : null), [current])
   useEffect(() => {
     if (!choosing) heading.current?.focus()
   }, [station, choosing])
@@ -65,6 +99,7 @@ export default function LabWorkspace() {
   const act: Intent = useCallback(
     (intent, params = {}, eventStation) => {
       if (paused || cursor !== null) return
+      let recorded = false
       setState((s) => {
         if (!s.lab.draft) return s
         const prior = replayRun(s.lab.draft)
@@ -77,8 +112,19 @@ export default function LabWorkspace() {
         }
         const result = EventLogSchema.safeParse([...s.lab.draft.events, event])
         if (!result.success) return s
-        return { ...s, lab: { ...s.lab, draft: { ...s.lab.draft, events: result.data } } }
+        recorded = true
+        return {
+          ...s,
+          lab: { ...s.lab, draft: { ...s.lab.draft, completedAt: undefined, events: result.data } },
+        }
       })
+      if (!recorded) {
+        setNotice(
+          `This action was not recorded. Check the field values; a run can hold up to ${MAX_RUN_EVENTS} actions. Your existing history is unchanged. Save it and start a new run if the limit has been reached.`,
+        )
+        return
+      }
+      setFinished(false)
       setNotice(`Recorded: ${intent.replaceAll('.', ' · ')}.`)
     },
     [station, paused, cursor],
@@ -87,13 +133,55 @@ export default function LabWorkspace() {
     setNotice(reason)
     setState((s) => ({ ...s, lab: { ...s.lab, view: '2d' } }))
   }, [])
+  function launchRecord(record: LabRecord) {
+    let failure: string | undefined
+    setState((s) => {
+      const prepared = prepareLabLaunch(s.lab, record, archive.runs)
+      if (!prepared.ok) {
+        failure = prepared.reason
+        return s
+      }
+      return { ...s, lab: prepared.lab }
+    })
+    if (failure) {
+      setNotice(failure)
+      return false
+    }
+    setChoosing(false)
+    setOpenedRequest(requestKey)
+    setCursor(null)
+    setPaused(false)
+    setFinished(!!record.completedAt)
+    setNotice('')
+    setStation(record.events.at(-1)?.station ?? 'accessioning')
+    return true
+  }
+  function launchRequestedShift() {
+    if (archive.loading || archive.error) return
+    try {
+      const all = mergeLabRuns(archive.runs, lab.runs, lab.draft)
+      const queue = assessShift(requestedShift, all).currentQueueMinute
+      const previous = latestShiftCase(requestedShift, requestedCase, all)
+      if (previous) {
+        const resumed = appendShiftTransition(previous, 'shift.resume', queue)
+        if (!resumed.ok) {
+          setNotice(resumed.reason)
+          return
+        }
+        launchRecord(resumed.record)
+      } else launchRecord(createShiftCase(requestedShift, requestedCase, queue))
+    } catch (error) {
+      setNotice(error instanceof Error ? error.message : 'That shift request is not available.')
+    }
+  }
   function start(preset: 'bottle' | 'block') {
-    const scenario = createScenario(seed.trim() || 'TRAIN-DEMO', archetype, difficulty)
+    const scenario = createScenario(seed.trim() || 'TRAIN-DEMO', archetype, difficulty, 2)
     const reference = preset === 'block' ? referenceTwin(scenario) : null
     const cutAt = reference?.events.findIndex((e) => e.intent === 'microtomy.cut') ?? -1
     const record: LabRecord = {
       id: crypto.randomUUID(),
       version: 1,
+      scenarioVersion: 2,
       seed: scenario.seed,
       archetype,
       difficulty,
@@ -102,39 +190,51 @@ export default function LabWorkspace() {
       title: scenario.title,
       events: reference ? reference.events.slice(0, cutAt) : [],
     }
-    setState((s) => ({
-      ...s,
-      lab: {
-        ...s.lab,
-        draft: record,
-        runs: s.lab.draft?.events.length
-          ? [s.lab.draft, ...s.lab.runs.filter((r) => r.id !== s.lab.draft!.id)]
-          : s.lab.runs,
-      },
-    }))
-    setChoosing(false)
-    setStation(preset === 'block' ? 'microtomy' : 'accessioning')
-    setCursor(null)
-    setPaused(false)
-    setFinished(false)
+    if (launchRecord(record)) setStation(preset === 'block' ? 'microtomy' : 'accessioning')
+  }
+  function replayAt(index: number) {
+    setCursor(index)
+    setStation(draft?.events[Math.max(0, index - 1)]?.station ?? 'accessioning')
   }
   function finish() {
-    if (!draft) return
+    if (!draft || !current) return
     const completed = { ...draft, completedAt: new Date().toISOString() }
-    setState((s) => ({
-      ...s,
-      lab: {
-        ...s.lab,
-        draft: completed,
-        runs: [completed, ...s.lab.runs.filter((r) => r.id !== completed.id)],
-      },
-    }))
+    const practicalGrade =
+      current && draft.practicalId ? gradePractical(current, draft.practicalId) : null
+    setState((s) =>
+      applyLabLearning(
+        {
+          ...s,
+          lab: {
+            ...s.lab,
+            draft: completed,
+            passedPracticals:
+              practicalGrade?.passed && draft.practicalId
+                ? [...new Set([...s.lab.passedPracticals, draft.practicalId])]
+                : s.lab.passedPracticals,
+            runs: [completed, ...s.lab.runs.filter((r) => r.id !== completed.id)],
+          },
+        },
+        completed,
+        current,
+      ),
+    )
     setFinished(true)
     setNotice('Run saved. These are practice results inside HistoQuest.')
+    void archiveRun(completed).catch((error) =>
+      setNotice(
+        `Run retained in recent progress; archiving did not complete. ${error instanceof Error ? error.message : 'Archive unavailable.'}`,
+      ),
+    )
   }
   if (choosing || !draft || !twin || !ideal)
     return (
       <div className="page lab-page">
+        {archive.cacheWarning && (
+          <p className="notice" role="alert">
+            {archive.cacheWarning}
+          </p>
+        )}
         <div className="lab-entry-header">
           <p className="eyebrow">HistoQuest Lab · specimen to slide</p>
           <h1>A laboratory for deliberate practice.</h1>
@@ -142,6 +242,90 @@ export default function LabWorkspace() {
             Make the preparation. See the consequences. Follow one fictional specimen through an
             entire technical workflow.
           </p>
+        </div>
+        {archive.loading && <p role="status">Reading saved laboratory history…</p>}
+        {archive.error && (
+          <p className="notice" role="alert">
+            {archive.error}{' '}
+            <button className="btn" onClick={archive.refresh}>
+              Retry archive
+            </button>
+          </p>
+        )}
+        {requestedPractical && !requestedLevel && (
+          <p className="notice" role="alert">
+            That practical is not in the published learning ladder.{' '}
+            <Link to="/career">Choose a practical</Link>.
+          </p>
+        )}
+        {requestedLevel && PRACTICAL_BY_ID[requestedPractical] && (
+          <section className="practical-launch panel">
+            <p className="eyebrow">{requestedLevel.id} · Guided practical</p>
+            <h2>{requestedLevel.practical.title}</h2>
+            <p>{requestedLevel.practical.scenario}</p>
+            <ul>
+              {requestedLevel.practical.rubric.map((item) => (
+                <li key={item}>{item}</li>
+              ))}
+            </ul>
+            <p className="small">
+              Critical identity, contamination or safety errors fail this practice assessment. The
+              rubric is visible throughout.
+            </p>
+            <p className="small">{availability.reason}</p>
+            <button
+              className="btn btn-primary"
+              disabled={archive.loading || !availability.allowed}
+              onClick={() => {
+                if (availability.allowed) launchRecord(createPracticalRecord(requestedPractical))
+              }}
+            >
+              Start assessed practical
+            </button>{' '}
+            <Link to="/career">Learning ladder</Link>
+          </section>
+        )}
+        {requestedShift && requestedCase && (
+          <section className="panel">
+            <p className="eyebrow">Shift {requestedShift}</p>
+            <h2>Dispatch {requestedCase} case</h2>
+            <p>
+              Switching retains the current case and records a pause. Secure the handwheel and blade
+              before leaving an active cutting station; the event log retains any unsafe
+              interruption.
+            </p>
+            <button
+              className="btn btn-primary"
+              disabled={archive.loading || !!archive.error}
+              onClick={launchRequestedShift}
+            >
+              Open shift case
+            </button>{' '}
+            <Link to={`/shift?seed=${encodeURIComponent(requestedShift)}`}>Return to queue</Link>
+            <p role="status">{notice}</p>
+          </section>
+        )}
+        {replayRecord && (
+          <section className="panel">
+            <h2>{replayRecord.title}</h2>
+            <button className="btn btn-primary" onClick={() => launchRecord(replayRecord)}>
+              Open saved run
+            </button>
+          </section>
+        )}
+        {requestedReplay && !replayRecord && !archive.loading && !archive.error && (
+          <p className="notice" role="status">
+            This saved run is not available in this browser. Import its complete progress backup in{' '}
+            <Link to="/settings">Settings</Link> to replay it.
+          </p>
+        )}
+        <div className="row">
+          <Link className="btn" to="/career">
+            Learning ladder & practicals
+          </Link>
+          <Link className="btn" to="/shift">
+            Start a simulated shift
+          </Link>
         </div>
         <div className="lab-entry-grid">
           <section className="lab-entry-setup">
@@ -226,30 +410,25 @@ export default function LabWorkspace() {
             <Link to="/pathway">Open the reference pathway</Link>
           </aside>
         </div>
-        {lab.runs.length > 0 && (
+        {archive.runs.length > 0 && (
           <section className="lab-history">
             <h2>Recent practice</h2>
             <ul className="list">
-              {lab.runs.slice(0, 12).map((r) => (
-                <li key={r.id}>
-                  <button
-                    className="list-row"
-                    onClick={() => {
-                      setState((s) => ({ ...s, lab: { ...s.lab, draft: r } }))
-                      setChoosing(false)
-                      setStation(r.events.at(-1)?.station ?? 'overview')
-                      setCursor(null)
-                    }}
-                  >
-                    <span>
-                      <strong>{r.title}</strong>
-                      <br />
-                      {r.seed} · {r.events.length} recorded actions
-                    </span>
-                    <span>Resume / replay →</span>
-                  </button>
-                </li>
-              ))}
+              {archive.runs
+                .toReversed()
+                .slice(0, 12)
+                .map((r) => (
+                  <li key={r.id}>
+                    <button className="list-row" onClick={() => launchRecord(r)}>
+                      <span>
+                        <strong>{r.title}</strong>
+                        <br />
+                        {r.seed} · {r.events.length} recorded actions
+                      </span>
+                      <span>Resume / replay →</span>
+                    </button>
+                  </li>
+                ))}
             </ul>
           </section>
         )}
@@ -259,6 +438,11 @@ export default function LabWorkspace() {
   const last = twin.block.sections.at(-1)
   return (
     <div className="page lab-page lab-active">
+      {archive.cacheWarning && (
+        <p className="notice" role="alert">
+          {archive.cacheWarning}
+        </p>
+      )}
       <header className="lab-workspace-header">
         <div>
           <p className="eyebrow">HistoQuest Lab</p>
@@ -299,6 +483,17 @@ export default function LabWorkspace() {
           </button>
         ))}
       </nav>
+      {draft.practicalId && (
+        <PracticalBrief practicalId={draft.practicalId} twin={current!} act={act} />
+      )}
+      {draft.mode === 'shift' && (
+        <p className="notice">
+          Separate shift case ·{' '}
+          <Link to={`/shift?seed=${encodeURIComponent(shiftRecordIdentity(draft)?.seed ?? '')}`}>
+            Open the live queue and prioritize the next case
+          </Link>
+        </p>
+      )}
       <div className="lab-hud">
         <span>
           <strong>{twin.time.toFixed(1)}</strong> simulation min
@@ -370,6 +565,17 @@ export default function LabWorkspace() {
           while you think.
         </p>
       )}
+      <StationTutorial
+        key={station}
+        station={station}
+        seen={lab.tutorials.includes(station)}
+        onSeen={() =>
+          setState((state) => ({
+            ...state,
+            lab: { ...state.lab, tutorials: [...new Set([...state.lab.tutorials, station])] },
+          }))
+        }
+      />
       <div className="lab-work-grid">
         <section className="lab-work-surface" aria-label="Instrument view">
           {lab.view === '3d' ? (
@@ -478,10 +684,22 @@ export default function LabWorkspace() {
             </div>
             <p>{last.slideId || 'Section not yet labeled'}</p>
           </div>
+          <p className="small muted">
+            A reference H&E preparation is available for routine morphology. Special-stain and IHC
+            controls are compared in their dedicated benches.
+          </p>
           <Suspense fallback={<p role="status">Preparing simulated microscopy…</p>}>
             <Microscope
               appearance={slideAppearance(twin)}
-              ideal={slideAppearance(ideal)}
+              ideal={
+                !twin.staining.special &&
+                !twin.ihc.ish &&
+                !twin.ihc.detectionApplied &&
+                twin.ihc.primary === 0 &&
+                twin.ihc.dab === 0
+                  ? slideAppearance(ideal)
+                  : undefined
+              }
               force2D={lab.view === '2d'}
             />
           </Suspense>
@@ -496,14 +714,14 @@ export default function LabWorkspace() {
             min={0}
             max={draft.events.length}
             value={cursor ?? draft.events.length}
-            onChange={(e) => setCursor(Number(e.target.value))}
+            onChange={(e) => replayAt(Number(e.target.value))}
           />
         </label>
         <div className="row">
           <button className="btn" onClick={() => setCursor(null)}>
             Latest state
           </button>
-          <button className="btn" onClick={() => setCursor(0)}>
+          <button className="btn" onClick={() => replayAt(0)}>
             Return to receipt
           </button>
         </div>
@@ -526,64 +744,7 @@ export default function LabWorkspace() {
           </ol>
         </details>
       </section>
-      {finished && assessment && (
-        <section className="lab-debrief" aria-label="Run debrief">
-          <h2>Your practice, reviewed</h2>
-          <p className="lede">
-            {assessment.critical.length
-              ? 'A critical error needs investigation.'
-              : `Practice rubric: ${assessment.total}/100.`}
-          </p>
-          <p>
-            Quality, process, safety, documentation and efficiency are separate measures. This is
-            practice evidence inside HistoQuest, not professional competency.
-          </p>
-          <table className="lab-table">
-            <thead>
-              <tr>
-                <th>Station</th>
-                <th>Quality</th>
-                <th>Process</th>
-                <th>Safety</th>
-                <th>Record</th>
-                <th>Efficiency</th>
-              </tr>
-            </thead>
-            <tbody>
-              {assessment.stations.map((s) => (
-                <tr key={s.station}>
-                  <th>{STATION_BY_ID[s.station].label}</th>
-                  <td>{s.quality}</td>
-                  <td>{s.process}</td>
-                  <td>{s.safety}</td>
-                  <td>{s.documentation}</td>
-                  <td>{s.efficiency}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          {assessment.issues.map((i) => (
-            <article className="lab-issue" key={i.id}>
-              <span className="tag">{i.severity}</span>
-              <h3>{i.title}</h3>
-              <p>
-                {i.cause} {i.effect}
-              </p>
-              <p>{i.remedy}</p>
-              <button
-                className="btn"
-                onClick={() => {
-                  setCursor(i.event + 1)
-                  setStation(i.station)
-                }}
-              >
-                Replay this decision
-              </button>{' '}
-              <Link to={i.lesson}>Targeted review</Link>
-            </article>
-          ))}
-        </section>
-      )}
+      {finished && current && <Debrief record={draft} twin={twin} onReplay={replayAt} />}
       <p className="lab-boundary small">
         All specimens and slides are simulated. Coefficients are educational assumptions. Content is
         author-checked, not expert-reviewed. Export complete progress from{' '}

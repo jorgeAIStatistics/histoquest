@@ -1,0 +1,41 @@
+.station-tutorial {
+  border: 1px solid var(--rule);
+  border-left: 3px solid var(--hema);
+  border-radius: 8px;
+  padding: 0.85rem 1rem;
+  background: var(--paper);
+  margin-block: 0.8rem 1.2rem;
+}
+.station-tutorial-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.station-tutorial-heading h3 {
+  margin: 0;
+  font-size: 1.05rem;
+}
+.station-tutorial-body {
+  max-width: 75ch;
+  margin-top: 1rem;
+}
+.station-tutorial-body h4 {
+  margin: 0.5rem 0;
+  font-size: 1rem;
+}
+.station-tutorial-body p {
+  margin: 0.5rem 0;
+}
+.station-tutorial-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-block: 0.85rem;
+}
+@media (max-width: 600px) {
+  .station-tutorial .btn {
+    min-height: 44px;
+  }
+}

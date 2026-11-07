@@ -1,12 +1,19 @@
 import { Component, useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import { OrbitControls } from '@react-three/drei/core/OrbitControls'
-import { Mesh, Vector3 } from 'three'
+import { Mesh, PerspectiveCamera, Vector3 } from 'three'
 import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib'
-import type { LabSceneProps, SceneQuality, SceneStation, Vec3 } from './types'
+import type { InstrumentProps, LabSceneProps, SceneQuality, SceneStation, Vec3 } from './types'
 import { STATION_NAMES } from './types'
 import { cameraPreset, restoreCamera, saveCamera, type CameraPose, type ViewPreset } from './camera'
-import { exposeRenderMetrics, getRenderMetrics, incrementMetric, recordMetric } from './metrics'
+import {
+  bindResourceReader,
+  exposeRenderMetrics,
+  getRenderMetrics,
+  incrementMetric,
+  recordFrameInterval,
+  recordMetric,
+} from './metrics'
 import Overview from './Overview'
 import StationModel from './Stations'
 import './scene.css'
@@ -51,6 +58,14 @@ function CameraRig({
   const controls = useRef<OrbitControlsImpl>(null)
   const camera = useThree((state) => state.camera)
   const invalidate = useThree((state) => state.invalidate)
+  const width = useThree((state) => state.size.width)
+  useEffect(() => {
+    if (camera instanceof PerspectiveCamera) {
+      const fov = width < 420 ? 52 : 42
+      camera.setFocalLength(camera.getFilmHeight() / (2 * Math.tan((fov * Math.PI) / 360)))
+      invalidate()
+    }
+  }, [camera, width, invalidate])
   const goal = useRef<CameraPose | null>(null)
   const previousStation = useRef(station)
   const destination = useRef(new Vector3())
@@ -117,16 +132,17 @@ function CameraRig({
 function RendererLifecycle({
   quality,
   onFallback,
+  onAdaptiveDpr,
 }: {
   quality: SceneQuality
   onFallback: LabSceneProps['onFallback']
+  onAdaptiveDpr: (dpr: number) => void
 }) {
-  const { gl, scene, invalidate, setFrameloop, setDpr } = useThree()
+  const { gl, scene, invalidate, setFrameloop } = useThree()
   const slow = useRef({ elapsed: 0, frames: 0, tier: 1.35 })
   const tracked = useRef(new WeakSet<object>())
   useEffect(() => {
     const canvas = gl.domElement
-    const viewport = canvas.closest('.lab-scene-viewport')
     let visible = true
     const reconcile = () => {
       setFrameloop(document.hidden || !visible ? 'never' : 'demand')
@@ -138,10 +154,6 @@ function RendererLifecycle({
       onFallback(
         'The graphics context was lost. Your specimen is preserved; continue in 2D or reopen 3D.',
       )
-    }
-    const skip = (event: Event) => {
-      visible = !(event as Event & { skipped: boolean }).skipped
-      reconcile()
     }
     const observer =
       typeof IntersectionObserver !== 'undefined'
@@ -156,17 +168,21 @@ function RendererLifecycle({
     observer?.observe(canvas)
     canvas.addEventListener('webglcontextlost', lose)
     document.addEventListener('visibilitychange', reconcile)
-    viewport?.addEventListener('contentvisibilityautostatechange', skip)
     exposeRenderMetrics()
+    const unbindResources = bindResourceReader(() => ({
+      geometries: gl.info.memory.geometries,
+      textures: gl.info.memory.textures,
+      programs: gl.info.programs?.length ?? 0,
+    }))
     incrementMetric('mounts')
     incrementMetric('activeCanvases')
     canvas.setAttribute('data-render-state', 'ready')
     reconcile()
     return () => {
+      unbindResources()
       observer?.disconnect()
       canvas.removeEventListener('webglcontextlost', lose)
       document.removeEventListener('visibilitychange', reconcile)
-      viewport?.removeEventListener('contentvisibilityautostatechange', skip)
       incrementMetric('unmounts')
       incrementMetric('activeCanvases', -1)
       if (getRenderMetrics().activeCanvases === 0)
@@ -175,13 +191,12 @@ function RendererLifecycle({
     }
   }, [gl, invalidate, onFallback, setFrameloop])
   useEffect(() => {
-    const maximum =
-      quality === 'low' ? 1 : quality === 'high' ? 1.75 : quality === 'medium' ? 1.4 : 1.35
-    slow.current = { elapsed: 0, frames: 0, tier: maximum }
-    setDpr(Math.min(window.devicePixelRatio || 1, maximum))
-  }, [quality, setDpr])
+    slow.current = { elapsed: 0, frames: 0, tier: 1.35 }
+    if (quality === 'auto') onAdaptiveDpr(1.35)
+  }, [quality, onAdaptiveDpr])
   useFrame((_, delta) => {
     incrementMetric('frames')
+    recordFrameInterval(delta * 1000)
     recordMetric({
       geometries: gl.info.memory.geometries,
       textures: gl.info.memory.textures,
@@ -206,7 +221,7 @@ function RendererLifecycle({
       if (slow.current.frames >= 45) {
         if (slow.current.elapsed / slow.current.frames > 1 / 38 && slow.current.tier > 0.85) {
           slow.current.tier = Math.max(0.85, slow.current.tier - 0.2)
-          setDpr(Math.min(window.devicePixelRatio || 1, slow.current.tier))
+          onAdaptiveDpr(slow.current.tier)
         }
         slow.current.elapsed = 0
         slow.current.frames = 0
@@ -221,6 +236,16 @@ export default function LabScene(props: LabSceneProps) {
   const [action, setAction] = useState<CameraAction>({ preset: 'front', sequence: 0 })
   const [manipulating, setManipulating] = useState(false)
   const [cameraStatus, setCameraStatus] = useState('')
+  const [embeddingGesture, setEmbeddingGesture] =
+    useState<InstrumentProps['embeddingGesture']>('translate')
+  const [bottleRotation, setBottleRotation] = useState(0)
+  const [selectedPieceId, setSelectedPieceId] = useState('')
+  const [adaptiveDpr, setAdaptiveDpr] = useState(1.35)
+  const dprCap =
+    quality === 'low' ? 1 : quality === 'medium' ? 1.4 : quality === 'high' ? 1.75 : adaptiveDpr
+  const activePieceId = props.twin.embedding.pieces.some((piece) => piece.id === selectedPieceId)
+    ? selectedPieceId
+    : props.twin.embedding.pieces[0]?.id
   const fallbackRef = useRef(onFallback)
   useEffect(() => {
     fallbackRef.current = onFallback
@@ -250,12 +275,64 @@ export default function LabScene(props: LabSceneProps) {
           </button>
         ))}
       </div>
+      {station === 'embedding' && (
+        <div className="scene-task-tools" role="group" aria-label="Tissue manipulation mode">
+          {!!props.twin.embedding.pieces.length && (
+            <label className="scene-piece-picker">
+              Piece{' '}
+              <select
+                aria-label="Selected tissue piece"
+                value={activePieceId}
+                onChange={(event) => setSelectedPieceId(event.target.value)}
+              >
+                {props.twin.embedding.pieces.map((piece) => (
+                  <option key={piece.id} value={piece.id}>
+                    {piece.id}
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
+          <span>Drag tissue to</span>
+          {(
+            [
+              ['translate', 'Move X/Y'],
+              ['height', 'Move Z'],
+              ['rx', 'Rotate X'],
+              ['ry', 'Rotate Y'],
+              ['rz', 'Rotate Z'],
+            ] as const
+          ).map(([mode, label]) => (
+            <button
+              key={mode}
+              type="button"
+              className="scene-camera-button"
+              aria-pressed={embeddingGesture === mode}
+              onClick={() => setEmbeddingGesture(mode)}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      )}
+      {station === 'accessioning' && (
+        <div className="scene-task-tools">
+          <button
+            type="button"
+            className="scene-camera-button"
+            onClick={() => setBottleRotation((angle) => angle + Math.PI / 2)}
+          >
+            Rotate specimen bottle
+          </button>
+          <span>View only · compare the label with the requisition below.</span>
+        </div>
+      )}
       <div className="lab-scene-viewport" aria-label={`${title}, interactive 3D teaching model`}>
         <SceneBoundary onFallback={stableFallback}>
           <Canvas
             frameloop="demand"
             shadows={quality === 'low' ? false : 'percentage'}
-            dpr={1.25}
+            dpr={Math.min(window.devicePixelRatio || 1, dprCap)}
             camera={{
               position: station === 'overview' ? [12, 12, 16] : [4.3, 3, 5.8],
               fov: 42,
@@ -291,16 +368,40 @@ export default function LabScene(props: LabSceneProps) {
               manipulating={manipulating}
               onSaved={setCameraStatus}
             />
-            <RendererLifecycle quality={quality} onFallback={stableFallback} />
+            <RendererLifecycle
+              quality={quality}
+              onFallback={stableFallback}
+              onAdaptiveDpr={setAdaptiveDpr}
+            />
             {station === 'overview' ? (
               <Overview onStationSelect={onStationSelect} />
             ) : (
-              <StationModel {...props} station={station} onManipulating={setManipulating} />
+              <StationModel
+                {...props}
+                station={station}
+                onManipulating={setManipulating}
+                embeddingGesture={embeddingGesture}
+                selectedPieceId={activePieceId}
+                onPieceSelect={setSelectedPieceId}
+                bottleRotation={bottleRotation}
+              />
             )}
           </Canvas>
         </SceneBoundary>
       </div>
       <div className="scene-caption">
+        {station === 'embedding' && (
+          <p>
+            Choose a piece and a manipulation mode, then drag that tissue. Use the six numerical
+            controls below to set its pose with the keyboard.
+          </p>
+        )}
+        {station === 'fixation' && (
+          <p>
+            Colored cutaways show separate model fields from the surface toward the center. Fixative
+            access does not imply a completed fixation reaction.
+          </p>
+        )}
         <p>
           {station === 'overview'
             ? 'Select a station to enter. Each scene shares its specimen with the procedure controls.'

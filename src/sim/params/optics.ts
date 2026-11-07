@@ -26,7 +26,46 @@ export const APPROXIMATE_VECTORS = {
   polarizedGreen: [0.93, 0.05, 0.82],
 } as const satisfies Record<string, RGB>
 
+/** Display pseudocolors, not emission spectra or measured filter responses. */
+export const EMISSION_COLORS = {
+  probe: [0.12, 1, 0.24],
+  secondary: [1, 0.16, 0.12],
+  nuclear: [0.18, 0.26, 1],
+} as const satisfies Record<string, RGB>
+export const EMISSION_PATTERN = { period: 3, thresholdLow: 0.6, thresholdHigh: 0.8 }
+
+export const PAS_GLYCOGEN_WEIGHT = 0.8
 export const OPTICS_PARAMETERS: ModelParameter[] = [
+  {
+    id: 'optics.pas-glycogen-weight',
+    value: PAS_GLYCOGEN_WEIGHT,
+    unit: 'relative compartment weight',
+    scope: 'Synthetic PAS/PAS-D comparison',
+    sourceIds: ['hq-original'],
+    accessStatus: 'illustrative',
+    illustrative: true,
+    note: 'Authored glycogen cue derived from cytoplasm. Not a measurement of tissue glycogen; non-glycogen PAS cues are retained separately.',
+  },
+  ...Object.entries(EMISSION_COLORS).map(([name, value]) => ({
+    id: `optics.emission.${name}`,
+    value: [...value],
+    unit: 'RGB pseudocolor',
+    scope: 'Synthetic fluorescence display',
+    sourceIds: ['hq-original'],
+    accessStatus: 'illustrative' as const,
+    illustrative: true,
+    note: 'Authored display color, not measured fluorophore emission or spectral separation.',
+  })),
+  ...Object.entries(EMISSION_PATTERN).map(([name, value]) => ({
+    id: `optics.emission.${name}`,
+    value,
+    unit: 'authored field unit',
+    scope: 'Synthetic probe puncta',
+    sourceIds: ['hq-original'],
+    accessStatus: 'illustrative' as const,
+    illustrative: true,
+    note: 'Procedural spatial cue. Puncta cannot be counted as molecules, copies, or gene rearrangements.',
+  })),
   ...Object.entries(STAIN_VECTORS).map(([name, value]) => ({
     id: `optics.${name}`,
     value: [...value],

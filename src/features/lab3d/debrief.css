@@ -1,0 +1,138 @@
+.lab-debrief {
+  margin-block: 2rem;
+  padding-block: 1.5rem;
+  border-top: 1px solid var(--rule);
+  color: var(--ink);
+}
+.lab-debrief > header {
+  max-width: 75ch;
+}
+.lab-debrief h3 {
+  margin: 2rem 0 0.8rem;
+}
+.debrief-outcome {
+  padding-block: 0.75rem;
+  border-block: 1px solid var(--rule);
+  font-variant-numeric: tabular-nums;
+}
+.debrief-timeline label {
+  display: grid;
+  gap: 0.6rem;
+  margin-bottom: 1rem;
+}
+.debrief-timeline input {
+  width: 100%;
+  min-height: 32px;
+  accent-color: var(--hema);
+}
+.debrief-selected-action {
+  color: var(--ink-2);
+  min-height: 1.5em;
+  font-variant-numeric: tabular-nums;
+}
+.debrief-timeline summary {
+  cursor: pointer;
+  color: var(--hema);
+}
+.debrief-timeline dl {
+  display: grid;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+.debrief-timeline dl > div {
+  display: grid;
+  grid-template-columns: minmax(100px, 1fr) minmax(0, 3fr);
+  gap: 0.75rem;
+  border-bottom: 1px solid var(--rule);
+  padding-block: 0.4rem;
+}
+.debrief-timeline dt {
+  color: var(--ink-2);
+  text-transform: capitalize;
+}
+.debrief-timeline dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.debrief-slide-choice {
+  display: grid;
+  gap: 0.5rem;
+  margin-top: 1.5rem;
+  max-width: 40rem;
+}
+.debrief-causes ol,
+.debrief-rubric ul {
+  list-style: none;
+  padding: 0;
+}
+.debrief-causes li,
+.debrief-rubric li {
+  padding-block: 1rem;
+  border-bottom: 1px solid var(--rule);
+}
+.debrief-cause-heading {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.debrief-cause-heading span {
+  color: var(--ink-2);
+  font-size: var(--t-0);
+}
+.debrief-causes p,
+.debrief-rubric p,
+.debrief-dimensions > p {
+  max-width: 75ch;
+  line-height: 1.6;
+  margin-block: 0.6rem;
+}
+.debrief-table-scroll {
+  overflow-x: auto;
+  scrollbar-color: var(--ink-3) var(--vellum);
+}
+.debrief-dimensions table {
+  border-collapse: collapse;
+  width: 100%;
+  min-width: 650px;
+  font-size: var(--t-0);
+}
+.debrief-dimensions caption {
+  text-align: left;
+  color: var(--ink-2);
+  padding-bottom: 0.75rem;
+}
+.debrief-dimensions th,
+.debrief-dimensions td {
+  padding: 0.65rem 0.5rem;
+  text-align: right;
+  border-bottom: 1px solid var(--rule);
+  font-variant-numeric: tabular-nums;
+}
+.debrief-dimensions th:first-child {
+  text-align: left;
+  font-weight: 400;
+}
+.debrief-dimensions thead {
+  background: var(--vellum);
+}
+.debrief-dimensions + .row {
+  margin-top: 1.5rem;
+}
+.lab-debrief :focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 3px;
+}
+.lab-debrief ::selection {
+  color: var(--ink);
+  background: var(--hema-soft);
+}
+@media (max-width: 600px) {
+  .debrief-cause-heading {
+    flex-direction: column;
+    gap: 0.3rem;
+  }
+  .debrief-timeline dl > div {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.2rem;
+  }
+}

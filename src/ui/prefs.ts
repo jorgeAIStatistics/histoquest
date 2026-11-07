@@ -1,10 +1,10 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useLayoutEffect, useState } from 'react'
 import { useAppState } from '../store/store'
 
-/** Apply theme, accent and motion preferences to <html>. */
+/** Apply stored preferences before painting a route, avoiding a mixed-theme first frame. */
 export function useApplyPrefs() {
   const settings = useAppState((s) => s.settings)
-  useEffect(() => {
+  useLayoutEffect(() => {
     const el = document.documentElement
     if (settings.theme === 'system') el.removeAttribute('data-theme')
     else el.setAttribute('data-theme', settings.theme)
@@ -15,7 +15,9 @@ export function useApplyPrefs() {
 }
 
 function useMediaQuery(q: string) {
-  const [match, setMatch] = useState(() => typeof matchMedia !== 'undefined' && matchMedia(q).matches)
+  const [match, setMatch] = useState(
+    () => typeof matchMedia !== 'undefined' && matchMedia(q).matches,
+  )
   useEffect(() => {
     const m = matchMedia(q)
     const on = () => setMatch(m.matches)

@@ -1,5 +1,6 @@
 import { average, clamp } from '../core/units'
 import type { SlideAppearance, Twin } from './types'
+import { MOLECULAR } from '../params/molecular'
 
 /** No station verdicts are read: appearance is derived from continuous preparation fields. */
 export function slideAppearance(t: Twin): SlideAppearance {
@@ -20,7 +21,19 @@ export function slideAppearance(t: Twin): SlideAppearance {
     bluing: t.staining.bluing,
     special: t.staining.special,
     specialIntensity: t.staining.specialIntensity,
+    specialGlycogen: t.staining.specialGlycogen,
+    specialBackground: t.staining.specialBackground,
     localization: t.ihc.location,
+    localizations: t.ihc.locations,
+    fluorescence:
+      t.ihc.ish?.modality === 'FISH'
+        ? {
+            signal: t.ihc.ish.signal,
+            background: t.ihc.ish.background,
+            targetType: t.ihc.ish.targetType,
+            counterstain: MOLECULAR['ish.counterstain'],
+          }
+        : undefined,
     thickness: s?.thickness ?? t.instrument.thickness,
     preservation: morphology * t.ihc.preservation,
     centerPreservation:

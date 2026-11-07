@@ -12,6 +12,21 @@ export interface Absorber {
   vector: RGB
 }
 
+/** Independent emitted channels add on black; clamp is display saturation.
+ * No Beer–Lambert absorption, photon calibration, bleed-through or copy counts. */
+export function additiveEmission(
+  channels: readonly Absorber[],
+  gain = 1,
+): [number, number, number] {
+  return [0, 1, 2].map((i) =>
+    Math.min(
+      1,
+      Math.max(0, gain) *
+        channels.reduce((sum, c) => sum + Math.max(0, c.density) * Math.max(0, c.vector[i]), 0),
+    ),
+  ) as [number, number, number]
+}
+
 import { APPROXIMATE_VECTORS } from '../params/optics'
 export { STAIN_VECTORS, APPROXIMATE_VECTORS, OPTICS_PROVENANCE } from '../params/optics'
 
@@ -43,12 +58,14 @@ export function blendVector(from: RGB, to: RGB, fraction: number): RGB {
 
 export function specialVector(name: string): RGB {
   const key = name.toLowerCase()
-  if (/alcian|mucin/.test(key)) return APPROXIMATE_VECTORS.alcian
+  if (/alcian|mucin|luxol/.test(key)) return APPROXIMATE_VECTORS.alcian
   if (/prussian|iron|perls/.test(key)) return APPROXIMATE_VECTORS.prussian
-  if (/silver|gms|retic|grocott|warthin/.test(key)) return APPROXIMATE_VECTORS.silver
+  if (/silver|gms|retic|grocott|warthin|steiner|vvg|von.kossa|fontana/.test(key))
+    return APPROXIMATE_VECTORS.silver
   if (/congo/.test(key)) return APPROXIMATE_VECTORS.congo
   if (/trichrome|masson/.test(key)) return APPROXIMATE_VECTORS.trichrome
   if (/giemsa|toluidine/.test(key)) return APPROXIMATE_VECTORS.giemsa
-  if (/fast.red|afb|ziehl/.test(key)) return APPROXIMATE_VECTORS.fastRed
+  if (/fast.red|afb|ziehl|fite|oil.red|alizarin|rhodanine/.test(key))
+    return APPROXIMATE_VECTORS.fastRed
   return APPROXIMATE_VECTORS.pas
 }

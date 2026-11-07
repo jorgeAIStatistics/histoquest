@@ -43,6 +43,13 @@ export function referenceTwin(scenario: Scenario): Twin {
       hours: P['reference.decalc-hours'],
       endpoint: 'radiographic',
     })
+  if (twin.processing.exhaustedAlcohol)
+    act('processing', 'processing.reagent-change', {
+      reagent: 'alcohol',
+      lot: 'TRAIN-REFERENCE',
+      documentation:
+        'Controlled synthetic reagent replacement and documented QC before the reference run.',
+    })
   for (const reagent of ['alcohol', 'clearant', 'paraffin'])
     act('processing', 'processing.step', {
       reagent,

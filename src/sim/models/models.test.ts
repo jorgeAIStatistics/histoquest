@@ -346,6 +346,8 @@ describe('stain access and IHC controls', () => {
 
   it('requires positive, low-positive and negative controls and rejects reagent failure/background', () => {
     const t = make()
+    stainStep(t, 'dewax', P['he.dewax-time'])
+    stainStep(t, 'hydrate', P['he.hydrate-time'])
     primary(t, 100, 30, true, true, true, 0)
     detect(t, 20, 5, true)
     evaluateControls(t, true, true, true, false)
@@ -356,11 +358,14 @@ describe('stain access and IHC controls', () => {
     evaluateControls(t, true, true, true, false)
     expect(t.ihc.positive).toBe(0)
     expect(t.ihc.valid).toBe(false)
-    primary(t, 1, 30, false, false, false, 0)
-    detect(t, 20, 5, true)
-    evaluateControls(t, true, true, true, true)
-    expect(t.ihc.valid).toBe(false)
-    expect(t.ihc.negative).toBeGreaterThan(P['ihc.background-max'])
+    const unblocked = make()
+    stainStep(unblocked, 'dewax', P['he.dewax-time'])
+    stainStep(unblocked, 'hydrate', P['he.hydrate-time'])
+    primary(unblocked, 1, 30, false, false, false, 0)
+    detect(unblocked, 20, 5, true)
+    evaluateControls(unblocked, true, true, true, true)
+    expect(unblocked.ihc.valid).toBe(false)
+    expect(unblocked.ihc.negative).toBeGreaterThan(P['ihc.background-max'])
   })
 })
 

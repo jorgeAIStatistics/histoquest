@@ -4,6 +4,7 @@ import { PROCESS as P } from '../params/process'
 import { parameterValue } from '../params/registry'
 import { slideAppearance } from '../specimen/appearance'
 import type { ModelIssue, Twin } from '../specimen/types'
+import { targetIntegrity } from '../models/targetIntegrity'
 
 export interface StationScore {
   station: StationId
@@ -84,7 +85,7 @@ export function stationQuality(t: Twin, station: StationId): number {
         t.staining.bluing,
       ])
     case 'special':
-      return clamp(t.staining.specialIntensity)
+      return t.staining.controls.valid ? clamp(t.staining.specialIntensity) : 0
     case 'ihc':
       return t.ihc.valid
         ? average([clamp(t.ihc.dab), 1 - t.ihc.background, 1 - t.ihc.edge, 1 - t.ihc.damage])
@@ -111,7 +112,39 @@ export function releaseProblems(t: Twin): string[] {
   if (!last?.pickedUp || !last.labelCorrect) problems.push('No correctly identified section')
   if (last && (last.thickness <= 0 || last.holes >= 1)) problems.push('No usable tissue section')
   if (last?.floaters.length) problems.push('Foreign tissue contamination')
-  if (!t.mounting.mounted) problems.push('Preparation is not mounted')
+  if (t.scenario.request !== 'molecular' && !t.mounting.mounted)
+    problems.push('Preparation is not mounted')
+  if (t.scenario.request === 'molecular') {
+    if (
+      t.staining.hematoxylin > 0 ||
+      t.staining.eosin > 0 ||
+      t.ihc.dab > 0 ||
+      t.staining.special ||
+      t.ihc.ish ||
+      t.mounting.mounted
+    )
+      problems.push('Molecular-preparation exercise requires an unstained, uncovered section')
+    const record = t.events.findLast(
+      (e) =>
+        e.intent === 'practice.evidence' &&
+        e.params.checkId === 'molecular-preparation' &&
+        e.params.sectionId === last?.id,
+    )
+    const target = record?.params.targetClass
+    if (
+      (target !== 'rna' && target !== 'dna') ||
+      !record?.params.protocolReviewed ||
+      !record.params.contaminationPlan ||
+      !record.params.receivingReview
+    )
+      problems.push(
+        'Document the RNA/DNA request, assay-specific preparation instructions, contamination precautions and receiving-laboratory review for this section',
+      )
+    else if (targetIntegrity(t, target) <= 0)
+      problems.push('Modeled target is lost; hold for qualified review and an alternative specimen')
+    else if (targetIntegrity(t, target) < 1 && !record.params.limitationsCommunicated)
+      problems.push('Communicate the retained preanalytic damage before this teaching handoff')
+  }
   if (t.embedding.representation < P['quality.preservation-min'])
     problems.push('Insufficient tissue representation')
   if (stationQuality(t, 'microtomy') < P['quality.preservation-min'])
@@ -120,7 +153,7 @@ export function releaseProblems(t: Twin): string[] {
     problems.push('IHC controls do not support interpretation')
   if (
     t.scenario.request === 'special' &&
-    t.staining.specialIntensity < P['quality.preservation-min']
+    (!t.staining.controls.valid || t.staining.specialIntensity < P['quality.preservation-min'])
   )
     problems.push('Special stain is inadequate')
   if (

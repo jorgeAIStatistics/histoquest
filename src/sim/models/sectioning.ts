@@ -13,9 +13,9 @@ export function startNewSlide(t: Twin) {
       id: previous.slideId || previous.id,
       appearance: structuredClone(slideAppearance(t)),
     })
-  const { preservation, masking, marker, location } = t.ihc
+  const { preservation, masking, marker, location, locations } = t.ihc
   t.staining = createStainingState()
-  t.ihc = { ...createIhcState(t.scenario), preservation, masking, marker, location }
+  t.ihc = { ...createIhcState(t.scenario), preservation, masking, marker, location, locations }
   t.mounting = createMountingState()
   t.disposition = 'pending'
 }
@@ -164,7 +164,11 @@ export function cut(t: Twin, purpose = 'routine', level = 1): Section {
     labelCorrect: false,
     dried: 0,
   }
-  if (t.block.remaining <= 0 || (t.embedding.pieces.length > 0 && t.block.face.every(value => value <= 0))) section.holes = 1
+  if (
+    t.block.remaining <= 0 ||
+    (t.embedding.pieces.length > 0 && t.block.face.every((value) => value <= 0))
+  )
+    section.holes = 1
   trim(t, m.thickness)
   t.block.sections.push(section)
   return section

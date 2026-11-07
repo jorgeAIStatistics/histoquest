@@ -23,8 +23,12 @@ function specimen(
     containment,
     pathways,
     risks,
-    sourceIds: ['histology-guide', 'cap-nsh-2025'],
-    review: LAB_REVIEW,
+    sourceIds: ['histology-guide', 'leica-101-histology', 'hq-original', 'cap-nsh-2025'],
+    review: {
+      ...LAB_REVIEW,
+      verification:
+        'Original teaching archetype informed by public microanatomy and general histology preparation guidance. Specimen-specific allocation and orientation require qualified review. CAP/NSH is listed as further reading only and was not accessed; no claim is made that these instructions were checked against that document.',
+    },
   }
 }
 export const ARCHETYPES: Archetype[] = [

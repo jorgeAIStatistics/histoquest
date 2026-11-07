@@ -60,6 +60,27 @@ export default function PathwayPage() {
           </p>
         </div>
       </section>
+      <section className="panel" aria-labelledby="lab-launch-title">
+        <h2 id="lab-launch-title">HistoQuest Lab</h2>
+        <p>
+          Rehearse the full specimen journey in an interactive laboratory, build evidence through
+          seven practical levels, and manage a simulated shift.
+        </p>
+        <div className="row">
+          <Link className="btn btn-primary" to="/lab3d">
+            Enter the 3D laboratory
+          </Link>
+          <Link className="btn" to="/career">
+            Explore L0–L6 practicals
+          </Link>
+          <Link className="btn" to="/shift">
+            Start a simulated shift
+          </Link>
+          <Link className="btn" to="/clinic">
+            Investigate a problem slide
+          </Link>
+        </div>
+      </section>
       <div className="learning-promise">
         <p>
           <strong>Built for the bridge between theory and the bench.</strong> Start with tissue
