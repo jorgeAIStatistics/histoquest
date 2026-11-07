@@ -25,7 +25,7 @@ test('v3 progress migrates and exports/imports without losing existing records',
     mimeType: 'application/json',
     buffer: Buffer.from(JSON.stringify(exported)),
   })
-  await expect(page.getByRole('status')).toHaveText('Imported.')
+  await expect(page.getByRole('status')).toContainText('0 laboratory runs preserved in the archive')
   await page.reload()
   await page.goto('notebook')
   await expect(page.getByText(v3Progress.pathway.notes.fixation)).toBeVisible()

@@ -31,6 +31,37 @@
 .scene-camera-button:hover {
   background: var(--hema-soft);
 }
+.scene-task-tools {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  padding: 0.65rem 0.8rem;
+  border-bottom: 1px solid var(--rule);
+  font-size: 0.82rem;
+}
+.scene-task-tools button[aria-pressed='true'] {
+  background: var(--hema-soft);
+  border-color: var(--hema);
+  box-shadow: inset 0 -2px var(--hema);
+}
+.scene-piece-picker {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+.scene-piece-picker select {
+  min-height: 36px;
+  border: 1px solid var(--rule);
+  border-radius: 5px;
+  background: var(--paper);
+  color: var(--ink);
+  font: inherit;
+  padding: 0.3rem;
+}
+.scene-caption p + p {
+  margin-top: 0.5rem;
+}
 .scene-camera-button:focus-visible,
 .scene-station-link:focus-visible {
   outline: 3px solid #584297;
@@ -41,8 +72,6 @@
   height: clamp(350px, 52vw, 580px);
   min-width: 0;
   isolation: isolate;
-  content-visibility: auto;
-  contain-intrinsic-size: auto none auto 480px;
   background: #e4e5df;
   color: #26343a;
   cursor: grab;

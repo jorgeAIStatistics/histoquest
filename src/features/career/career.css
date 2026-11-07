@@ -1,0 +1,410 @@
+.career-page {
+  color: var(--ink);
+}
+.career-intro {
+  max-width: 75ch;
+  margin-bottom: 2.5rem;
+}
+.career-intro > p {
+  line-height: 1.65;
+}
+.career-layout {
+  display: grid;
+  grid-template-columns: minmax(240px, 0.8fr) minmax(0, 2fr);
+  gap: clamp(1.5rem, 4vw, 4rem);
+}
+.career-ladder ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.career-ladder li {
+  border-top: 1px solid var(--rule);
+}
+.career-ladder button {
+  display: flex;
+  gap: 1rem;
+  align-items: baseline;
+  width: 100%;
+  min-height: 70px;
+  padding: 1rem 0.65rem;
+  border: 0;
+  border-radius: 0;
+  color: var(--ink);
+  background: transparent;
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+}
+.career-ladder button:hover {
+  background: var(--vellum);
+}
+.career-ladder button[aria-current='step'] {
+  color: var(--hema);
+  background: var(--hema-soft);
+}
+.career-ladder button > strong {
+  flex: 0 0 1.8rem;
+  font-variant-numeric: tabular-nums;
+}
+.career-ladder button span {
+  line-height: 1.4;
+}
+.career-ladder small {
+  display: block;
+  margin-top: 0.35rem;
+  color: var(--ink-2);
+  font-size: var(--t-0);
+}
+.career-level {
+  min-width: 0;
+}
+.career-level h2 {
+  margin-top: 0;
+}
+.career-level h3 {
+  margin-top: 2rem;
+  margin-bottom: 0.6rem;
+}
+.career-level h4 {
+  margin-top: 1.4rem;
+  margin-bottom: 0.5rem;
+}
+.career-level p,
+.career-level li {
+  max-width: 75ch;
+  line-height: 1.6;
+}
+.career-level li + li {
+  margin-top: 0.45rem;
+}
+.career-level details {
+  margin-block: 1.25rem;
+  padding-block: 0.8rem;
+  border-block: 1px solid var(--rule);
+}
+.career-level summary,
+.practical-brief summary {
+  color: var(--hema);
+  cursor: pointer;
+  font-weight: 700;
+}
+.career-result,
+.career-lock {
+  padding: 1rem;
+  background: var(--vellum);
+  color: var(--ink-2);
+}
+.career-evidence,
+.career-history {
+  margin-top: 3rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--rule);
+}
+.career-evidence > p {
+  max-width: 75ch;
+  line-height: 1.6;
+}
+.career-table-scroll {
+  overflow-x: auto;
+  scrollbar-color: var(--ink-3) var(--vellum);
+}
+.career-evidence table {
+  width: 100%;
+  min-width: 560px;
+  border-collapse: collapse;
+  font-size: var(--t-0);
+}
+.career-evidence caption {
+  text-align: left;
+  padding: 0.75rem 0;
+  color: var(--ink-2);
+}
+.career-evidence th,
+.career-evidence td {
+  padding: 0.8rem 0.6rem;
+  border-bottom: 1px solid var(--rule);
+  vertical-align: top;
+  text-align: left;
+}
+.career-evidence th[scope='row'] {
+  font-weight: 400;
+}
+.career-evidence thead {
+  background: var(--vellum);
+}
+.career-evidence td:nth-child(2) {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.career-history ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.career-history li {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-block: 1rem;
+  border-bottom: 1px solid var(--rule);
+}
+.career-history p,
+.career-history time {
+  margin: 0.3rem 0 0;
+  color: var(--ink-2);
+  font-size: var(--t-0);
+}
+.career-history time {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.practical-brief {
+  margin-block: 2rem;
+  padding-block: 1.5rem;
+  border-block: 1px solid var(--rule);
+}
+.practical-brief > header {
+  max-width: 75ch;
+}
+.practical-brief details {
+  padding-block: 1rem;
+}
+.practical-brief details li {
+  max-width: 75ch;
+  line-height: 1.6;
+}
+.practical-brief details li + li {
+  margin-top: 0.5rem;
+}
+.practical-brief details h3 {
+  margin-top: 1.5rem;
+}
+.practical-evidence-form {
+  margin-block: 1.5rem;
+}
+.practical-evidence-form fieldset {
+  border: 0;
+  padding: 0;
+  margin: 0;
+}
+.practical-evidence-form legend {
+  padding: 0;
+  margin-bottom: 0.75rem;
+  font-weight: 700;
+  font-size: var(--t-2);
+}
+.practical-acknowledgements {
+  display: grid;
+  gap: 0.4rem;
+  margin-block: 0.5rem 1rem;
+}
+.practical-acknowledgements label {
+  display: flex;
+  align-items: start;
+  gap: 0.6rem;
+  min-height: 36px;
+}
+.practical-acknowledgements input {
+  margin-top: 0.25rem;
+  accent-color: var(--hema);
+}
+.practical-text-label {
+  display: grid;
+  gap: 0.4rem;
+}
+.practical-text-label textarea {
+  resize: vertical;
+  min-height: 110px;
+  caret-color: var(--hema);
+}
+.practical-text-label .input {
+  width: 100%;
+}
+.practical-input-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-block: 0.5rem 1rem;
+}
+.practical-input-row label {
+  display: grid;
+  flex: 1 1 180px;
+  gap: 0.4rem;
+}
+.practical-current-checks {
+  border-top: 1px solid var(--rule);
+}
+.practical-current-checks ul {
+  list-style: none;
+  padding: 0;
+}
+.practical-current-checks li {
+  padding-block: 0.6rem;
+  border-bottom: 1px solid var(--rule);
+}
+.practical-current-checks p {
+  margin: 0.3rem 0;
+  color: var(--ink-2);
+}
+.career-page :focus-visible,
+.practical-brief :focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 3px;
+}
+.career-page ::selection,
+.practical-brief ::selection {
+  background: var(--hema-soft);
+  color: var(--ink);
+}
+.planning-tools {
+  margin-block: 2rem;
+  padding-block: 1rem;
+  border-block: 1px solid var(--rule);
+}
+.planning-tools > h3 {
+  margin-top: 0;
+}
+.planning-tools > p,
+.planning-tools details > p {
+  max-width: 75ch;
+  line-height: 1.6;
+}
+.planning-input-grid,
+.planning-validation-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  margin-block: 1rem;
+}
+.planning-input-grid label,
+.planning-validation-grid label {
+  display: grid;
+  align-content: start;
+  gap: 0.4rem;
+  font-size: var(--t-0);
+}
+.planning-validation-grid span {
+  color: var(--ink-2);
+  font-weight: 400;
+}
+.planning-input-grid input,
+.planning-validation-grid textarea {
+  width: 100%;
+}
+.planning-results {
+  margin-block: 1.5rem;
+}
+.planning-results > div {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+  gap: 1rem;
+  padding-block: 0.7rem;
+  border-bottom: 1px solid var(--rule);
+}
+.planning-results dt {
+  color: var(--ink-2);
+}
+.planning-results dd {
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+}
+@media (max-width: 600px) {
+  .planning-input-grid,
+  .planning-validation-grid,
+  .planning-results > div {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+@media (max-width: 800px) {
+  .career-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .career-ladder ol {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0 0.75rem;
+  }
+  .career-ladder button {
+    height: 100%;
+  }
+}
+@media (max-width: 480px) {
+  .career-ladder ol {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .career-history li {
+    flex-direction: column;
+    gap: 0.2rem;
+  }
+  .career-table-scroll {
+    margin-inline: -0.5rem;
+  }
+}
+
+.career-intro {
+  max-width: none;
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(240px, 0.8fr);
+  align-items: center;
+  gap: 2rem;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid var(--rule);
+}
+.career-intro-content {
+  min-width: 0;
+  max-width: 65ch;
+}
+.career-intro-content .lede {
+  max-width: 42ch;
+}
+.career-journey {
+  margin: 0;
+  min-width: 0;
+}
+.career-journey svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.career-journey figcaption {
+  font-size: var(--t-0);
+  color: var(--ink-2);
+  text-align: center;
+  margin-top: 1rem;
+}
+.career-quicklinks {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.25rem 0.5rem;
+}
+.career-quicklinks .btn {
+  justify-content: flex-start;
+  text-align: left;
+  white-space: normal;
+  padding-inline: 0.5rem;
+}
+@media (max-width: 900px) {
+  .career-intro {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .career-journey {
+    display: none;
+  }
+}
+@media (max-width: 480px) {
+  .career-intro {
+    gap: 0;
+    padding-bottom: 1.25rem;
+    margin-bottom: 1.5rem;
+  }
+  .career-intro h1 {
+    font-size: var(--t-5);
+  }
+  .career-quicklinks {
+    gap: 0;
+  }
+  .career-quicklinks .btn {
+    font-size: var(--t-0);
+  }
+}

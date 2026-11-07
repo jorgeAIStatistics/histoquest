@@ -36,6 +36,7 @@ export interface MicroscopeProps {
   ideal?: SlideAppearance
   /** Useful for low-power devices and fallback verification; does not change the model. */
   force2D?: boolean
+  initialCompare?: boolean
 }
 type Tool = 'pan' | 'measure' | 'annotate'
 const ASPECT = 1.6
@@ -374,7 +375,12 @@ function SlidePanel({
 }
 
 /** Lazy-load from consuming routes: no graphics dependency enters the app shell. */
-export default function Microscope({ appearance, ideal, force2D = false }: MicroscopeProps) {
+export default function Microscope({
+  appearance,
+  ideal,
+  force2D = false,
+  initialCompare = false,
+}: MicroscopeProps) {
   const id = useId()
   const [objective, setObjective] = useState<TeachingObjective>(2)
   const [center, setCenter] = useState<Point>({ x: 1000, y: 750 })
@@ -382,7 +388,9 @@ export default function Microscope({ appearance, ideal, force2D = false }: Micro
   const [illumination, setIllumination] = useState(1)
   const [condenser, setCondenser] = useState(0.8)
   const [polarization, setPolarization] = useState(0)
-  const [compare, setCompare] = useState(false)
+  const [fluorescenceChannel, setFluorescenceChannel] =
+    useState<NonNullable<OpticalView['fluorescenceChannel']>>('composite')
+  const [compare, setCompare] = useState(initialCompare)
   const [compatible, setCompatible] = useState(force2D)
   const [tool, setTool] = useState<Tool>('pan')
   const [label, setLabel] = useState('')
@@ -394,8 +402,8 @@ export default function Microscope({ appearance, ideal, force2D = false }: Micro
   const measurementsForSlide = measurements.filter((entry) => entry.seed === appearance.seed)
   const pendingPoint = pending?.seed === appearance.seed ? pending.point : null
   const optical = useMemo(
-    () => ({ illumination, condenser, polarization }),
-    [illumination, condenser, polarization],
+    () => ({ illumination, condenser, polarization, fluorescenceChannel }),
+    [illumination, condenser, polarization, fluorescenceChannel],
   )
   const viewport = viewportAt(center, objective, ASPECT)
   const move = (next: Point) => setCenter(clampCenter(next, objective, ASPECT))
@@ -448,11 +456,39 @@ export default function Microscope({ appearance, ideal, force2D = false }: Micro
       <header className="microscope-heading">
         <div>
           <h3 id={`${id}-title`}>Simulated slide</h3>
-          <p>Explore the tissue your decisions produced.</p>
+          <p>
+            {appearance.fluorescence
+              ? 'Synthetic fluorescence · additive pseudocolor, not measured photon counts.'
+              : 'Explore the tissue your decisions produced.'}
+          </p>
         </div>
         <span className="microscope-family">{appearance.family} · procedural teaching field</span>
       </header>
       <div className="microscope-toolbar">
+        {appearance.fluorescence && (
+          <label>
+            Fluorescence channel
+            <select
+              className="input"
+              value={fluorescenceChannel}
+              onChange={(e) =>
+                setFluorescenceChannel(
+                  e.target.value as NonNullable<OpticalView['fluorescenceChannel']>,
+                )
+              }
+            >
+              <option value="composite">Composite</option>
+              <option value="probe">Probe only · green</option>
+              <option value="nuclear">Nuclear counterstain only · blue</option>
+              {appearance.fluorescence.secondary && (
+                <>
+                  <option value="primary">Target A only · green</option>
+                  <option value="secondary">Target B only · red</option>
+                </>
+              )}
+            </select>
+          </label>
+        )}
         <fieldset className="microscope-objectives">
           <legend>Teaching magnification</legend>
           <div>
@@ -554,7 +590,8 @@ export default function Microscope({ appearance, ideal, force2D = false }: Micro
           />
         </label>
         <label htmlFor={`${id}-light`}>
-          Illumination <output>{Math.round(illumination * 100)}%</output>
+          {appearance.fluorescence ? 'Display gain' : 'Illumination'}{' '}
+          <output>{Math.round(illumination * 100)}%</output>
           <input
             id={`${id}-light`}
             type="range"
@@ -574,6 +611,7 @@ export default function Microscope({ appearance, ideal, force2D = false }: Micro
             max="1"
             step="0.1"
             value={condenser}
+            disabled={!!appearance.fluorescence}
             onChange={(event) => setCondenser(Number(event.target.value))}
           />
         </label>
@@ -586,6 +624,7 @@ export default function Microscope({ appearance, ideal, force2D = false }: Micro
             max="1"
             step="0.1"
             value={polarization}
+            disabled={!!appearance.fluorescence}
             onChange={(event) => setPolarization(Number(event.target.value))}
           />
         </label>

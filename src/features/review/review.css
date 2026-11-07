@@ -1,0 +1,70 @@
+.review-page header {
+  max-width: 76ch;
+  margin-bottom: 2rem;
+}
+.review-layout {
+  display: grid;
+  grid-template-columns: minmax(210px, 0.8fr) minmax(0, 2fr);
+  gap: clamp(1.5rem, 4vw, 3.5rem);
+}
+.review-layout aside {
+  align-self: start;
+  position: sticky;
+  top: 1rem;
+}
+.review-layout label,
+.review-form {
+  display: grid;
+  gap: 0.5rem;
+}
+.review-layout label {
+  margin-block: 1rem;
+  font-weight: 700;
+}
+.review-layout .input {
+  width: 100%;
+  min-width: 0;
+}
+.review-layout aside select[size] {
+  height: 20rem;
+  max-width: 100%;
+  font-size: var(--t-0);
+}
+.review-layout article {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.review-layout article p,
+.review-layout article li {
+  line-height: 1.65;
+}
+.review-layout h2 {
+  margin-top: 0.5rem;
+}
+.review-form {
+  border-block: 1px solid var(--rule);
+  padding-block: 1rem;
+  margin-top: 2rem;
+}
+.review-form h3,
+.review-form label {
+  margin-block: 0.3rem;
+}
+.review-form button {
+  justify-self: start;
+}
+.review-page :focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 3px;
+}
+@media (max-width: 800px) {
+  .review-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .review-layout aside {
+    position: static;
+  }
+  .review-layout aside select[size] {
+    height: 11rem;
+  }
+}

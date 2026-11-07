@@ -1,3 +1,7 @@
+import { IHC_EXPERIMENT_PARAMETERS } from './ihcExperiments'
+import { CLINIC_PARAMETERS } from './clinic'
+import { UPSTREAM_PARAMETERS } from './upstream'
+import { PLANNING_PARAMETERS } from './planning'
 import { MECHANICS_PARAMETERS } from './mechanics'
 import { CORE_PARAMETERS } from './registry'
 import { PROCESS_PARAMETERS } from './process'
@@ -9,6 +13,9 @@ import { MOLECULAR_PARAMETERS } from './molecular'
 /** Imported only by simulation/review routes; the storage boundary imports no scientific catalog. */
 export const MODEL_PARAMETERS = [
   ...CORE_PARAMETERS,
+  ...CLINIC_PARAMETERS,
+  ...UPSTREAM_PARAMETERS,
+  ...PLANNING_PARAMETERS,
   ...MECHANICS_PARAMETERS,
   ...PROCESS_PARAMETERS,
   ...WORKBENCH_PARAMETERS,
@@ -16,5 +23,6 @@ export const MODEL_PARAMETERS = [
   ...PROTOCOL_PARAMETERS,
   ...OPTICS_PARAMETERS,
   ...MOLECULAR_PARAMETERS,
+  ...IHC_EXPERIMENT_PARAMETERS,
 ]
 export const MODEL_PARAMETER_BY_ID = Object.fromEntries(MODEL_PARAMETERS.map((p) => [p.id, p]))

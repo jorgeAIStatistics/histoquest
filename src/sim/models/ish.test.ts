@@ -11,7 +11,7 @@ it('ISH control failure remains uninterpretable and excessive stringency loses t
   expect(t.ihc.background).toBeLessThan(0.2)
   ishControls(t, false, true)
   expect(t.ihc.valid).toBe(false)
-  ishControls(t, true, true)
+  ishControls(t, true, true, true)
   expect(t.ihc.valid).toBe(true)
   stringencyWash(t, 6)
   expect(t.ihc.dab).toBeLessThan(before)

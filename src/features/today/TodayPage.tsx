@@ -1,3 +1,4 @@
+import LabRecommendations from './LabRecommendations'
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { motion } from 'motion/react'
@@ -183,6 +184,7 @@ export default function TodayPage() {
           {contentProblems.length} content items failed validation and are hidden.
         </p>
       )}
+      <LabRecommendations />
       <div className="today-grid">
         <section aria-labelledby="today-h">
           <p className="muted" style={{ marginBottom: 6 }}>

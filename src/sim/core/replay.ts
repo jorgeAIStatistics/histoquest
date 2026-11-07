@@ -1,7 +1,9 @@
+import { applyIhcExperiment } from '../models/ihcExperiments'
 import { MARKERS } from '../../content/lab/markers'
 import { hybridize, stringencyWash, ishControls } from '../models/ish'
 import type { LabRecord } from '../../store/labSchema'
 import { EventLogSchema, type SimEvent, type StationId } from './events'
+import { scenarioForShiftRecord } from './shiftScenarios'
 import { createScenario, CURATED_SCENARIOS } from './scenarios'
 import { average, clamp } from './units'
 import { createTwin } from '../specimen/initial'
@@ -10,6 +12,7 @@ import { fix, decalcify } from '../models/preservation'
 import { processStep } from '../models/processing'
 import { cut, dry, floatSection, representation, updateBlockFace, trim } from '../models/sectioning'
 import { specialStep, specialControls } from '../models/special'
+import { prepareSpecialSection } from '../models/specialExperiments'
 import { stainStep, mount } from '../models/staining'
 import { retrieve, primary, detect, evaluateControls } from '../models/ihc'
 import { releaseProblems } from '../scoring/assess'
@@ -52,6 +55,12 @@ export function reduceEvent(previous: Twin, event: SimEvent): Twin {
   const s = (key: string, fallback = '') => text(event, key, fallback)
   const b = (key: string) => yes(event, key)
   switch (event.intent) {
+    case 'shift.pause':
+      sharps(t, event)
+      break
+    case 'shift.dispatch':
+    case 'shift.resume':
+      break
     case 'practice.evidence':
       if (s('text').trim())
         t.documentation.push({
@@ -114,6 +123,7 @@ export function reduceEvent(previous: Twin, event: SimEvent): Twin {
         cassette: s('cassette', 'standard'),
         crowding: clamp(n('crowding')),
         ink: s('ink', 'none'),
+        approach: s('approach', t.gross.approach ?? 'not recorded'),
         key: s('key'),
         sampled: true,
       })
@@ -145,8 +155,32 @@ export function reduceEvent(previous: Twin, event: SimEvent): Twin {
       t.time += Math.max(0, n('hours', P['fixation.hours'])) * 60
       break
     case 'decalcification.run':
-      decalcify(t, s('agent', 'edta'), n('hours'), s('endpoint', 'none'))
+      decalcify(
+        t,
+        s('agent', 'edta'),
+        n('hours'),
+        s('endpoint', 'none'),
+        n('temperature', P['fixation.temperature']),
+        b('agitation'),
+      )
       t.time += Math.max(0, n('hours')) * 60
+      break
+    case 'processing.reagent-change':
+      if (s('lot').trim() && s('documentation').trim().length >= 8) {
+        if (s('reagent') === 'alcohol') t.processing.exhaustedAlcohol = false
+        t.processing.reagentChanges = [
+          ...(t.processing.reagentChanges ?? []),
+          { reagent: s('reagent'), lot: s('lot'), t: t.time },
+        ]
+        t.documentation.push({
+          station: 'processing',
+          text: `Reagent ${s('reagent')}, lot ${s('lot')}: ${s('documentation')}`,
+          t: t.time,
+        })
+      } else
+        t.notes.push(
+          'Record the reagent lot and the controlled replacement/QC procedure before using the fresh reagent.',
+        )
       break
     case 'processing.step':
       processStep(
@@ -157,6 +191,7 @@ export function reduceEvent(previous: Twin, event: SimEvent): Twin {
         n('concentration', 100),
         n('exhaustion'),
         b('vacuum'),
+        b('agitation'),
       )
       t.time += Math.max(0, n('minutes'))
       break
@@ -281,17 +316,32 @@ export function reduceEvent(previous: Twin, event: SimEvent): Twin {
       stainStep(t, s('reagent'), n('minutes'), n('freshness', 1), s('lot', 'TRAIN-LOT'))
       t.time += Math.max(0, n('minutes'))
       break
+    case 'special.prepare':
+    case 'ihc.prepare':
+      sharps(t, event)
+      prepareSpecialSection(t)
+      break
     case 'special.step':
       specialStep(t, s('protocol'), s('step'), n('minutes'), n('ph', 2.5))
       t.time += Math.max(0, n('minutes'))
       break
     case 'special.controls':
-      specialControls(t, b('positive'), b('negative'))
+      specialControls(t, b('positive'), b('negative'), b('digestionVerified'))
       break
     case 'ihc.marker': {
       const marker = MARKERS.find((m) => m.id === s('marker'))
       if (marker) {
+        if (
+          marker.label !== t.ihc.marker &&
+          (t.ihc.primary > 0 || t.ihc.dab > 0 || t.ihc.detectionApplied || t.ihc.ish)
+        ) {
+          t.notes.push(
+            'This section already has assay chemistry. Prepare an adjacent unstained section before selecting a different marker; existing deposits cannot be relabeled or moved to another compartment.',
+          )
+          break
+        }
         t.ihc.marker = marker.label
+        t.ihc.locations = [...marker.localization]
         t.ihc.location = marker.localization.includes('nuclear')
           ? 'nuclear'
           : marker.localization.includes('membranous')
@@ -302,14 +352,26 @@ export function reduceEvent(previous: Twin, event: SimEvent): Twin {
       break
     }
     case 'ish.hybridize':
-      hybridize(t, s('probe'), n('minutes'), n('temperature'), n('protease'))
+      hybridize(
+        t,
+        s('probe'),
+        n('minutes'),
+        n('temperature'),
+        n('protease'),
+        s('modality', 'CISH'),
+        b('denatured'),
+      )
       t.time += Math.max(0, n('minutes'))
       break
     case 'ish.wash':
       stringencyWash(t, n('stringency'))
       break
     case 'ish.controls':
-      ishControls(t, b('positive'), b('negative'))
+      ishControls(t, b('positive'), b('negative'), b('integrity'))
+      break
+    case 'ihc.experiment.apply':
+      sharps(t, event)
+      applyIhcExperiment(t, event.params)
       break
     case 'ihc.retrieve':
       retrieve(
@@ -406,7 +468,10 @@ export function reduceEvent(previous: Twin, event: SimEvent): Twin {
 export function replayRun(record: LabRecord, until = record.events.length): Twin {
   const events = EventLogSchema.parse(record.events).slice(0, until)
   const curated = CURATED_SCENARIOS.find((s) => s.seed === record.seed)
-  const scenario = curated ?? createScenario(record.seed, record.archetype, record.difficulty)
+  const scenario =
+    scenarioForShiftRecord(record) ??
+    curated ??
+    createScenario(record.seed, record.archetype, record.difficulty, record.scenarioVersion ?? 1)
   return events.reduce(reduceEvent, createTwin(scenario))
 }
 export function nominalEvent(

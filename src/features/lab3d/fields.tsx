@@ -1,4 +1,5 @@
 import { useId, type FormEvent, type ReactNode } from 'react'
+import { UPSTREAM_PARAMETERS } from '../../sim/params/upstream'
 import { PROCESS_PARAMETERS } from '../../sim/params/process'
 import { CORE_PARAMETERS } from '../../sim/params/registry'
 import type { SimEvent, StationId } from '../../sim/core/events'
@@ -8,7 +9,7 @@ export interface ControlsProps {
   twin: Twin
   act: Intent
 }
-const parameters = [...PROCESS_PARAMETERS, ...CORE_PARAMETERS]
+const parameters = [...PROCESS_PARAMETERS, ...CORE_PARAMETERS, ...UPSTREAM_PARAMETERS]
 export function N({
   name,
   label,

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { lazy, Suspense, useState } from 'react'
 import { ActionForm, Check, N, S, type ControlsProps } from './fields'
 import type { StationId } from '../../sim/core/events'
 import { PROTOCOLS, PROTOCOL_BY_ID } from '../../content/lab/protocols'
@@ -6,6 +6,10 @@ import { PROTOCOL_PARAMETERS } from '../../sim/params/protocols'
 import { MARKERS } from '../../content/lab/markers'
 import { PROCESS as P } from '../../sim/params/process'
 import { releaseProblems } from '../../sim/scoring/assess'
+
+const IhcAcademy = lazy(() => import('./IhcAcademy'))
+const SpecialBench = lazy(() => import('./SpecialBench'))
+const HeProgram = lazy(() => import('./HeProgram'))
 
 export default function ChemistryControls({
   twin: t,
@@ -65,6 +69,9 @@ export default function ChemistryControls({
           </p>
         </details>
         <StainHistory twin={t} />
+        <Suspense fallback={<p>Loading H&E program editor…</p>}>
+          <HeProgram twin={t} act={act} />
+        </Suspense>
       </>
     )
   if (station === 'special')
@@ -81,6 +88,13 @@ export default function ChemistryControls({
           </select>
         </label>
         <p>{selected.principle}</p>
+        <button
+          className="btn"
+          disabled={!t.instrument.locked || !t.instrument.guarded || !t.embedding.cooled}
+          onClick={() => act('special.prepare')}
+        >
+          Prepare an adjacent unstained section
+        </button>
         <p className="small">
           <strong>Target:</strong> {selected.target} · {selected.pathway} pathway ·{' '}
           {selected.mounting} mounting
@@ -112,7 +126,16 @@ export default function ChemistryControls({
                   unit="simulation minute"
                 />
                 {protocol.includes('alcian') && (
-                  <N name="ph" label="Reagent pH" value={2.5} unit="pH" />
+                  <N
+                    name="ph"
+                    label="Reagent pH"
+                    value={
+                      protocol === 'alcian-blue-1'
+                        ? P['special.alcian-low-ph']
+                        : P['special.alcian-standard-ph']
+                    }
+                    unit="pH"
+                  />
                 )}
               </ActionForm>
             </li>
@@ -126,12 +149,21 @@ export default function ChemistryControls({
           <p className="span-all small">{selected.controls.join(' ')}</p>
           <Check name="positive" label="Known target-positive control included" />
           <Check name="negative" label="Appropriate negative / comparison control included" />
+          {protocol === 'pas-d' && (
+            <Check
+              name="digestionVerified"
+              label="Paired digestion control shows glycogen loss with retained non-glycogen PAS reaction"
+            />
+          )}
         </ActionForm>
         <p role="status">
           {t.staining.controls.valid
             ? 'Control results support the modeled reaction.'
             : 'Control adequacy has not been established.'}
         </p>
+        <Suspense fallback={<p>Loading reaction comparisons…</p>}>
+          <SpecialBench key={protocol} twin={t} act={act} protocol={protocol} />
+        </Suspense>
         <details>
           <summary>Investigate this method</summary>
           {selected.failures.map((f) => (
@@ -145,18 +177,36 @@ export default function ChemistryControls({
   if (station === 'ihc')
     return (
       <>
-        <ActionForm
-          title="Target and expected compartment"
-          submit="Select target"
-          onAction={(p) => act('ihc.marker', p)}
-        >
-          <S
-            name="marker"
-            label="Marker"
-            value={t.ihc.marker}
-            options={MARKERS.filter((m) => m.modality === 'IHC').map((m) => [m.id, m.label])}
-          />
-        </ActionForm>
+        {t.ihc.primary > 0 || t.ihc.dab > 0 || t.ihc.detectionApplied || t.ihc.ish ? (
+          <div className="notice">
+            <p>
+              Current assay: <strong>{t.ihc.marker}</strong>. Its bound reagents and deposits remain
+              on this section. Prepare a new section before changing the target or repeating
+              retrieval, primary or detection after development. The marker library below remains
+              available for reference.
+            </p>
+            <button
+              className="btn"
+              disabled={!t.instrument.locked || !t.instrument.guarded || !t.embedding.cooled}
+              onClick={() => act('ihc.prepare')}
+            >
+              Prepare an adjacent unstained IHC section
+            </button>
+          </div>
+        ) : (
+          <ActionForm
+            title="Target and expected compartment"
+            submit="Select target"
+            onAction={(p) => act('ihc.marker', p)}
+          >
+            <S
+              name="marker"
+              label="Marker"
+              value={t.ihc.marker}
+              options={MARKERS.filter((m) => m.modality === 'IHC').map((m) => [m.id, m.label])}
+            />
+          </ActionForm>
+        )}
         <ActionForm
           title="Antigen retrieval"
           submit="Apply retrieval"
@@ -223,6 +273,9 @@ export default function ChemistryControls({
             {t.ihc.valid ? 'Controls support technical interpretation' : 'Run not interpretable'}
           </strong>
         </p>
+        <Suspense fallback={<p>Loading IHC mastery academy…</p>}>
+          <IhcAcademy twin={t} act={act} />
+        </Suspense>
       </>
     )
   if (station === 'ish')
@@ -236,9 +289,13 @@ export default function ChemistryControls({
           <S
             name="probe"
             label="Teaching target"
-            options={['EBER', 'kappa', 'lambda', 'housekeeping RNA']}
+            options={['EBER', 'kappa', 'lambda', 'housekeeping RNA', 'generic DNA']}
           />
-          <S name="modality" label="Detection" options={['CISH', 'FISH', 'RNA ISH']} />
+          <S name="modality" label="Detection" options={['CISH', 'FISH']} />
+          <Check
+            name="denatured"
+            label="For DNA target: method-specified DNA denaturation completed before hybridization"
+          />
           <N name="minutes" label="Exposure" value={30} unit="simulation minute" />
           <N name="temperature" label="Hybridization temperature" value={40} unit="°C" />
           <N name="protease" label="Protease exposure" value={1} unit="relative exposure" />
@@ -255,8 +312,9 @@ export default function ChemistryControls({
           submit="Evaluate ISH controls"
           onAction={(p) => act('ish.controls', p)}
         >
-          <Check name="positive" label="Positive target / housekeeping probe control" />
+          <Check name="positive" label="Known target-positive assay control" />
           <Check name="negative" label="Negative probe control" />
+          <Check name="integrity" label="Independent specimen nucleic-acid integrity control" />
         </ActionForm>
       </>
     )
@@ -300,6 +358,43 @@ export default function ChemistryControls({
     return (
       <>
         <h3>Technical release review</h3>
+        {t.scenario.request === 'molecular' && (
+          <ActionForm
+            title="Unstained-section preparation handoff"
+            submit="Record molecular preparation review"
+            onAction={(p) =>
+              act('practice.evidence', {
+                ...p,
+                checkId: 'molecular-preparation',
+                sectionId: t.block.sections.at(-1)?.id ?? '',
+                text: 'Structured unstained-section preparation review; clinical assay suitability requires receiving-laboratory assessment.',
+              })
+            }
+          >
+            <p className="span-all small">
+              This is an assay-specific preparation exercise, not a molecular result or a
+              demonstration of clinical assay suitability. Keep the section unstained and uncovered;
+              follow the receiving laboratory’s requirements.
+            </p>
+            <S name="targetClass" label="Declared molecular target" options={['rna', 'dna']} />
+            <Check
+              name="protocolReviewed"
+              label="Receiving laboratory’s assay-specific preparation instructions reviewed"
+            />
+            <Check
+              name="contaminationPlan"
+              label="Clean collection and contamination precautions documented"
+            />
+            <Check
+              name="receivingReview"
+              label="Section identity and morphology information prepared for qualified receiving review"
+            />
+            <Check
+              name="limitationsCommunicated"
+              label="Fixation, decal, delay and processing limitations communicated"
+            />
+          </ActionForm>
+        )}
         {problems.length ? (
           <ul>
             {problems.map((p) => (

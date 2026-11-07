@@ -22,6 +22,10 @@ export interface InstrumentProps {
   onIntent: SceneIntent
   reducedMotion: boolean
   onManipulating: (active: boolean) => void
+  embeddingGesture?: 'translate' | 'height' | 'rx' | 'ry' | 'rz'
+  selectedPieceId?: string
+  onPieceSelect?: (id: string) => void
+  bottleRotation?: number
 }
 export type Vec3 = [number, number, number]
 

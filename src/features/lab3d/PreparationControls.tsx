@@ -1,3 +1,4 @@
+import EmbeddingPrediction from './EmbeddingPrediction'
 import { useState } from 'react'
 import { ActionForm, Check, N, S, T, type ControlsProps, type Intent } from './fields'
 import type { StationId } from '../../sim/core/events'
@@ -8,6 +9,7 @@ interface ProgramStep {
   temperature: number
   concentration: number
   exhaustion: number
+  agitation: boolean
   vacuum: boolean
 }
 function Processor({ act }: { act: Intent }) {
@@ -30,6 +32,7 @@ function Processor({ act }: { act: Intent }) {
         <N name="temperature" label="Temperature" parameter="processing.wax-temperature" />
         <N name="exhaustion" label="Reagent exhaustion" value={0} unit="0–1" />
         <Check name="vacuum" label="Vacuum enabled in this scenario" />
+        <Check name="agitation" label="Reagent circulation enabled" />
       </ActionForm>
       <ol className="program-rows">
         {rows.map((r, i) => (
@@ -78,6 +81,7 @@ function Processor({ act }: { act: Intent }) {
               concentration: r.concentration,
               exhaustion: r.exhaustion,
               vacuum: r.vacuum,
+              agitation: r.agitation,
             })
         }}
       >
@@ -108,6 +112,12 @@ export default function PreparationControls({
             <dd>{t.scenario.title}, part A</dd>
             <dt>Requested work</dt>
             <dd>{t.scenario.request}</dd>
+            {t.scenario.instruction && (
+              <>
+                <dt>Teaching work order</dt>
+                <dd>{t.scenario.instruction}</dd>
+              </>
+            )}
             <dt>Container / requisition comparison</dt>
             <dd>
               {t.scenario.discrepancy === 'none'
@@ -238,7 +248,9 @@ export default function PreparationControls({
         onAction={(p) => act('decalcification.run', p)}
       >
         <S name="agent" label="Agent" options={['edta', 'weak-acid', 'strong-acid', 'none']} />
-        <N name="hours" label="Exposure" value={12} unit="hour" />
+        <N name="hours" label="Exposure" parameter="fixation.hours" />
+        <N name="temperature" label="Temperature" parameter="fixation.temperature" />
+        <Check name="agitation" label="Controlled reagent agitation" />
         <S
           name="endpoint"
           label="Endpoint assessment"
@@ -249,6 +261,25 @@ export default function PreparationControls({
   if (station === 'processing')
     return (
       <>
+        {t.processing.exhaustedAlcohol && (
+          <p className="notice" role="status">
+            Reagent check: the loaded alcohol is exhausted in this scenario. Record replacement and
+            QC before continuing.
+          </p>
+        )}
+        <ActionForm
+          title="Reagent replacement and QC"
+          submit="Register reagent replacement"
+          onAction={(p) => act('processing.reagent-change', p)}
+        >
+          <S
+            name="reagent"
+            label="Reagent being replaced"
+            options={['alcohol', 'clearant', 'paraffin']}
+          />
+          <T name="lot" label="Replacement reagent lot" />
+          <T name="documentation" label="Replacement and QC record" multiline />
+        </ActionForm>
         <Processor act={act} />
         <details>
           <summary>Executed processor record</summary>
@@ -266,6 +297,7 @@ export default function PreparationControls({
   if (station === 'embedding')
     return (
       <>
+        <EmbeddingPrediction twin={t} />
         <ActionForm
           title="Piece placement — six degrees of freedom"
           submit="Place / update piece"

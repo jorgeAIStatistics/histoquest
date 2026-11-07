@@ -5,7 +5,9 @@ import {
   blendVector,
   specialVector,
   STAIN_VECTORS,
+  additiveEmission,
 } from '../sim/models/optics'
+import { EMISSION_COLORS, EMISSION_PATTERN, PAS_GLYCOGEN_WEIGHT } from '../sim/params/optics'
 import type { Absorber, RGB } from '../sim/models/optics'
 import {
   clamp01,
@@ -24,6 +26,7 @@ export interface OpticalView {
   illumination: number
   polarization: number
   condenser: number
+  fluorescenceChannel?: 'composite' | 'probe' | 'nuclear' | 'primary' | 'secondary'
 }
 export interface Spot {
   x: number
@@ -91,16 +94,25 @@ function spotMask(
 function specialDensity(sample: TissueSample, a: SlideAppearance): number {
   const name = a.special.toLowerCase()
   if (!name || a.specialIntensity <= 0) return 0
-  if (/alcian/.test(name)) return sample.mucin + sample.cytoplasm * 0.02
+  if (/melanin.bleach/.test(name)) return 0
+  if (/fontana/.test(name)) return sample.pigment
+  if (/oil.red/.test(name)) return a.family === 'fat' ? sample.tissue * (1 - sample.membrane) : 0
+  if (/luxol/.test(name)) return a.family === 'neural' ? sample.tissue * (1 - sample.target) : 0
+  if (/alcian|mucicarmine|colloidal.iron/.test(name)) return sample.mucin + sample.cytoplasm * 0.02
   if (/prussian|iron|perls/.test(name)) return sample.target * sample.pigment
   if (/retic/.test(name)) return sample.reticulin
-  if (/gms|grocott|warthin|afb|ziehl/.test(name)) return sample.organism
+  if (/gms|grocott|warthin|steiner|gram|afb|ziehl|fite/.test(name)) return sample.organism
   if (/congo/.test(name)) return a.targetPresent ? sample.amyloid : 0
   if (/trichrome|masson/.test(name)) return sample.collagen
-  if (/elastic/.test(name)) return sample.reticulin + sample.collagen * 0.15
-  if (/von.kossa|calcium/.test(name)) return sample.mineral
+  if (/elastic|vvg/.test(name)) return sample.reticulin + sample.collagen * 0.15
+  if (/von.kossa|alizarin|calcium/.test(name)) return sample.mineral
   if (/giemsa|toluidine/.test(name)) return sample.nucleus * 0.5 + sample.organism
-  if (/pas/.test(name)) return sample.mucin + sample.reticulin * 0.5 + sample.cytoplasm * 0.15
+  if (/pas/.test(name))
+    return (
+      sample.mucin +
+      sample.reticulin * 0.5 +
+      sample.cytoplasm * PAS_GLYCOGEN_WEIGHT * (a.specialGlycogen ?? 1)
+    )
   return sample.target * 0.3
 }
 
@@ -124,7 +136,9 @@ export function sampleSlide(
   const a = field.appearance
   const illuminant = Math.min(1.1, Math.max(0.3, view.illumination))
   if (worldX < 0 || worldX > FIELD_WIDTH_UM || worldY < 0 || worldY > FIELD_HEIGHT_UM)
-    return [clamp01(illuminant), clamp01(illuminant), clamp01(illuminant)]
+    return a.fluorescence
+      ? [0, 0, 0]
+      : [clamp01(illuminant), clamp01(illuminant), clamp01(illuminant)]
   const x = (worldX - 1000) / (1 - clamp01(a.compression) * 0.43) + 1000
   const wrinkle = a.wrinkles * 6 * Math.sin(worldX / 25 + field.phenotype.phase)
   const y = worldY + wrinkle
@@ -186,7 +200,61 @@ export function sampleSlide(
   const sectionMask = tissue * (1 - Math.max(hole, tear, ice, lift * 0.9, lostPlane))
   const staining = sectionMask * (1 - wax * 0.94) * thickness
   const edge = a.edge * smoothstep(0.64, 0.95, Math.hypot((x - 1000) / 890, (y - 750) / 635))
-  const target = a.targetPresent ? sample.target * (1 - clamp01(a.masking) * 0.8) : 0
+  const target = a.targetPresent ? sample.target : 0
+  if (a.fluorescence) {
+    const channel = view.fluorescenceChannel ?? 'composite'
+    const puncta =
+      a.fluorescence.targetType === 'protein'
+        ? 1
+        : smoothstep(
+            EMISSION_PATTERN.thresholdLow,
+            EMISSION_PATTERN.thresholdHigh,
+            noise(x / EMISSION_PATTERN.period, y / EMISSION_PATTERN.period, field.phenotype.seed),
+          )
+    return additiveEmission(
+      [
+        {
+          density:
+            channel === 'nuclear' || channel === 'secondary'
+              ? 0
+              : staining *
+                (a.fluorescence.signal *
+                  (a.targetPresent ? sample.target : 0) *
+                  Math.max(
+                    ...(a.localizations ?? [a.localization]).map((location) =>
+                      localizationDensity(sample, location),
+                    ),
+                  ) *
+                  puncta +
+                  a.fluorescence.background * sample.cytoplasm),
+          vector: EMISSION_COLORS.probe,
+        },
+        {
+          density:
+            channel === 'probe' || channel === 'primary' || channel === 'secondary'
+              ? 0
+              : sectionMask * sample.nucleus * a.fluorescence.counterstain,
+          vector: EMISSION_COLORS.nuclear,
+        },
+        {
+          density:
+            !a.fluorescence.secondary || channel === 'nuclear' || channel === 'primary'
+              ? 0
+              : staining *
+                (a.fluorescence.secondary.signal *
+                  (a.targetPresent ? sample.target : 0) *
+                  Math.max(
+                    ...a.fluorescence.secondary.localizations.map((location) =>
+                      localizationDensity(sample, location),
+                    ),
+                  ) +
+                  a.fluorescence.secondary.background * sample.cytoplasm),
+          vector: EMISSION_COLORS.secondary,
+        },
+      ],
+      illuminant,
+    )
+  }
   const hematoxylin = blendVector(
     APPROXIMATE_VECTORS.unbluedHematoxylin,
     STAIN_VECTORS.hematoxylin,
@@ -211,25 +279,53 @@ export function sampleSlide(
     {
       density:
         staining *
-        (Math.max(0, a.dab) * target * localizationDensity(sample, a.localization) * 1.8 +
+        (Math.max(0, a.dab) *
+          target *
+          Math.max(
+            ...(a.localizations ?? [a.localization]).map((location) =>
+              localizationDensity(sample, location),
+            ),
+          ) *
+          1.8 +
           Math.max(0, a.background) * (0.2 + sample.cytoplasm + sample.collagen) +
           edge),
       vector: STAIN_VECTORS.dab,
     },
-    { density: staining * special * 1.7, vector: specialVector(a.special) },
+    {
+      density: staining * (special * 1.7 + (a.specialBackground ?? 0) * sample.tissue),
+      vector: specialVector(a.special),
+    },
     {
       density:
         staining *
-        (sample.pigment * 0.6 +
+        (sample.pigment *
+          0.6 *
+          (/melanin.bleach/i.test(a.special) && a.family === 'skin'
+            ? 1 - clamp01(a.specialIntensity)
+            : 1) +
           a.pigment * (noise(x / 1.8, y / 1.8, field.phenotype.seed + 24) > 0.63 ? 1.2 : 0) +
           foldSeam * 0.35),
       vector: APPROXIMATE_VECTORS.pigment,
     },
   ]
+  if (a.secondaryChromogen)
+    absorbers.push({
+      density:
+        staining *
+        (a.secondaryChromogen.signal *
+          target *
+          Math.max(
+            ...a.secondaryChromogen.localizations.map((location) =>
+              localizationDensity(sample, location),
+            ),
+          ) +
+          a.secondaryChromogen.background * sample.cytoplasm),
+      vector: APPROXIMATE_VECTORS.fastRed,
+    })
   let rgb = beerLambert(absorbers, [illuminant, illuminant * 0.994, illuminant * 0.98])
   if (polarized > 0) {
     // Authored qualitative effect; a polarization teaching cue, not retardance data.
-    const congo = /congo/i.test(a.special) ? special * 0.9 : 0
+    const congo = /congo/i.test(a.special) ? special * thickness * 0.9 : 0
     const birefringence =
       clamp01(congo + sample.collagen * 0.28 + sample.mineral * 0.22) * sectionMask
     const green = congo > 0.02 ? [0.38, 0.77, 0.18] : [0.78, 0.72, 0.48]
@@ -279,8 +375,15 @@ const ARTIFACT_DESCRIPTIONS: [keyof SlideAppearance, string][] = [
 
 export function describeSlide(appearance: SlideAppearance): string[] {
   const descriptions = [FAMILY_FEATURES[appearance.family]]
-  if (appearance.hematoxylin < 0.2) descriptions.push('Nuclear hematoxylin is very weak or absent.')
-  if (appearance.eosin < 0.2) descriptions.push('Cytoplasmic eosin is very weak or absent.')
+  if (appearance.fluorescence) {
+    descriptions.push(
+      `Simulated ${appearance.fluorescence.targetType.toUpperCase()} fluorescence: green probe emission in the ${appearance.localization} compartment and blue nuclear counterstain on a dark background. Channels add; this is not a chromogenic image. Puncta are procedural cues and cannot establish molecule counts, gene copies or rearrangements.`,
+    )
+  }
+  if (!appearance.fluorescence && appearance.hematoxylin < 0.2)
+    descriptions.push('Nuclear hematoxylin is very weak or absent.')
+  if (!appearance.fluorescence && appearance.eosin < 0.2)
+    descriptions.push('Cytoplasmic eosin is very weak or absent.')
   if (appearance.bluing < 0.4 && appearance.hematoxylin > 0.2)
     descriptions.push('Insufficient bluing shifts nuclei toward reddish purple.')
   if (appearance.centerPreservation < 0.65)
@@ -302,10 +405,14 @@ export function describeSlide(appearance: SlideAppearance): string[] {
     )
   if (appearance.dab > 0)
     descriptions.push(
-      `DAB is modeled in the ${appearance.localization} compartment${appearance.targetPresent ? '' : '; the target is absent, so specific staining is absent'}.`,
+      `DAB is modeled in the ${(appearance.localizations ?? [appearance.localization]).join(' and ')} compartment${appearance.targetPresent ? '' : '; the target is absent, so specific staining is absent'}.`,
     )
   if (appearance.background > 0.1)
     descriptions.push('Nonspecific chromogen deposition stains background tissue.')
+  if (appearance.secondaryChromogen)
+    descriptions.push(
+      'A second target uses approximate Fast Red absorption in its declared compartments. This synthetic overlay is not validated colocalization.',
+    )
   if (appearance.special)
     descriptions.push(`${appearance.special} uses illustrative, uncalibrated stain optics.`)
   if (!appearance.mounted)

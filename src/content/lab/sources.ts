@@ -1268,4 +1268,105 @@ export const LAB_SOURCES: LabSource[] = [
     limitations:
       'Supports the scoped technical principle, not a universal approved protocol. Numerical exposures, product substitutions and clinical interpretation require the current method and qualified review.',
   },
+  {
+    id: 'abcam-alcian-1',
+    title: 'Alcian Blue pH 1.0 mucin stain protocol',
+    publisher: 'Abcam',
+    url: 'https://www.abcam.com/ps/products/150/ab150661/documents/Alcian-Blue-Staining-protocol-book-v4-ab150661%20%28website%29.pdf',
+    access: 'read',
+    onAscpReadingList: false,
+    accessedOn: '2026-11-06',
+    readScope:
+      'Assay sequence, pH-controlled rinse warning, optional counterstain and finishing instructions read.',
+    limitations:
+      'Product-specific variant; numeric timings are not copied into the simulator and must not be generalized.',
+  },
+  {
+    id: 'webpath-steiner',
+    title: 'Steiner and Steiner method',
+    publisher: 'University of Utah WebPath',
+    url: 'https://webpath.med.utah.edu/HISTHTML/MANUALS/STEINER.PDF',
+    access: 'read',
+    onAscpReadingList: false,
+    accessedOn: '2026-11-06',
+    readScope: 'Principle, control, sequence and target appearance read.',
+    limitations:
+      'Historical manual includes hazardous reagents and microwave details not reproduced here. It does not establish current clinical validation.',
+  },
+  {
+    id: 'webpath-melanin-bleach',
+    title: 'Melanin bleach comparison',
+    publisher: 'University of Utah WebPath',
+    url: 'https://webpath.med.utah.edu/HISTHTML/MANUALS/MELBLCH.PDF',
+    access: 'read',
+    onAscpReadingList: false,
+    accessedOn: '2026-11-06',
+    readScope: 'Paired comparison, bleaching sequence and tissue-detachment warning read.',
+    limitations:
+      'Historical method; tissue loss confounds apparent pigment disappearance. No reagent recipes or timings imported.',
+  },
+  {
+    id: 'criswell-von-kossa-2025',
+    title: 'Von Kossa Calcium Staining Procedure Revisited',
+    publisher: 'Journal of Histochemistry and Cytochemistry',
+    url: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC12463881/',
+    access: 'read',
+    onAscpReadingList: false,
+    accessedOn: '2026-11-06',
+    readScope:
+      'Methods, results and discussion of light-assisted silver development and phosphate-associated reaction read.',
+    limitations:
+      'Single study; no numerical calibration imported. Images not redistributed because a compatible reuse license was not verified.',
+  },
+  {
+    id: 'webpath-alizarin',
+    title: 'Alizarin red S calcium method',
+    publisher: 'University of Utah WebPath',
+    url: 'https://webpath.med.utah.edu/HISTHTML/MANUALS/ALIZARIN.PDF',
+    access: 'read',
+    onAscpReadingList: false,
+    accessedOn: '2026-11-06',
+    readScope: 'Principle, control, pH dependence, sequence and acetone finishing read.',
+    limitations:
+      'Historical method; simulator omits reagent recipes and uses illustrative timing only.',
+  },
+  {
+    id: 'webpath-rhodanine',
+    title: 'Copper rhodanine method',
+    publisher: 'University of Utah WebPath',
+    url: 'https://webpath.med.utah.edu/HISTHTML/MANUALS/COPPER.PDF',
+    access: 'read',
+    onAscpReadingList: false,
+    accessedOn: '2026-11-06',
+    readScope:
+      'Target appearance, control, qualified mechanism statement, sequence and mounting warning read.',
+    limitations:
+      'Historical method; no clinical interpretation, microwave settings or reagent recipes imported.',
+  },
+  {
+    id: 'thermo-biotin',
+    title: 'TechTip: Biotin and IHC Detection',
+    publisher: 'Thermo Fisher Scientific',
+    url: 'https://www.thermofisher.com/us/en/home/life-science/cell-analysis/cellular-imaging/ihc/techtip-biotin-and-ihc-detection.html',
+    access: 'read',
+    onAscpReadingList: false,
+    accessedOn: '2026-11-06',
+    readScope:
+      'Mechanism of endogenous biotin interference, retrieval-associated exposure and biotin-free polymer distinction read.',
+    limitations:
+      'Manufacturer educational source. No product recommendation or claim of universal background elimination; antibody and method-specific verification remains necessary.',
+  },
+  {
+    id: 'ogt-fish-workflow',
+    title: 'What is fluorescence in situ hybridization?',
+    publisher: 'Oxford Gene Technology',
+    url: 'https://www.ogt.com/us/resources/fish-resources-and-support/introduction-to-fish/what-is-fish/',
+    access: 'read',
+    onAscpReadingList: false,
+    accessedOn: '2026-11-07',
+    readScope:
+      'Fluorescent probe complementarity, tissue pretreatment, DNA denaturation, hybridization, stringency washes, nuclear counterstain and filter-channel viewing.',
+    limitations:
+      'Manufacturer conceptual workflow. No clinical temperatures, counting requirements, expected gene-copy patterns or spectral values imported. All rendered puncta and emission colors are authored teaching cues.',
+  },
 ]

@@ -5,6 +5,9 @@ import { v3Progress } from './fixtures'
 const routes = [
   '',
   'today',
+  'career',
+  'shift',
+  'review',
   'learn',
   'lab',
   'practice',

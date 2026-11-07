@@ -10,7 +10,7 @@ React dispatches intents and persists run records. Three.js is dynamically impor
 
 ## Determinism and limits
 
-A seed, scenario version and ordered event log determine the run. Events carry simulation time rather than reading the clock inside models. Numeric parameters carry a unit, scope, provenance, access status and explicit illustrative flag. Model coefficients express teaching relationships; they are not measured calibration or clinical SOPs. Seeded phenotype rendering labels every output as a simulated slide.
+A seed, scenario version and ordered event log determine the run under the current documented model revision. Version-1 scenario generation is retained for earlier logs; new free runs explicitly select version 2. Software updates can refine model behavior, so retained logs are original observations, not immutable certified scores. Events carry simulation time rather than reading the clock inside models. Numeric parameters carry a unit, scope, provenance, access status and explicit illustrative flag. Model coefficients express teaching relationships; they are not measured calibration or clinical SOPs. Seeded phenotype rendering labels every output as a simulated slide.
 
 The twin retains identity/custody, geometry, fixation/decalcification fields, processing exchanges, embedding transforms, block consumption, section defects, stain optical densities, controls and target preservation. Identity and safety faults survive later technically attractive results.
 
@@ -25,3 +25,11 @@ Procedural instrument geometry avoids external model licenses and downloads. A m
 ## Verification
 
 Pure models get monotonic, boundary, invariant and deterministic replay tests. Route and practical tests exercise the same event dispatch as learners. Golden slides check visual reproducibility. Bundle checks compare non-lab route entry graphs with the baseline; performance claims require measured device evidence. Scientific validity remains a separate expert-review task.
+
+## Learning and storage boundaries
+
+Career, shift and clinic routes share the same pure replay reducer. Guided practicals require published observable checks and retain critical events. Senior/supervisor planning is held for qualified review. Simulation follow-ups may make related retrieval cards due, without fabricating an answer, review, lapse, exam attempt or fresh readiness evidence.
+
+The archive stores completed logs in IndexedDB; recent local records, an active draft and archive results are merged by ID with the local revision taking precedence. Complete export reads and validates both stores before creating a single v4 JSON file. Explicit pruning requires a successful complete export and preserves changed/unexported records. See PERSISTENCE.md for caps and failure behavior.
+
+Detailed instrument scenes load per station. The next scene is prefetched during idle time when connection and visibility conditions permit. The 3D engine remains absent from 2D-only lab navigation. Synthetic fluorescence uses an additive emission branch; brightfield channels retain the absorbance branch. All real micrographs remain separate attributed image assets.

@@ -1,0 +1,177 @@
+{
+  "browser": "chromium",
+  "viewport": {
+    "width": 1280,
+    "height": 720
+  },
+  "quality": "low",
+  "reducedMotion": true,
+  "network": "local preview; not a device/network benchmark",
+  "firstInteractiveMs": 1145,
+  "initial": {
+    "mounts": 1,
+    "unmounts": 0,
+    "activeCanvases": 1,
+    "frames": 6,
+    "geometries": 37,
+    "textures": 1,
+    "programs": 1,
+    "contextLosses": 0,
+    "disposedResources": 0
+  },
+  "transitions": [
+    {
+      "station": "Grossing",
+      "resources": {
+        "mounts": 1,
+        "unmounts": 0,
+        "activeCanvases": 1,
+        "frames": 12,
+        "geometries": 65,
+        "textures": 1,
+        "programs": 2,
+        "contextLosses": 0,
+        "disposedResources": 60
+      }
+    },
+    {
+      "station": "Fixation",
+      "resources": {
+        "mounts": 1,
+        "unmounts": 0,
+        "activeCanvases": 1,
+        "frames": 18,
+        "geometries": 34,
+        "textures": 1,
+        "programs": 2,
+        "contextLosses": 0,
+        "disposedResources": 176
+      }
+    },
+    {
+      "station": "Processing",
+      "resources": {
+        "mounts": 1,
+        "unmounts": 0,
+        "activeCanvases": 1,
+        "frames": 25,
+        "geometries": 56,
+        "textures": 1,
+        "programs": 2,
+        "contextLosses": 0,
+        "disposedResources": 230
+      }
+    },
+    {
+      "station": "Embedding",
+      "resources": {
+        "mounts": 1,
+        "unmounts": 0,
+        "activeCanvases": 1,
+        "frames": 33,
+        "geometries": 40,
+        "textures": 1,
+        "programs": 2,
+        "contextLosses": 0,
+        "disposedResources": 328
+      }
+    },
+    {
+      "station": "Microtomy",
+      "resources": {
+        "mounts": 1,
+        "unmounts": 0,
+        "activeCanvases": 1,
+        "frames": 40,
+        "geometries": 37,
+        "textures": 1,
+        "programs": 1,
+        "contextLosses": 0,
+        "disposedResources": 394
+      }
+    },
+    {
+      "station": "Grossing",
+      "resources": {
+        "mounts": 1,
+        "unmounts": 0,
+        "activeCanvases": 1,
+        "frames": 46,
+        "geometries": 65,
+        "textures": 1,
+        "programs": 2,
+        "contextLosses": 0,
+        "disposedResources": 454
+      }
+    },
+    {
+      "station": "Fixation",
+      "resources": {
+        "mounts": 1,
+        "unmounts": 0,
+        "activeCanvases": 1,
+        "frames": 54,
+        "geometries": 34,
+        "textures": 1,
+        "programs": 2,
+        "contextLosses": 0,
+        "disposedResources": 570
+      }
+    },
+    {
+      "station": "Processing",
+      "resources": {
+        "mounts": 1,
+        "unmounts": 0,
+        "activeCanvases": 1,
+        "frames": 60,
+        "geometries": 56,
+        "textures": 1,
+        "programs": 2,
+        "contextLosses": 0,
+        "disposedResources": 624
+      }
+    },
+    {
+      "station": "Embedding",
+      "resources": {
+        "mounts": 1,
+        "unmounts": 0,
+        "activeCanvases": 1,
+        "frames": 68,
+        "geometries": 40,
+        "textures": 1,
+        "programs": 2,
+        "contextLosses": 0,
+        "disposedResources": 722
+      }
+    },
+    {
+      "station": "Microtomy",
+      "resources": {
+        "mounts": 1,
+        "unmounts": 0,
+        "activeCanvases": 1,
+        "frames": 76,
+        "geometries": 37,
+        "textures": 1,
+        "programs": 1,
+        "contextLosses": 0,
+        "disposedResources": 788
+      }
+    }
+  ],
+  "idleFrames": 0,
+  "offscreenFrames": 0,
+  "afterUnmount": {
+    "mounts": 1,
+    "unmounts": 1,
+    "activeCanvases": 0,
+    "frames": 82,
+    "geometries": 0,
+    "textures": 0,
+    "programs": 0,
+    "contextLosses": 0,
+    "disposedResources": 862
+  }
+}

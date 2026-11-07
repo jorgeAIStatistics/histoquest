@@ -12,7 +12,7 @@ export function stainStep(
 ) {
   const s = t.staining
   if (t.frozen.prepared) s.dewax = 1
-  s.history.push({ reagent, minutes, lot })
+  s.history.push({ reagent, minutes, lot, freshness: clamp(freshness) })
   const exposure = Math.max(0, minutes) * clamp(freshness)
   const response = (scale: number) => 1 - Math.exp(-exposure / scale)
   if (reagent === 'dewax')

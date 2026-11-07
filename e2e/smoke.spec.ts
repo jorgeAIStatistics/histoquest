@@ -4,6 +4,11 @@ import { v3Progress } from './fixtures'
 const routes = [
   '',
   'today',
+  'career',
+  'clinic',
+  'pathway',
+  'shift',
+  'review',
   'learn',
   'learn/L-01',
   'lab',
@@ -59,7 +64,7 @@ test('phone overview has no page overflow and preserves primary navigation', asy
 }, testInfo) => {
   await page.setViewportSize({ width: 390, height: 844 })
   await page.goto('./')
-  await expect(page.getByRole('heading', { name: 'From specimen to understanding.' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Practice through the laboratory' })).toBeVisible()
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
   await expect(
     page.getByRole('navigation', { name: 'Primary' }).last().getByRole('link'),
@@ -75,6 +80,6 @@ test('the 3D engine is absent from the non-3D entry', async ({ page }) => {
     if (/\.js(?:\?|$)/.test(response.url())) scripts.push(response.url())
   })
   await page.goto('./')
-  await expect(page.getByRole('heading', { name: 'From specimen to understanding.' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Practice through the laboratory' })).toBeVisible()
   expect(scripts.filter((url) => /three|fiber|drei|render3d|lab3d/i.test(url))).toEqual([])
 })

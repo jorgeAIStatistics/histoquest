@@ -2,6 +2,43 @@
 
 Software verification and scientific verification are separate. **Passing tests does not establish educational accuracy.**
 
+## Current release candidate — HistoQuest Lab (2026-11-07)
+
+This is the current status. Older dated checkpoints below are retained as an audit trail; their smaller content counts and missing-feature lists describe those earlier versions.
+
+### What is implemented
+
+- **Career and study:** `/` and `/career` open the L0–L6 learning ladder with explicit rubrics, practical prerequisites and separate evidence. The original reference pathway is at `/pathway`; all previous study, exam, planner, atlas and Route 2 features remain. Lab debriefs can schedule relevant review without inventing question answers or workplace competency.
+- **Specimen laboratory:** `/lab3d` offers 16 stations with shared 3D/native controls, 21 seeded specimen archetypes, replay and causal microscopy. Receipt discrepancies, grossing/sampling, cumulative fixation, decalcification, reagent exchange, per-piece embedding, section consumption, bath/pickup/drying, staining, mounting and disposition share one specimen history. Embedding has a non-consuming cutting-plane preview. Tours are skippable and replayable.
+- **Staining and IHC:** manual and editable linear H&E programs retain reagent activity, lot and timing; a separately prepared synthetic control receives the same program. Twenty-five special-stain graphs provide concept-level reactions; 22 have target-bearing synthetic comparators. VVG, toluidine blue and rhodanine explicitly withhold comparator validity because their dedicated target compartments are not yet modeled. The IHC academy has ten exercises, 71 marker references, molecular scenes, checkerboards, preanalytic comparisons, investigation/validation planning, and separate fluorescence channels for IF/FISH. Deposited detection chemistry cannot be erased by changing settings; recovery needs a fresh section.
+- **Applied practice:** `/shift` has a five-case queue with priorities, frozen interruption, processor reagent recovery, failed IHC controls and requested levels. `/clinic` provides six one-variable investigations with actual recuts, before/after views and verification. Senior/supervisor worksheets make assumptions and review requirements explicit.
+- **Content and review:** 304 original questions, 23 lessons, 88 retrieval cards, 98 atlas entries, 12 reference chapters and six individually attributed real micrographs. The new lessons address mounting, stainer QC, dye chemistry, Romanowsky and Pap. `/review`, linked from Settings, prioritizes the 14 previously softened facts, parameters, markers, stain protocols and specimen archetypes and records local reviewer notes without automatically declaring expert approval.
+- **Data preservation:** tested v1–v3 migration into v4; bounded recent local cache plus IndexedDB histories; one complete validated JSON export/import; explicit unreadable/quota/capacity failure handling; manual pruning only after a complete export. See [PERSISTENCE.md](PERSISTENCE.md).
+
+### Software evidence
+
+The combined candidate passes TypeScript, warning-free lint, production build and all enforced asset budgets. The final combined unit/content/property run passed **271 tests**, with two opt-in inventory/image-generation helpers skipped. The two opt-in helpers generate inventories or image baselines; they are not skipped behavioral tests. The complete local Chromium/Firefox suite passed **195 tests** in 1.7 minutes, with nine deliberate Firefox skips for Chromium-owned pixel baselines. No behavioral browser checks were skipped. Supported-host three-engine CI and Pages deployment remain the release gate.
+
+Independent browser flows already cover actual L0→L3 progression from empty progress through saved L4 availability, the complete five-case shift, laboratory pointer/touch/native controls, independent-control failures and corrective sections, migration and full IndexedDB backup/restore, unreadable archives, and complete backups containing 6,000 events. The practical chain creates real learner actions, rather than inserting completed practical records. Axe checks cover desktop, phone and dark-theme surfaces, with keyboard checks and visible WebGL-loss/2D fallback. Automated scans do not establish full WCAG conformance or screen-reader usability.
+
+The Phase 2 gate passed all three engines in [run 42340035756](https://github.com/jorgeAIStatistics/histoquest/actions/runs/42340035756), merged as `c19acdb`, and was deployed by successful [Pages run 42340359283](https://github.com/jorgeAIStatistics/histoquest/actions/runs/42340359283). The final combined release must pass the same Chromium, Firefox and WebKit workflow before merging. Local WebKit cannot create a page on this host's frozen macOS 14 runtime (`PushAPIEnabled`); Ubuntu CI supplies the supported-host WebKit check. Linux CI runs Firefox with Mesa/Xvfb to exercise actual software WebGL rather than skipping its 3D checks.
+
+The final audit corrected Firefox-invalid seed-input patterns, protected automatic shift transitions at the 2,000-event limit, and tied special-stain comparator validity to actual target-bearing microscope fields. The 31 protocol-comparator regressions check visible target reactions separately from counterstaining; unsupported target compartments cannot earn a comparator pass.
+
+### Performance and presentation
+
+The combined build has **134,738 gzip bytes** of initial static JavaScript, **+6,571 bytes** against the original 128,167-byte baseline and within the +10 KiB gate. All JavaScript totals 864,047 gzip bytes; deployment is 7,149,013 bytes; the largest asset is 1,131,989 bytes. Three.js and detailed station modules load lazily; station prefetch respects hidden pages, Save-Data and slow connections. No external model/texture asset or runtime CDN is required. Three/fiber/drei support the procedural instruments; fast-check, axe and Prettier support invariants, accessibility checks and readable source. No UI kit was introduced.
+
+On the actual Apple M3 Pro/Metal host, the measured Medium microtome camera workload reached interactive readiness in 1.745 s, with 8.3 ms median / 10.1 ms p95 frame interval. Headless software-renderer and Firefox measurements are separately identified. These are local, bounded workloads, not cold-network or phone benchmarks. Ten station transitions keep renderer-managed resources bounded; idle/offscreen windows stop frames. [RENDERING_QA.md](RENDERING_QA.md) contains the exact hardware, reports, viewport captures and limitations. Latest home, IHC, clinic, review, shift and station screenshots are in `docs/screens/`.
+
+### Remaining acceptance limits and closest implemented versions
+
+- **Scientific review:** all instructional material is author-checked and awaits qualified independent review. The 635 registered process/render parameters expose units, rationale and calibration status. Tests verify the encoded behavior, not clinical kinetics, diagnostic fidelity, eligibility or competency.
+- **Microscopy:** authored CPU phenotype tiles are cached and displayed/composited through WebGL2 with a 2D fallback. This is not GPU generation or calibrated whole-slide pathology. Six real images supplement the synthetic microscope; they are not a comprehensive organ/diagnosis atlas.
+- **Chemistry:** selected compartment cues illustrate special-stain reactions. Full Gram classes, multicolor counterstains, true metachromasia and organism-specific quantitative chemistry are incomplete. Target-class susceptibility is generic, not clone-specific calibration. Retrieval device/enzyme names are recorded without fitted device-specific kinetics; some IHC investigations assess a structured plan because the underlying specific chemistry is not modeled. Fluorescence is illustrative emission without measured spectra, unmixing or diagnostic copy counts. Detailed limits are in [SCIENTIFIC_MODEL_NOTES.md](SCIENTIFIC_MODEL_NOTES.md).
+- **Instruments and operations:** generic procedural instruments support equivalent native actions, not tactile force, arbitrary volumetric cutting, manufacturer operation or real LIS/barcode hardware. Processor circulation/vacuum and block maps are simplified. L5/L6 plans require qualified review; arithmetic and completed fields cannot approve a validation, staffing model or clinical policy.
+- **Hardware and accessibility:** real mid-range phone/laptop, iOS Safari, Edge, screen-reader and sustained battery testing remain unverified. Desktop viewport/touch emulation is explicitly not physical-device validation. WebGPU, optional audio and optional WebXR were not enabled without verification; WebGL2, text tutorials and 2D controls provide the implemented paths.
+
 ## Specimen-to-slide upgrade (2026-11-06)
 
 `npm test` passes **46 tests**, with two environment-gated helpers skipped. `npm run build` passes TypeScript and creates the production bundle; `npm run inventory` regenerates the bank inventory. No new runtime dependencies were added.
@@ -9,6 +46,7 @@ Software verification and scientific verification are separate. **Passing tests 
 The ten new tests cover all three complete specimen paths, restore at every station, early identity failures, IHC control/localization failures, fragment reconciliation, processing order, cutting safety, malformed drafts, v2 migration, notes/backup round-trips, and chapter references. These verify encoded behavior, not clinical validity.
 
 Browser checks against the local Vite app:
+
 - Desktop and phone layouts, including 1440×1000 and 390×844, plus the initial narrow 319px overview; light and dark themes.
 - Full ten-station skin case, including an incorrect sampling decision carried into a correct final hold (9/10 supported decisions), save and reload.
 - Repeat case, keyboard-operated thickness/fragment sliders, saved uncommitted controls after reload, correct sampling feedback, processing reordering, embedding selection, animated ribbon, H&E contrast and IHC repeat controls.
@@ -23,6 +61,7 @@ The new chapter text, qualitative case rules and diagrams are author-checked, **
 `npm run typecheck` is clean. `npm test` passes 36 tests; 2 env-gated helpers are skipped. (Rerun 2026-11-05 after adding Fixation detective and the IHC room.)
 
 **`src/engine/engine.test.ts`**
+
 - Local-date handling across DST and month ends.
 - Guideline selection by exam date.
 - Answer grading: stable seeded option shuffles, and grading that is independent of option order.
@@ -42,12 +81,14 @@ The new chapter text, qualitative case rules and diagrams are author-checked, **
 - Persistence: export → import round-trip, v1 → v2 migration, and rejection of malformed, newer or invalid files.
 
 **`src/features/lab/sims/sims.test.ts`**
+
 - Processing rules accept the correct sequence and flag each class of error.
 - Fixation detective cases: one best approach per case, mixed variable and artifact sets, and scoring that penalizes wrong picks.
 - IHC runs: one correct answer per decision, all four control slides present, and encoded QC rules. A failed external positive control, or signal in the negative reagent control, always makes the run uninterpretable; a passing external control with failing internal controls is a specimen problem.
 - Lab-math generator: across 234 generated problems, every stated answer passes the grader and common errors fail it. Known values are checked, for example 70% from 95% for 500 mL = 368.42 mL.
 
 **`src/content/content.test.ts`**
+
 - Every item parses, and release targets are met.
 - Ids are unique.
 - Every objective and source reference resolves.
@@ -65,6 +106,7 @@ All 10 bank calculation answers were also recomputed by hand, and all are correc
 Checked with the in-app browser against the Vite dev server, at 1440×900, 1280×800 and 390×844, in light and dark themes.
 
 **Core loop.** Each step passed:
+
 1. Today → Start
 2. Lesson L-01: step navigation, demo, retrieval answer, confidence, check
 3. Rationale for every option
@@ -73,6 +115,7 @@ Checked with the in-app browser against the Vite dev server, at 1440×900, 1280�
 6. Resume → failed-run case session
 
 **Timed exam**
+
 - 100 unique questions: FIX 20, PROC 15, EMB 19, STAIN 34, OPS 12.
 - A 150-minute deadline.
 - Explanations and difficulty are hidden during the exam.
@@ -81,6 +124,7 @@ Checked with the in-app browser against the Vite dev server, at 1440×900, 1280�
 - Results show a per-area table and missed, flagged and all explanations.
 
 **Simulations**
+
 - The lab map renders, with the list alternative.
 - Processing bench: consequences and principles for a wrong order.
 - Embedding studio: keyboard arrows tip and rotate.
@@ -88,11 +132,13 @@ Checked with the in-app browser against the Vite dev server, at 1440×900, 1280�
 - Specimen journey and lab math render.
 
 **Other checks**
+
 - Every primary and secondary page renders with no console errors.
 - The phone layout has no horizontal scroll and uses a bottom tab bar.
 - The reduced-motion setting removes transitions.
 
 **Bugs found and fixed during verification**
+
 - An invisible current-step pill.
 - A lesson step that blanked when animation frames were paused.
 - Exam submission recording unanswered questions as wrong "fresh" attempts.
@@ -133,7 +179,7 @@ Facts the authors deliberately softened to ranges or qualitative wording, which 
 - **Regulations:**
   - CLIA competency frequencies and IHC validation case numbers, left out
 
-## Prioritized remaining gaps
+## Initial gap audit (historical, before the Lab expansion)
 
 1. **Expert review.** A qualified HTL(ASCP) reviewer should review all items, starting with the softened facts above and the HTL-only chemistry. Record `reviewer` and `reviewedOn`.
 2. **Thin objectives.** STAIN-11 (mounting and refractive index), STAIN-13 (dye chemistry) and STAIN-14 (Romanowsky and Pap) have one question each. Several FIX, PROC and EMB objectives have two. Add more original questions here first.

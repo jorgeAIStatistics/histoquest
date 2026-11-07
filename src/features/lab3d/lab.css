@@ -608,3 +608,56 @@
 [data-motion='reduced'] .lab-page * {
   scroll-behavior: auto !important;
 }
+.he-program {
+  margin-block: 2rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--rule);
+}
+.he-program-list {
+  padding-left: 1.4rem;
+}
+.he-program-list > li {
+  padding-block: 1rem;
+  border-bottom: 1px solid var(--rule);
+}
+.he-program-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+.he-program-grid label {
+  display: grid;
+  gap: 0.35rem;
+  font-size: var(--t-0);
+}
+.he-program-grid .input {
+  width: 100%;
+  min-width: 0;
+}
+.he-control-comparison {
+  margin-top: 1rem;
+}
+.he-control-comparison .microscope-panels {
+  grid-template-columns: minmax(0, 1fr);
+}
+@media (max-width: 600px) {
+  .he-program-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+.embedding-prediction {
+  padding-block: 1rem;
+  margin-top: 1rem;
+  border-top: 1px solid var(--rule);
+}
+.embedding-prediction label,
+.embedding-prediction input,
+.embedding-prediction svg {
+  display: block;
+  margin-block: 1rem;
+}
+.embedding-prediction input {
+  width: 100%;
+  accent-color: var(--hema);
+}

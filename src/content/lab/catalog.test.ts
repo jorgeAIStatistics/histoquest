@@ -37,7 +37,20 @@ describe('laboratory teaching catalogs', () => {
   it('meets initial catalog sizes and includes every requested marker concept', () => {
     expect(ARCHETYPES.length).toBeGreaterThanOrEqual(15)
     expect(MARKERS.length).toBeGreaterThanOrEqual(60)
-    expect(PROTOCOLS.length).toBeGreaterThanOrEqual(12)
+    expect(PROTOCOLS.length).toBeGreaterThanOrEqual(25)
+    for (const id of [
+      'alcian-blue-1',
+      'steiner',
+      'melanin-bleach',
+      'von-kossa',
+      'alizarin-red',
+      'rhodanine',
+    ]) {
+      expect(
+        PROTOCOLS.some((protocol) => protocol.id === id),
+        id,
+      ).toBe(true)
+    }
     const required = [
       'pan-ck',
       'ck7',
