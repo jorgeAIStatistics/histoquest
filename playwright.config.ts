@@ -27,7 +27,10 @@ export default defineConfig({
         // GPU-less Linux CI otherwise blocklists WebGL2 (AllowWebgl2:false).
         // Exercise the actual software renderer; the separate unavailable-WebGL test covers fallback.
         launchOptions: process.env.CI
-          ? { firefoxUserPrefs: { 'webgl.force-enabled': true, 'webgl.forbid-software': false } }
+          ? {
+              headless: process.platform !== 'linux',
+              firefoxUserPrefs: { 'webgl.force-enabled': true, 'webgl.forbid-software': false },
+            }
           : {},
       },
     },
