@@ -1,5 +1,17 @@
 import { describe, expect, it } from 'vitest'
-import { advanceRun, canRelease, CASES, ControlsSchema, evaluateStation, startRun, WorkbenchSchema, type SpecimenCase, type WorkbenchRun } from './model'
+import {
+  advanceRun,
+  canRelease,
+  CASES,
+  choiceOrder,
+  ControlsSchema,
+  evaluateStation,
+  missingStationDecisions,
+  startRun,
+  WorkbenchSchema,
+  type SpecimenCase,
+  type WorkbenchRun,
+} from './model'
 import { exportJson, importJson, initialState, migrateAndValidate } from '../../store/state'
 import { PATHWAY, pathwayQuestions } from '../../content/pathway'
 import { LESSON_BY_ID, QUESTION_BY_ID } from '../../content'
@@ -7,31 +19,60 @@ import { SOURCE_BY_ID } from '../../content/sources'
 
 function preparedRun(specimen: SpecimenCase): WorkbenchRun {
   const run = startRun(specimen.id)
-  run.controls = { ...run.controls, identity: 'hold', thickness: 3, fragments: specimen.fragments, sampling: 'profile', fixation: 'validated', decalcification: 'edta', schedule: specimen.schedule, sequence: ['dehydrate', 'clear', 'infiltrate'], orientation: specimen.orientation, section: 4, blade: 'sound', block: 'conditioned', safety: true, dewax: true, nuclei: true, eosin: true, mount: true, stain: specimen.stain, positive: true, ihcAction: 'repeat', location: specimen.compartment, handoff: 'release' }
+  run.controls = {
+    ...run.controls,
+    identity: 'hold',
+    thickness: 3,
+    fragments: specimen.fragments,
+    sampling: 'profile',
+    fixation: 'validated',
+    decalcification: 'edta',
+    schedule: specimen.schedule,
+    sequence: ['dehydrate', 'clear', 'infiltrate'],
+    orientation: specimen.orientation,
+    section: 4,
+    blade: 'sound',
+    block: 'conditioned',
+    safety: true,
+    dewax: true,
+    nuclei: true,
+    eosin: true,
+    mount: true,
+    stain: specimen.stain,
+    positive: true,
+    ihcAction: 'repeat',
+    location: specimen.compartment,
+    handoff: 'release',
+  }
   return run
 }
 describe('connected specimen reasoning', () => {
-  for (const specimen of CASES) it(`${specimen.title}: a supported run survives refresh at every station`, () => {
-    let run = preparedRun(specimen)
-    for (let i = 0; i < 10; i++) {
-      expect(canRelease(run.findings)).toBe(i === 9)
-      run = advanceRun(run)
-      expect(run.findings.at(-1)?.ok).toBe(true)
-      const result = importJson(exportJson({ ...initialState(), workbench: run }))
-      expect(result.ok).toBe(true)
-      if (result.ok) run = result.state.workbench!
-    }
-    expect(run.station).toBe(10)
-    expect(advanceRun(run)).toEqual(run)
-    expect(canRelease(run.findings)).toBe(true)
-  })
+  for (const specimen of CASES)
+    it(`${specimen.title}: a supported run survives refresh at every station`, () => {
+      let run = preparedRun(specimen)
+      for (let i = 0; i < 10; i++) {
+        expect(canRelease(run.findings)).toBe(i === 9)
+        run = advanceRun(run)
+        expect(run.findings.at(-1)?.ok).toBe(true)
+        const result = importJson(exportJson({ ...initialState(), workbench: run }))
+        expect(result.ok).toBe(true)
+        if (result.ok) run = result.state.workbench!
+      }
+      expect(run.station).toBe(10)
+      expect(advanceRun(run)).toEqual(run)
+      expect(canRelease(run.findings)).toBe(true)
+    })
   it('never hides an early identity failure behind a beautiful final stain', () => {
     let run = preparedRun(CASES[0])
     run.controls.identity = 'relabel'
     for (let i = 0; i < 9; i++) run = advanceRun(run)
     expect(canRelease(run.findings)).toBe(false)
-    expect(evaluateStation(9, { ...run.controls, handoff: 'release' }, CASES[0], run.findings).ok).toBe(false)
-    expect(evaluateStation(9, { ...run.controls, handoff: 'hold' }, CASES[0], run.findings).ok).toBe(true)
+    expect(
+      evaluateStation(9, { ...run.controls, handoff: 'release' }, CASES[0], run.findings).ok,
+    ).toBe(false)
+    expect(
+      evaluateStation(9, { ...run.controls, handoff: 'hold' }, CASES[0], run.findings).ok,
+    ).toBe(true)
   })
   it('requires both a corrected IHC run and the expected localization', () => {
     const c = preparedRun(CASES[0]).controls
@@ -42,13 +83,19 @@ describe('connected specimen reasoning', () => {
   it('rejects missing material, wrong exchange order and unsafe cutting', () => {
     const c = preparedRun(CASES[1]).controls
     expect(evaluateStation(1, { ...c, fragments: 3 }, CASES[1], []).ok).toBe(false)
-    expect(evaluateStation(3, { ...c, sequence: ['clear', 'dehydrate', 'infiltrate'] }, CASES[1], []).ok).toBe(false)
+    expect(
+      evaluateStation(3, { ...c, sequence: ['clear', 'dehydrate', 'infiltrate'] }, CASES[1], []).ok,
+    ).toBe(false)
     expect(evaluateStation(5, { ...c, safety: false }, CASES[1], []).ok).toBe(false)
   })
   it('rejects malformed drafts instead of resuming into an impossible station', () => {
     expect(WorkbenchSchema.safeParse({ ...startRun('skin'), station: 8 }).success).toBe(false)
-    expect(WorkbenchSchema.safeParse({ ...startRun('skin'), caseId: 'unknown' }).success).toBe(false)
-    expect(ControlsSchema.safeParse({ sequence: ['clear', 'clear', 'infiltrate'] }).success).toBe(false)
+    expect(WorkbenchSchema.safeParse({ ...startRun('skin'), caseId: 'unknown' }).success).toBe(
+      false,
+    )
+    expect(ControlsSchema.safeParse({ sequence: ['clear', 'clear', 'infiltrate'] }).success).toBe(
+      false,
+    )
     expect(ControlsSchema.safeParse({ section: NaN }).success).toBe(false)
   })
   it('migrates existing v2 data without changing clinical records or exam history', () => {
@@ -58,21 +105,32 @@ describe('connected specimen reasoning', () => {
     const { pathway: _p, ...old } = current
     const result = migrateAndValidate({ ...old, version: 2 })
     expect(result.ok).toBe(true)
-    if (result.ok) { expect(result.state.route2).toEqual(current.route2); expect(result.state.lessons).toEqual(current.lessons); expect(result.state.pathway.completed).toEqual([]) }
+    if (result.ok) {
+      expect(result.state.route2).toEqual(current.route2)
+      expect(result.state.lessons).toEqual(current.lessons)
+      expect(result.state.pathway.completed).toEqual([])
+    }
   })
   it('exports and imports notes, chapter completion and specimen history together', () => {
     const s = initialState()
-    s.pathway = { completed: ['fixation'], lastChapter: 'fixation', notes: { fixation: 'Ask about the validated fixation window.' } }
+    s.pathway = {
+      completed: ['fixation'],
+      lastChapter: 'fixation',
+      notes: { fixation: 'Ask about the validated fixation window.' },
+    }
     s.workbench = preparedRun(CASES[2])
     const r = importJson(exportJson(s))
     expect(r.ok).toBe(true)
-    if (r.ok) { expect(r.state.pathway).toEqual(s.pathway); expect(r.state.workbench).toEqual(s.workbench) }
+    if (r.ok) {
+      expect(r.state.pathway).toEqual(s.pathway)
+      expect(r.state.workbench).toEqual(s.workbench)
+    }
   })
 })
 describe('pathway links and retrieval', () => {
   it('keeps every chapter connected to valid questions, lessons, and references', () => {
     expect(PATHWAY).toHaveLength(12)
-    expect(new Set(PATHWAY.map(c => c.id)).size).toBe(12)
+    expect(new Set(PATHWAY.map((c) => c.id)).size).toBe(12)
     expect(pathwayQuestions).toHaveLength(24)
     for (const c of PATHWAY) {
       expect(c.checks).toHaveLength(2)
@@ -80,5 +138,89 @@ describe('pathway links and retrieval', () => {
       for (const id of c.lessons) expect(LESSON_BY_ID[id]).toBeDefined()
       for (const id of c.sources) expect(SOURCE_BY_ID[id]).toBeDefined()
     }
+  })
+})
+
+describe('unanswered decisions and neutral option presentation', () => {
+  it('starts every control unanswered and refuses an untouched station', () => {
+    const run = startRun('skin', 'new-practice-run')
+    expect(Object.values(run.controls).every((value) => value === null)).toBe(true)
+    expect(missingStationDecisions(run)).toEqual(['identity action'])
+    expect(advanceRun(run)).toBe(run)
+  })
+
+  it('requires an explicit decision for every field at every station', () => {
+    let run = preparedRun(CASES[2])
+    for (let station = 0; station < 10; station++) {
+      const unanswered = { ...run, controls: ControlsSchema.parse({}) }
+      expect(missingStationDecisions(unanswered).length).toBeGreaterThan(0)
+      expect(advanceRun(unanswered)).toBe(unanswered)
+      run = advanceRun(run)
+    }
+    const bone = preparedRun(CASES[2])
+    bone.station = 2
+    bone.controls.decalcification = null
+    expect(missingStationDecisions(bone)).toEqual(['bone preparation'])
+  })
+
+  it('accepts wrong choices and explicit negative checks as complete decisions', () => {
+    for (const identity of ['accept', 'hold', 'relabel'] as const) {
+      const run = startRun('skin', 'same-seed')
+      run.controls.identity = identity
+      expect(missingStationDecisions(run)).toEqual([])
+      const next = advanceRun(run)
+      expect(next.station).toBe(1)
+      expect(next.findings[0].ok).toBe(identity === 'hold')
+    }
+    let run = preparedRun(CASES[0])
+    for (let i = 0; i < 5; i++) run = advanceRun(run)
+    run.controls.safety = false
+    expect(missingStationDecisions(run)).toEqual([])
+    expect(advanceRun(run).findings[5].ok).toBe(false)
+    run = advanceRun({ ...run, controls: { ...run.controls, safety: true } })
+    run.controls.dewax = false
+    expect(missingStationDecisions(run)).toEqual([])
+    expect(advanceRun(run).findings[6].ok).toBe(false)
+  })
+
+  it('keeps seeded order stable across export and uses different positions across seeds', () => {
+    const options = ['accept', 'hold', 'relabel'] as const
+    const run = startRun('skin', 'order-verification')
+    const order = choiceOrder(options, run.seed, 'identity')
+    expect(choiceOrder(options, run.seed, 'identity')).toEqual(order)
+    const decoded = WorkbenchSchema.parse(JSON.parse(JSON.stringify(run)))
+    expect(choiceOrder(options, decoded.seed, 'identity')).toEqual(order)
+    const positions = new Set(
+      Array.from({ length: 24 }, (_, i) =>
+        choiceOrder(options, `seed-${i}`, 'identity').indexOf('hold'),
+      ),
+    )
+    expect(positions.size).toBe(3)
+    expect(options).toEqual(['accept', 'hold', 'relabel'])
+  })
+
+  it('allows the initial processor arrangement to include every permutation', () => {
+    const orderings = new Set(
+      Array.from({ length: 100 }, (_, i) =>
+        choiceOrder(['dehydrate', 'clear', 'infiltrate'], `case-${i}`, 'processing-start').join(
+          ',',
+        ),
+      ),
+    )
+    expect(orderings.size).toBe(6)
+    expect(orderings.has('dehydrate,clear,infiltrate')).toBe(true)
+  })
+
+  it('preserves old v3 draft controls and committed findings without marking them unanswered', () => {
+    let old = preparedRun(CASES[0])
+    old = advanceRun(old)
+    old = advanceRun(old)
+    const { seed: _seed, ...v3Draft } = old
+    const decoded = WorkbenchSchema.parse(v3Draft)
+    expect(decoded.seed).toBe('legacy-workbench-v3')
+    expect(decoded.controls).toEqual(v3Draft.controls)
+    expect(decoded.findings).toEqual(v3Draft.findings)
+    expect(decoded.station).toBe(2)
+    expect(missingStationDecisions(decoded)).toEqual([])
   })
 })

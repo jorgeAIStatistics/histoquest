@@ -1,15 +1,126 @@
-import { useEffect, useRef, useState } from 'react'
+import { createContext, useContext, useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { recordSim, setState, useAppState } from '../../store/store'
 import { References } from '../../ui/components'
 import { FigureCanvas, TissueSection } from '../pathway/Figures'
-import { advanceRun, canRelease, CASES, startRun, STATIONS, type Controls, type SpecimenCase, type WorkbenchRun } from './model'
+import {
+  advanceRun,
+  canRelease,
+  CASES,
+  choiceOrder,
+  missingStationDecisions,
+  startRun,
+  STATIONS,
+  type Controls,
+  type SpecimenCase,
+  type WorkbenchRun,
+} from './model'
 
-function Choices<T extends string>({ legend, value, choices, onChange }: { legend: string; value: T; choices: readonly { value: T; label: string; detail?: string }[]; onChange: (value: T) => void }) {
-  return <fieldset className="bench-options"><legend>{legend}</legend>{choices.map(o => <label className={`bench-choice ${value === o.value ? 'selected' : ''}`} key={o.value}><input type="radio" name={legend} value={o.value} checked={value === o.value} onChange={() => onChange(o.value)} /><span><strong>{o.label}</strong>{o.detail && <span>{o.detail}</span>}</span></label>)}</fieldset>
+const ChoiceSeed = createContext('legacy-workbench-v3')
+
+function Choices<T extends string>({
+  legend,
+  value,
+  choices,
+  onChange,
+}: {
+  legend: string
+  value: T | null
+  choices: readonly { value: T; label: string }[]
+  onChange: (value: T) => void
+}) {
+  const seed = useContext(ChoiceSeed)
+  return (
+    <fieldset className="bench-options">
+      <legend>{legend}</legend>
+      {choiceOrder(choices, seed, legend).map((option) => (
+        <label
+          className={`bench-choice ${value === option.value ? 'selected' : ''}`}
+          key={option.value}
+        >
+          <input
+            type="radio"
+            name={legend}
+            value={option.value}
+            checked={value === option.value}
+            onChange={() => onChange(option.value)}
+          />
+          <span>{option.label}</span>
+        </label>
+      ))}
+    </fieldset>
+  )
 }
-function Toggle({ label, checked, onChange }: { label: string; checked: boolean; onChange: (value: boolean) => void }) { return <label className="bench-toggle"><input type="checkbox" checked={checked} onChange={e => onChange(e.target.checked)} /><span>{label}</span></label> }
-function Range({ id, label, value, min, max, unit, onChange }: { id: string; label: string; value: number; min: number; max: number; unit: string; onChange: (value: number) => void }) { return <div className="bench-range"><label htmlFor={id}>{label}<output htmlFor={id}>{value} {unit}</output></label><input id={id} type="range" min={min} max={max} value={value} onChange={e => onChange(Number(e.target.value))} /></div> }
+
+/** An explicit negative decision differs from an unanswered check. */
+function Toggle({
+  label,
+  checked,
+  onChange,
+}: {
+  label: string
+  checked: boolean | null
+  onChange: (value: boolean) => void
+}) {
+  return (
+    <Choices
+      legend={label}
+      value={checked === null ? null : checked ? 'yes' : 'no'}
+      choices={[
+        { value: 'yes', label: 'Performed' },
+        { value: 'no', label: 'Not performed' },
+      ]}
+      onChange={(value) => onChange(value === 'yes')}
+    />
+  )
+}
+
+function Range({
+  id,
+  label,
+  value,
+  min,
+  max,
+  unit,
+  onChange,
+}: {
+  id: string
+  label: string
+  value: number | null
+  min: number
+  max: number
+  unit: string
+  onChange: (value: number | null) => void
+}) {
+  return (
+    <div className="bench-range">
+      <label htmlFor={id}>
+        {label}
+        <span>{unit}</span>
+      </label>
+      <input
+        id={id}
+        className="input"
+        type="number"
+        min={min}
+        max={max}
+        value={value ?? ''}
+        placeholder="Enter a value"
+        aria-describedby={`${id}-range`}
+        onChange={(event) =>
+          onChange(
+            event.target.value === ''
+              ? null
+              : Math.max(min, Math.min(max, Number(event.target.value))),
+          )
+        }
+      />
+      <p id={`${id}-range`} className="small muted">
+        Exercise range: {min}–{max} {unit}. {value === null ? 'No value selected.' : ''}
+      </p>
+    </div>
+  )
+}
 
 const TASKS = [
   'Compare the request and bottle. Decide how to handle a mismatch before the specimen moves forward.',
@@ -23,75 +134,830 @@ const TASKS = [
   'The sample is negative and the external positive control has failed. Decide what happens next and identify the expected compartment.',
   'Inspect the entire record. Decide whether to hand the preparation to the pathologist or hold for corrective action.',
 ]
-const MATERIAL = ['Received specimen', 'Cassette contents', 'Preserved specimen', 'Infiltrated tissue', 'Paraffin block', 'Unstained sections', 'Routine H&E slide', 'Ancillary stain', 'Controlled IHC result', 'Technical review']
+const MATERIAL = [
+  'Received specimen',
+  'Cassette contents',
+  'Preserved specimen',
+  'Infiltrated tissue',
+  'Paraffin block',
+  'Unstained sections',
+  'Routine H&E slide',
+  'Ancillary stain',
+  'Controlled IHC result',
+  'Technical review',
+]
 
-function StageControls({ run, specimen, update }: { run: WorkbenchRun; specimen: SpecimenCase; update: (patch: Partial<Controls>) => void }) {
+function StationInputs({
+  run,
+  specimen,
+  update,
+}: {
+  run: WorkbenchRun
+  specimen: SpecimenCase
+  update: (patch: Partial<Controls>) => void
+}) {
   const c = run.controls
+  const sequence =
+    c.sequence ??
+    choiceOrder(['dehydrate', 'clear', 'infiltrate'] as const, run.seed, 'processing-start')
   switch (run.station) {
-    case 0: return <Choices legend="Resolve the discrepancy" value={c.identity} onChange={identity => update({ identity })} choices={[
-      { value: 'accept', label: 'Accept because the name matches' }, { value: 'hold', label: 'Hold and resolve with the submitting team', detail: 'Document the discrepancy and the authorized correction.' }, { value: 'relabel', label: 'Rewrite the bottle label to match' },
-    ]} />
-    case 1: return <>
-      <div className="teaching-protocol"><strong>Teaching block key · {specimen.label}</strong><p>{specimen.fragments} {specimen.fragments === 1 ? 'piece' : 'pieces'}; preserve the requested profile. Use pieces no thicker than 4 mm in this exercise. Do not trim a tiny biopsy merely to reach that thickness.</p></div>
-      <Range id="gross-thickness" label="Maximum piece thickness" value={c.thickness} min={1} max={10} unit="mm" onChange={thickness => update({ thickness })} />
-      <Range id="fragment-count" label="Fragments reconciled" value={c.fragments} min={0} max={6} unit="pieces" onChange={fragments => update({ fragments })} />
-      <Choices legend="Sampling plan" value={c.sampling} onChange={sampling => update({ sampling })} choices={[{ value: 'profile', label: 'Preserve the requested profile and block key' }, { value: 'enface', label: 'Sample a surface only' }, { value: 'random', label: 'Take whichever fragment fits' }]} />
-    </>
-    case 2: return <><Choices legend="Fixation decision" value={c.fixation} onChange={fixation => update({ fixation })} choices={[{ value: 'validated', label: 'Verify validated criteria and document times' }, { value: 'rush', label: 'Process immediately to meet the run time' }, { value: 'heat', label: 'Use unvalidated heating to speed it up' }]} />{specimen.id === 'bone' && <Choices legend="Bone preparation" value={c.decalcification} onChange={decalcification => update({ decalcification })} choices={[{ value: 'edta', label: 'Monitored EDTA after adequate fixation', detail: 'Specified by this teaching protocol for the ancillary assay.' }, { value: 'acid', label: 'Unmonitored strong acid for speed' }, { value: 'none', label: 'Skip decalcification for routine paraffin sectioning' }]} />}</>
-    case 3: return <><fieldset className="bench-options"><legend>Arrange the exchanges</legend><p className="small muted">Move each step into the order that makes tissue compatible with wax.</p><ol className="reagent-order">{c.sequence.map((s, i) => <li key={s}><span><b>{i + 1}.</b> {{ dehydrate: 'Dehydrate', clear: 'Clear', infiltrate: 'Infiltrate' }[s]}</span><div><button className="btn" disabled={i === 0} aria-label={`Move ${s} earlier`} onClick={() => { const sequence = [...c.sequence]; [sequence[i - 1], sequence[i]] = [sequence[i], sequence[i - 1]]; update({ sequence }) }}>Earlier</button><button className="btn" disabled={i === 2} aria-label={`Move ${s} later`} onClick={() => { const sequence = [...c.sequence]; [sequence[i + 1], sequence[i]] = [sequence[i], sequence[i + 1]]; update({ sequence }) }}>Later</button></div></li>)}</ol></fieldset><Choices legend="Validated specimen class" value={c.schedule} onChange={schedule => update({ schedule })} choices={[{ value: 'biopsy', label: 'Small mucosal biopsy' }, { value: 'routine', label: 'Routine soft tissue' }, { value: 'bone', label: 'Adequately fixed, decalcified core' }]} /></>
-    case 4: return <Choices legend="Face presented to the blade" value={c.orientation} onChange={orientation => update({ orientation })} choices={[{ value: 'flat', label: 'Tangential surface', detail: 'One surface or layer at a time.' }, { value: 'profile', label: 'Surface-to-depth profile', detail: 'The prepared face includes epithelium and underlying tissue.' }, { value: 'longitudinal', label: 'Longitudinal core face', detail: 'Represent the length of a core.' }]} />
-    case 5: return <><Range id="section-thickness" label="Section thickness" value={c.section} min={1} max={12} unit="µm" onChange={section => update({ section })} /><Choices legend="Blade condition" value={c.blade} onChange={blade => update({ blade })} choices={[{ value: 'sound', label: 'Sound edge' }, { value: 'nicked', label: 'Nicked edge' }]} /><Choices legend="Block condition" value={c.block} onChange={block => update({ block })} choices={[{ value: 'conditioned', label: 'Appropriately conditioned' }, { value: 'warm', label: 'Too warm for this wax' }]} /><Toggle label="Instrument safety procedure checked: guard, lock and safe handling before adjustments" checked={c.safety} onChange={safety => update({ safety })} /></>
-    case 6: return <fieldset className="bench-options"><legend>H&E milestones</legend><Toggle label="Deparaffinize and hydrate for reagent access" checked={c.dewax} onChange={dewax => update({ dewax })} /><Toggle label="Develop appropriate nuclear staining, differentiation where needed, and bluing" checked={c.nuclei} onChange={nuclei => update({ nuclei })} /><Toggle label="Apply and assess eosin countercontrast" checked={c.eosin} onChange={eosin => update({ eosin })} /><Toggle label="Complete compatible dehydration, clearing and mounting; check clarity and label" checked={c.mount} onChange={mount => update({ mount })} /><p className="small muted">The controls summarize milestones. They are not a complete staining protocol or a reagent timer.</p></fieldset>
-    case 7: return <><p><strong>Requested target:</strong> {specimen.target}.</p><Choices legend="Select the requested method" value={c.stain} onChange={stain => update({ stain })} choices={[{ value: 'pas', label: 'PAS' }, { value: 'alcian', label: 'Alcian blue, pH 2.5' }, { value: 'iron', label: 'Prussian blue' }, { value: 'oil', label: 'Oil red O on this routine paraffin material' }]} /><Toggle label="Include and evaluate a known target-positive control" checked={c.positive} onChange={positive => update({ positive })} /></>
-    case 8: return <><Choices legend="Respond to failed control" value={c.ihcAction} onChange={ihcAction => update({ ihcAction })} choices={[{ value: 'release', label: 'Release the sample as negative' }, { value: 'repeat', label: 'Hold, investigate, correct and repeat', detail: 'The synthetic repeat resolves a documented reagent fault and passes controls.' }, { value: 'ignore', label: 'Ignore the control because morphology is acceptable' }]} /><Choices legend={`Expected ${specimen.marker} compartment`} value={c.location} onChange={location => update({ location })} choices={[{ value: 'nuclear', label: 'Nuclear' }, { value: 'cytoplasmic', label: 'Cytoplasmic' }, { value: 'membranous', label: 'Membranous' }]} /></>
-    case 9: return <><div className="teaching-protocol"><strong>Record review</strong><p>{run.findings.filter(f => !f.ok).length} unresolved modeled failures. Review the specimen record below before deciding.</p></div><Choices legend="Technical disposition" value={c.handoff} onChange={handoff => update({ handoff })} choices={[{ value: 'release', label: 'Ready for technical handoff to the pathologist' }, { value: 'hold', label: 'Hold for investigation and corrective action' }]} /></>
-    default: return null
+    case 0:
+      return (
+        <Choices
+          legend="Resolve the discrepancy"
+          value={c.identity}
+          onChange={(identity) => update({ identity })}
+          choices={[
+            { value: 'accept', label: 'Accept because the name matches' },
+            { value: 'hold', label: 'Hold and resolve with the submitting team' },
+            { value: 'relabel', label: 'Rewrite the bottle label to match' },
+          ]}
+        />
+      )
+    case 1:
+      return (
+        <>
+          <div className="teaching-protocol">
+            <strong>Teaching block key · {specimen.label}</strong>
+            <p>
+              {specimen.fragments} {specimen.fragments === 1 ? 'piece' : 'pieces'}; preserve the
+              requested profile. Use pieces no thicker than 4 mm in this exercise. Do not trim a
+              tiny biopsy merely to reach that thickness.
+            </p>
+          </div>
+          <Range
+            id="gross-thickness"
+            label="Maximum piece thickness"
+            value={c.thickness}
+            min={1}
+            max={10}
+            unit="mm"
+            onChange={(thickness) => update({ thickness })}
+          />
+          <Range
+            id="fragment-count"
+            label="Fragments reconciled"
+            value={c.fragments}
+            min={0}
+            max={6}
+            unit="pieces"
+            onChange={(fragments) => update({ fragments })}
+          />
+          <Choices
+            legend="Sampling plan"
+            value={c.sampling}
+            onChange={(sampling) => update({ sampling })}
+            choices={[
+              { value: 'profile', label: 'Preserve the requested profile and block key' },
+              { value: 'enface', label: 'Sample a surface only' },
+              { value: 'random', label: 'Take whichever fragment fits' },
+            ]}
+          />
+        </>
+      )
+    case 2:
+      return (
+        <>
+          <Choices
+            legend="Fixation decision"
+            value={c.fixation}
+            onChange={(fixation) => update({ fixation })}
+            choices={[
+              { value: 'validated', label: 'Verify validated criteria and document times' },
+              { value: 'rush', label: 'Process immediately to meet the run time' },
+              { value: 'heat', label: 'Use unvalidated heating to speed it up' },
+            ]}
+          />
+          {specimen.id === 'bone' && (
+            <Choices
+              legend="Bone preparation"
+              value={c.decalcification}
+              onChange={(decalcification) => update({ decalcification })}
+              choices={[
+                { value: 'edta', label: 'Monitored EDTA after adequate fixation' },
+                { value: 'acid', label: 'Unmonitored strong acid for speed' },
+                { value: 'none', label: 'Skip decalcification for routine paraffin sectioning' },
+              ]}
+            />
+          )}
+        </>
+      )
+    case 3:
+      return (
+        <>
+          <fieldset className="bench-options">
+            <legend>Arrange the exchanges</legend>
+            <p className="small muted">
+              Arrange the steps, or explicitly confirm the displayed order. The initial arrangement
+              varies between runs.
+            </p>
+            <ol className="reagent-order">
+              {sequence.map((s, i) => (
+                <li key={s}>
+                  <span>
+                    <b>{i + 1}.</b>{' '}
+                    {{ dehydrate: 'Dehydrate', clear: 'Clear', infiltrate: 'Infiltrate' }[s]}
+                  </span>
+                  <div>
+                    <button
+                      className="btn"
+                      disabled={i === 0}
+                      aria-label={`Move ${s} earlier`}
+                      onClick={() => {
+                        const arranged = [...sequence]
+                        ;[arranged[i - 1], arranged[i]] = [arranged[i], arranged[i - 1]]
+                        update({ sequence: arranged })
+                      }}
+                    >
+                      Earlier
+                    </button>
+                    <button
+                      className="btn"
+                      disabled={i === 2}
+                      aria-label={`Move ${s} later`}
+                      onClick={() => {
+                        const arranged = [...sequence]
+                        ;[arranged[i + 1], arranged[i]] = [arranged[i], arranged[i + 1]]
+                        update({ sequence: arranged })
+                      }}
+                    >
+                      Later
+                    </button>
+                  </div>
+                </li>
+              ))}
+            </ol>
+            {c.sequence === null ? (
+              <button className="btn" onClick={() => update({ sequence })}>
+                Use this sequence
+              </button>
+            ) : (
+              <p className="small muted">
+                Sequence selected. You can still rearrange it before committing.
+              </p>
+            )}
+          </fieldset>
+          <Choices
+            legend="Validated specimen class"
+            value={c.schedule}
+            onChange={(schedule) => update({ schedule })}
+            choices={[
+              { value: 'biopsy', label: 'Small mucosal biopsy' },
+              { value: 'routine', label: 'Routine soft tissue' },
+              { value: 'bone', label: 'Adequately fixed, decalcified core' },
+            ]}
+          />
+        </>
+      )
+    case 4:
+      return (
+        <Choices
+          legend="Face presented to the blade"
+          value={c.orientation}
+          onChange={(orientation) => update({ orientation })}
+          choices={[
+            { value: 'flat', label: 'Tangential surface' },
+            { value: 'profile', label: 'Surface-to-depth profile' },
+            { value: 'longitudinal', label: 'Longitudinal core face' },
+          ]}
+        />
+      )
+    case 5:
+      return (
+        <>
+          <Range
+            id="section-thickness"
+            label="Section thickness"
+            value={c.section}
+            min={1}
+            max={12}
+            unit="µm"
+            onChange={(section) => update({ section })}
+          />
+          <Choices
+            legend="Blade condition"
+            value={c.blade}
+            onChange={(blade) => update({ blade })}
+            choices={[
+              { value: 'sound', label: 'Sound edge' },
+              { value: 'nicked', label: 'Nicked edge' },
+            ]}
+          />
+          <Choices
+            legend="Block condition"
+            value={c.block}
+            onChange={(block) => update({ block })}
+            choices={[
+              { value: 'conditioned', label: 'Appropriately conditioned' },
+              { value: 'warm', label: 'Too warm for this wax' },
+            ]}
+          />
+          <Toggle
+            label="Instrument safety procedure checked: guard, lock and safe handling before adjustments"
+            checked={c.safety}
+            onChange={(safety) => update({ safety })}
+          />
+        </>
+      )
+    case 6:
+      return (
+        <fieldset className="bench-options">
+          <legend>H&E milestones</legend>
+          <Toggle
+            label="Deparaffinize and hydrate for reagent access"
+            checked={c.dewax}
+            onChange={(dewax) => update({ dewax })}
+          />
+          <Toggle
+            label="Develop appropriate nuclear staining, differentiation where needed, and bluing"
+            checked={c.nuclei}
+            onChange={(nuclei) => update({ nuclei })}
+          />
+          <Toggle
+            label="Apply and assess eosin countercontrast"
+            checked={c.eosin}
+            onChange={(eosin) => update({ eosin })}
+          />
+          <Toggle
+            label="Complete compatible dehydration, clearing and mounting; check clarity and label"
+            checked={c.mount}
+            onChange={(mount) => update({ mount })}
+          />
+          <p className="small muted">
+            The controls summarize milestones. They are not a complete staining protocol or a
+            reagent timer.
+          </p>
+        </fieldset>
+      )
+    case 7:
+      return (
+        <>
+          <p>
+            <strong>Requested target:</strong> {specimen.target}.
+          </p>
+          <Choices
+            legend="Select the requested method"
+            value={c.stain}
+            onChange={(stain) => update({ stain })}
+            choices={[
+              { value: 'pas', label: 'PAS' },
+              { value: 'alcian', label: 'Alcian blue, pH 2.5' },
+              { value: 'iron', label: 'Prussian blue' },
+              { value: 'oil', label: 'Oil red O on this routine paraffin material' },
+            ]}
+          />
+          <Toggle
+            label="Include and evaluate a known target-positive control"
+            checked={c.positive}
+            onChange={(positive) => update({ positive })}
+          />
+        </>
+      )
+    case 8:
+      return (
+        <>
+          <Choices
+            legend="Respond to failed control"
+            value={c.ihcAction}
+            onChange={(ihcAction) => update({ ihcAction })}
+            choices={[
+              { value: 'release', label: 'Release the sample as negative' },
+              { value: 'repeat', label: 'Hold, investigate, correct and repeat' },
+              { value: 'ignore', label: 'Ignore the control because morphology is acceptable' },
+            ]}
+          />
+          <Choices
+            legend={`Expected ${specimen.marker} compartment`}
+            value={c.location}
+            onChange={(location) => update({ location })}
+            choices={[
+              { value: 'nuclear', label: 'Nuclear' },
+              { value: 'cytoplasmic', label: 'Cytoplasmic' },
+              { value: 'membranous', label: 'Membranous' },
+            ]}
+          />
+        </>
+      )
+    case 9:
+      return (
+        <>
+          <div className="teaching-protocol">
+            <strong>Record review</strong>
+            <p>
+              {run.findings.filter((f) => !f.ok).length} unresolved modeled failures. Review the
+              specimen record below before deciding.
+            </p>
+          </div>
+          <Choices
+            legend="Technical disposition"
+            value={c.handoff}
+            onChange={(handoff) => update({ handoff })}
+            choices={[
+              { value: 'release', label: 'Ready for technical handoff to the pathologist' },
+              { value: 'hold', label: 'Hold for investigation and corrective action' },
+            ]}
+          />
+        </>
+      )
+    default:
+      return null
   }
+}
+
+function StageControls(props: {
+  run: WorkbenchRun
+  specimen: SpecimenCase
+  update: (patch: Partial<Controls>) => void
+}) {
+  return (
+    <ChoiceSeed.Provider value={props.run.seed}>
+      <StationInputs {...props} />
+    </ChoiceSeed.Provider>
+  )
 }
 
 function LiveStage({ run, specimen }: { run: WorkbenchRun; specimen: SpecimenCase }) {
   const c = run.controls
   const [cut, setCut] = useState(false)
-  if (run.station === 0) return <div className="receipt-comparison"><div><h3>Container label</h3><dl><dt>Patient</dt><dd>Training patient A</dd><dt>Date of birth</dt><dd>04 / 12 / 1978</dd><dt>Specimen</dt><dd>{specimen.title}</dd></dl></div><div><h3>Request</h3><dl><dt>Patient</dt><dd>Training patient A</dd><dt>Date of birth</dt><dd className="discrepancy">04 / 21 / 1978</dd><dt>Specimen</dt><dd>{specimen.title}</dd></dl></div><p className="small muted">Fictional labels. Identity discrepancy intentionally introduced.</p></div>
-  if (run.station === 1) return <><FigureCanvas kind="gross" step={c.thickness <= 3 ? 0 : c.thickness <= 4 ? 1 : 2} thickness={c.thickness} /><div className="cassette-fragments" aria-label={`${c.fragments} fragments in the teaching cassette`}>{Array.from({ length: c.fragments }, (_, i) => <span key={i}>{i + 1}</span>)}</div><p>{c.fragments} of {specimen.fragments} expected fragments reconciled.</p></>
-  if (run.station === 2) return <><FigureCanvas kind="fixation" step={c.fixation === 'validated' ? 2 : c.fixation === 'heat' ? 1 : 0} /><p>{c.fixation === 'validated' ? 'Criteria verified in the exercise. Actual fixation must follow the validated tissue and assay requirements.' : 'Preservation is not established by this choice.'}</p></>
-  if (run.station === 3) return <><FigureCanvas kind="processing" step={3} /><div className="exchange-trail">{c.sequence.map((s, i) => <span key={s}>{i + 1}. {s}</span>)}</div><p>The diagram shows the intended material exchanges. Your programmed order is shown below it.</p></>
-  if (run.station === 4) return <><FigureCanvas kind="embedding" step={c.orientation === 'flat' ? 0 : 1} /><p>{c.orientation === 'flat' ? 'Tangential face: surface detail dominates; depth relationships may be lost.' : c.orientation === 'profile' ? 'Profile face: surface and deeper layers enter the same plane.' : 'Longitudinal face: the section follows the length of a core.'} {specimen.id === 'bone' ? 'The layered schematic demonstrates plane geometry; it is not bone morphology.' : ''}</p></>
-  if (run.station === 5) return <><FigureCanvas kind="microtomy" step={cut ? 2 : 0} damage={c.blade === 'nicked' || c.block === 'warm'} /><button className="btn" onClick={() => setCut(!cut)}>{cut ? 'Return to block' : 'Cut a teaching ribbon'}</button><div className="section-observation"><strong>Predicted observations</strong><p>{c.blade === 'nicked' ? 'The damaged edge may produce recurring lines. ' : 'A sound edge removes one possible cause of lines. '}{c.block === 'warm' ? 'The warm block increases compression risk in this model. ' : 'Conditioning supports cutting in this model. '}{c.section !== 4 ? 'The section does not meet this exercise’s 4 µm specification.' : 'The thickness matches the exercise specification.'}</p></div></>
-  if (run.station === 6) return <><svg viewBox="0 0 600 310" role="img" aria-label={`Schematic section: ${c.nuclei && c.dewax ? 'nuclear contrast present' : 'nuclear contrast missing'}, ${c.eosin && c.dewax ? 'cytoplasmic contrast present' : 'cytoplasmic contrast missing'}.`}><TissueSection nuclear={c.nuclei && c.dewax} pink={c.eosin && c.dewax} /><text x="70" y="280" className="fig-label">{c.dewax ? 'Reagents can access the modeled tissue' : 'Wax remains: stain access is not established'}</text></svg><p>{c.mount ? 'Mounting milestone selected. Inspect actual slides for water, bubbles and compatible medium.' : 'Final optical clarity and mounting still need review.'}</p></>
-  if (run.station === 7) return <><FigureCanvas kind="special" step={c.stain === 'pas' || c.stain === 'alcian' ? 0 : 1} /><div className={`control-observation ${c.positive ? 'pass' : 'fail'}`}><strong>Target-positive control</strong><span>{c.positive ? 'Included for evaluation' : 'Missing — analytical performance unverified'}</span></div><p>{specimen.target}. The schematic is a target-selection aid, not a prediction of a real patient result.</p></>
-  if (run.station === 8) return <><FigureCanvas kind="ihc" step={3} /><div className="control-pair"><div className="control-observation fail"><strong>Initial positive control</strong><span>Failed · sample negative</span></div><div className={`control-observation ${c.ihcAction === 'repeat' ? 'pass' : 'fail'}`}><strong>Repeat branch</strong><span>{c.ihcAction === 'repeat' ? 'Fault corrected · repeat controls pass' : 'Not resolved'}</span></div></div><p>Specificity requires expected localization as well as signal. {specimen.marker} is the teaching marker for this case.</p></>
-  return <><FigureCanvas kind="quality" step={3} /><p><strong>{canRelease(run.findings) ? 'All nine upstream checks passed.' : 'One or more upstream checks remain unresolved.'}</strong> Technical release must account for the entire specimen record.</p></>
+  if (run.station === 0)
+    return (
+      <div className="receipt-comparison">
+        <div>
+          <h3>Container label</h3>
+          <dl>
+            <dt>Patient</dt>
+            <dd>Training patient A</dd>
+            <dt>Date of birth</dt>
+            <dd>04 / 12 / 1978</dd>
+            <dt>Specimen</dt>
+            <dd>{specimen.title}</dd>
+          </dl>
+        </div>
+        <div>
+          <h3>Request</h3>
+          <dl>
+            <dt>Patient</dt>
+            <dd>Training patient A</dd>
+            <dt>Date of birth</dt>
+            <dd className="discrepancy">04 / 21 / 1978</dd>
+            <dt>Specimen</dt>
+            <dd>{specimen.title}</dd>
+          </dl>
+        </div>
+        <p className="small muted">
+          Fictional labels. Identity discrepancy intentionally introduced.
+        </p>
+      </div>
+    )
+  if (run.station === 1)
+    return (
+      <>
+        <FigureCanvas
+          kind="gross"
+          step={(c.thickness ?? 4) <= 3 ? 0 : (c.thickness ?? 4) <= 4 ? 1 : 2}
+          thickness={c.thickness ?? 4}
+        />
+        <div
+          className="cassette-fragments"
+          aria-label={
+            c.fragments === null
+              ? 'Fragment count not selected'
+              : `${c.fragments} fragments in the teaching cassette`
+          }
+        >
+          {Array.from({ length: c.fragments ?? 0 }, (_, i) => (
+            <span key={i}>{i + 1}</span>
+          ))}
+        </div>
+        <p>
+          {c.fragments === null
+            ? 'Enter the fragment count to model cassette contents.'
+            : `${c.fragments} of ${specimen.fragments} expected fragments reconciled.`}
+        </p>
+      </>
+    )
+  if (run.station === 2)
+    return (
+      <>
+        <FigureCanvas
+          kind="fixation"
+          step={c.fixation === 'validated' ? 2 : c.fixation === 'heat' ? 1 : 0}
+        />
+        <p>
+          {c.fixation === 'validated'
+            ? 'Criteria verified in the exercise. Actual fixation must follow the validated tissue and assay requirements.'
+            : 'Preservation is not established by this choice.'}
+        </p>
+      </>
+    )
+  if (run.station === 3)
+    return (
+      <>
+        <FigureCanvas kind="processing" step={3} />
+        <div className="exchange-trail">
+          {(c.sequence ?? []).map((s, i) => (
+            <span key={s}>
+              {i + 1}. {s}
+            </span>
+          ))}
+        </div>
+        <p>
+          The diagram shows the intended material exchanges. Your programmed order is shown below
+          it.
+        </p>
+      </>
+    )
+  if (run.station === 4 && c.orientation === null)
+    return <p>Choose a plane to inspect the resulting tissue relationship.</p>
+  if (run.station === 4)
+    return (
+      <>
+        <FigureCanvas kind="embedding" step={c.orientation === 'flat' ? 0 : 1} />
+        <p>
+          {c.orientation === 'flat'
+            ? 'Tangential face: surface detail dominates; depth relationships may be lost.'
+            : c.orientation === 'profile'
+              ? 'Profile face: surface and deeper layers enter the same plane.'
+              : 'Longitudinal face: the section follows the length of a core.'}{' '}
+          {specimen.id === 'bone'
+            ? 'The layered schematic demonstrates plane geometry; it is not bone morphology.'
+            : ''}
+        </p>
+      </>
+    )
+  if (run.station === 5)
+    return (
+      <>
+        <FigureCanvas
+          kind="microtomy"
+          step={cut ? 2 : 0}
+          damage={c.blade === 'nicked' || c.block === 'warm'}
+        />
+        <button className="btn" onClick={() => setCut(!cut)}>
+          {cut ? 'Return to block' : 'Cut a teaching ribbon'}
+        </button>
+        <div className="section-observation">
+          <strong>Predicted observations</strong>
+          <p>
+            {c.blade === null
+              ? 'Select a blade condition. '
+              : c.blade === 'nicked'
+                ? 'The damaged edge may produce recurring lines. '
+                : 'A sound edge removes one possible cause of lines. '}
+            {c.block === null
+              ? 'Select a block condition. '
+              : c.block === 'warm'
+                ? 'The warm block increases compression risk in this model. '
+                : 'Conditioning supports cutting in this model. '}
+            {c.section === null
+              ? 'Select a section thickness.'
+              : c.section !== 4
+                ? 'The section does not meet this exercise’s 4 µm specification.'
+                : 'The thickness matches the exercise specification.'}
+          </p>
+        </div>
+      </>
+    )
+  if (run.station === 6)
+    return (
+      <>
+        <svg
+          viewBox="0 0 600 310"
+          role="img"
+          aria-label={`Schematic section: ${c.nuclei && c.dewax ? 'nuclear contrast present' : 'nuclear contrast missing'}, ${c.eosin && c.dewax ? 'cytoplasmic contrast present' : 'cytoplasmic contrast missing'}.`}
+        >
+          <TissueSection
+            nuclear={c.nuclei === true && c.dewax === true}
+            pink={c.eosin === true && c.dewax === true}
+          />
+          <text x="70" y="280" className="fig-label">
+            {c.dewax
+              ? 'Reagents can access the modeled tissue'
+              : 'Wax remains: stain access is not established'}
+          </text>
+        </svg>
+        <p>
+          {c.mount
+            ? 'Mounting milestone selected. Inspect actual slides for water, bubbles and compatible medium.'
+            : 'Final optical clarity and mounting still need review.'}
+        </p>
+      </>
+    )
+  if (run.station === 7)
+    return (
+      <>
+        <FigureCanvas kind="special" step={c.stain === 'pas' || c.stain === 'alcian' ? 0 : 1} />
+        <div className={`control-observation ${c.positive ? 'pass' : 'fail'}`}>
+          <strong>Target-positive control</strong>
+          <span>
+            {c.positive ? 'Included for evaluation' : 'Missing — analytical performance unverified'}
+          </span>
+        </div>
+        <p>
+          {specimen.target}. The schematic is a target-selection aid, not a prediction of a real
+          patient result.
+        </p>
+      </>
+    )
+  if (run.station === 8)
+    return (
+      <>
+        <FigureCanvas kind="ihc" step={3} />
+        <div className="control-pair">
+          <div className="control-observation fail">
+            <strong>Initial positive control</strong>
+            <span>Failed · sample negative</span>
+          </div>
+          <div className={`control-observation ${c.ihcAction === 'repeat' ? 'pass' : 'fail'}`}>
+            <strong>Repeat branch</strong>
+            <span>
+              {c.ihcAction === 'repeat' ? 'Fault corrected · repeat controls pass' : 'Not resolved'}
+            </span>
+          </div>
+        </div>
+        <p>
+          Specificity requires expected localization as well as signal. {specimen.marker} is the
+          teaching marker for this case.
+        </p>
+      </>
+    )
+  return (
+    <>
+      <FigureCanvas kind="quality" step={3} />
+      <p>
+        <strong>
+          {canRelease(run.findings)
+            ? 'All nine upstream checks passed.'
+            : 'One or more upstream checks remain unresolved.'}
+        </strong>{' '}
+        Technical release must account for the entire specimen record.
+      </p>
+    </>
+  )
 }
 
 export default function WorkbenchPage() {
-  const run = useAppState(s => s.workbench)
+  const run = useAppState((s) => s.workbench)
   const [choosing, setChoosing] = useState(false)
   const stageHeading = useRef<HTMLHeadingElement>(null)
-  const specimen = CASES.find(c => c.id === run?.caseId)
-  useEffect(() => { if (run) stageHeading.current?.focus() }, [run?.station, run?.caseId])
-  const update = (patch: Partial<Controls>) => setState(s => s.workbench ? { ...s, workbench: { ...s.workbench, controls: { ...s.workbench.controls, ...patch } } } : s)
-  function selectCase(caseId: SpecimenCase['id']) { setState(s => ({ ...s, workbench: startRun(caseId) })); setChoosing(false) }
+  const specimen = CASES.find((c) => c.id === run?.caseId)
+  const missing = run ? missingStationDecisions(run) : []
+  const station = run?.station
+  const caseId = run?.caseId
+  useEffect(() => {
+    if (station !== undefined) stageHeading.current?.focus()
+  }, [station, caseId])
+  const update = (patch: Partial<Controls>) =>
+    setState((s) =>
+      s.workbench
+        ? { ...s, workbench: { ...s.workbench, controls: { ...s.workbench.controls, ...patch } } }
+        : s,
+    )
+  function selectCase(caseId: SpecimenCase['id']) {
+    setState((s) => ({ ...s, workbench: startRun(caseId) }))
+    setChoosing(false)
+  }
   function record() {
     if (!run || !specimen || run.recorded || run.station !== 10) return
-    recordSim({ sim: 'specimen-workbench', correct: run.findings.filter(f => f.ok).length, total: 10, objectives: ['OPS-08', 'FIX-02', 'PROC-01', 'EMB-01', 'EMB-02', 'STAIN-01', 'STAIN-07', 'STAIN-09'], summary: `${specimen.title}: ${canRelease(run.findings) && run.findings[9].ok ? 'technical handoff supported' : 'hold / rework reviewed'}` })
-    setState(s => s.workbench ? { ...s, workbench: { ...s.workbench, recorded: true } } : s)
+    recordSim({
+      sim: 'specimen-workbench',
+      correct: run.findings.filter((f) => f.ok).length,
+      total: 10,
+      objectives: [
+        'OPS-08',
+        'FIX-02',
+        'PROC-01',
+        'EMB-01',
+        'EMB-02',
+        'STAIN-01',
+        'STAIN-07',
+        'STAIN-09',
+      ],
+      summary: `${specimen.title}: ${canRelease(run.findings) && run.findings[9].ok ? 'technical handoff supported' : 'hold / rework reviewed'}`,
+    })
+    setState((s) => (s.workbench ? { ...s, workbench: { ...s.workbench, recorded: true } } : s))
   }
-  return <div className="page workbench-page">
-    <div className="studio-top"><Link to="/lab">Virtual Lab</Link><Link to="/notebook">Field notebook</Link></div>
-    <div className="page-head"><div><h1>Specimen workbench</h1><p className="lede">Make the decisions. Follow the consequences.</p></div>{run && <button className="btn" onClick={() => setChoosing(!choosing)}>{choosing ? 'Return to current case' : 'Choose another specimen'}</button>}</div>
-    <p className="bench-boundary">Synthetic cases · simplified qualitative models · no patient data. Practice reasoning here; learn instrument handling and demonstrate competency under supervision.</p>
-    {(!run || choosing || !specimen) ? <section className="case-selection"><h2>Which specimen will you follow?</h2><p>Each case travels through ten stations. Your active case is saved after every decision.</p>{choosing && <p className="notice">Starting a new case replaces the current draft. Previously recorded runs remain in your notebook.</p>}{CASES.map((c, i) => <article key={c.id} className="case-option"><span className="case-index">{String(i + 1).padStart(2, '0')}</span><div><h3>{c.title}</h3><p>{c.description}</p><p className="small muted">{c.level} · {c.dimensions}</p></div><button className="btn btn-primary" onClick={() => selectCase(c.id)}>Start {c.title.toLowerCase()}</button></article>)}<Link to="/pathway/accessioning">Review accessioning first</Link></section> : <>
-      <div className="specimen-passport"><div><strong>{specimen.title}</strong><span>{specimen.label}</span></div><p>{specimen.description}</p><span className="small muted">{specimen.dimensions}</span></div>
-      <ol className="station-track" aria-label="Specimen workflow">{STATIONS.map((label, i) => <li key={label} className={i < run.station ? 'past' : i === run.station ? 'current' : ''} aria-current={i === run.station ? 'step' : undefined}><span>{i + 1}</span>{label}</li>)}</ol>
-      {run.station < 10 ? <>
-        <div className="workbench-heading"><div><span className="small muted">Station {run.station + 1} of 10</span><h2 ref={stageHeading} tabIndex={-1}>{STATIONS[run.station]}</h2></div><Link to={`/pathway/${['accessioning', 'grossing', 'fixation', 'processing', 'embedding', 'microtomy', 'he', 'special-stains', 'ihc', 'quality-handoff'][run.station]}`}>Review the science</Link></div>
-        <p className="bench-task">{TASKS[run.station]}</p>
-        <div className="workbench-grid"><section className="inspection-stage" aria-label="Specimen inspection"><div className="inspection-header"><strong>{MATERIAL[run.station]}</strong><span>Schematic</span></div><LiveStage key={`${run.caseId}-${run.station}`} run={run} specimen={specimen} /><details className="deeper"><summary>Case preparation notes</summary><p>{specimen.preanalytic}</p></details></section><section className="bench-console" aria-label="Station controls"><StageControls run={run} specimen={specimen} update={update} /><div className="commit-station"><p className="small muted">Commit your choice to see feedback. Earlier decisions stay in the specimen record.</p><button className="btn btn-primary" onClick={() => setState(s => s.workbench ? { ...s, workbench: advanceRun(s.workbench) } : s)}>{run.station === 9 ? 'Complete technical review' : 'Commit and move to next station'}</button></div></section></div>
-        {run.findings.length > 0 && <div className={`last-finding ${run.findings.at(-1)!.ok ? 'pass' : 'fail'}`} role="status"><strong>Previous station: {run.findings.at(-1)!.ok ? 'Decision supported' : 'Issue carried forward'}</strong><p>{run.findings.at(-1)!.detail}</p>{!run.findings.at(-1)!.ok && <p>{run.findings.at(-1)!.consequence}</p>}</div>}
-      </> : <section className="run-debrief"><h2 ref={stageHeading} tabIndex={-1}>Your specimen, reviewed</h2><p className="lede">{canRelease(run.findings) && run.findings[9]?.ok ? 'The modeled preparation supports a technical handoff.' : 'The record identifies issues that need resolution before technical release.'}</p><p>{run.findings.filter(f => f.ok).length} of 10 decisions supported. This is a learning result, not a readiness score or a diagnosis.</p><div className="row"><button className="btn btn-primary" disabled={run.recorded} onClick={record}>{run.recorded ? 'Run saved to your notebook' : 'Save this run to your notebook'}</button><button className="btn" onClick={() => selectCase(specimen.id)}>Repeat this case</button><Link className="btn" to="/practice">Practice the concepts</Link></div></section>}
-      <section className="specimen-record"><h2>Specimen record</h2>{run.findings.length === 0 ? <p className="muted">Your decisions and their consequences will appear here, station by station.</p> : <ol>{run.findings.map(f => <li key={f.station}><div className="record-heading"><strong>{f.station + 1}. {f.title}</strong><span className={`tag ${f.ok ? 'tag-teal' : 'tag-eosin'}`}>{f.ok ? 'Supported' : 'Review needed'}</span></div><p>{f.detail}</p>{!f.ok && <><p><strong>Downstream effect:</strong> {f.consequence}</p><p><strong>Investigate:</strong> {f.repair}</p></>}</li>)}</ol>}</section>
-    </>}
-    <details className="bench-sources"><summary>Model scope and references</summary><p>Rules are transparent teaching scenarios. They do not calculate fixation kinetics, instrument settings, stain performance, tissue viability, or clinical eligibility. Corrective action is simulated only where explicitly stated. All content remains author-checked, not independently expert-reviewed.</p><References refs={['cap-nsh-2025', 'leica-processing', 'leica-microtomy', 'leica-he', 'leica-ihc'].map(sourceId => ({ sourceId }))} /></details>
-  </div>
+  return (
+    <div className="page workbench-page">
+      <div className="studio-top">
+        <Link to="/lab">Virtual Lab</Link>
+        <Link to="/notebook">Field notebook</Link>
+      </div>
+      <div className="page-head">
+        <div>
+          <h1>Specimen workbench</h1>
+          <p className="lede">Make the decisions. Follow the consequences.</p>
+        </div>
+        {run && (
+          <button className="btn" onClick={() => setChoosing(!choosing)}>
+            {choosing ? 'Return to current case' : 'Choose another specimen'}
+          </button>
+        )}
+      </div>
+      <p className="bench-boundary">
+        Synthetic cases · simplified qualitative models · no patient data. Practice reasoning here;
+        learn instrument handling and demonstrate competency under supervision.
+      </p>
+      {!run || choosing || !specimen ? (
+        <section className="case-selection">
+          <h2>Which specimen will you follow?</h2>
+          <p>
+            Each case travels through ten stations. Choices begin unanswered; select and commit your
+            decisions. Your active case is saved after every decision.
+          </p>
+          {choosing && (
+            <p className="notice">
+              Starting a new case replaces the current draft. Previously recorded runs remain in
+              your notebook.
+            </p>
+          )}
+          {CASES.map((c, i) => (
+            <article key={c.id} className="case-option">
+              <span className="case-index">{String(i + 1).padStart(2, '0')}</span>
+              <div>
+                <h3>{c.title}</h3>
+                <p>{c.description}</p>
+                <p className="small muted">
+                  {c.level} · {c.dimensions}
+                </p>
+              </div>
+              <button className="btn btn-primary" onClick={() => selectCase(c.id)}>
+                Start {c.title.toLowerCase()}
+              </button>
+            </article>
+          ))}
+          <Link to="/pathway/accessioning">Review accessioning first</Link>
+        </section>
+      ) : (
+        <>
+          <div className="specimen-passport">
+            <div>
+              <strong>{specimen.title}</strong>
+              <span>{specimen.label}</span>
+            </div>
+            <p>{specimen.description}</p>
+            <span className="small muted">{specimen.dimensions}</span>
+          </div>
+          <ol className="station-track" aria-label="Specimen workflow">
+            {STATIONS.map((label, i) => (
+              <li
+                key={label}
+                className={i < run.station ? 'past' : i === run.station ? 'current' : ''}
+                aria-current={i === run.station ? 'step' : undefined}
+              >
+                <span>{i + 1}</span>
+                {label}
+              </li>
+            ))}
+          </ol>
+          {run.station < 10 ? (
+            <>
+              <div className="workbench-heading">
+                <div>
+                  <span className="small muted">Station {run.station + 1} of 10</span>
+                  <h2 ref={stageHeading} tabIndex={-1}>
+                    {STATIONS[run.station]}
+                  </h2>
+                </div>
+                <Link
+                  to={`/pathway/${['accessioning', 'grossing', 'fixation', 'processing', 'embedding', 'microtomy', 'he', 'special-stains', 'ihc', 'quality-handoff'][run.station]}`}
+                >
+                  Review the science
+                </Link>
+              </div>
+              <p className="bench-task">{TASKS[run.station]}</p>
+              <div className="workbench-grid">
+                <section className="inspection-stage" aria-label="Specimen inspection">
+                  <div className="inspection-header">
+                    <strong>{MATERIAL[run.station]}</strong>
+                    <span>Schematic</span>
+                  </div>
+                  <LiveStage key={`${run.caseId}-${run.station}`} run={run} specimen={specimen} />
+                  <details className="deeper">
+                    <summary>Case preparation notes</summary>
+                    <p>{specimen.preanalytic}</p>
+                  </details>
+                </section>
+                <section className="bench-console" aria-label="Station controls">
+                  <StageControls run={run} specimen={specimen} update={update} />
+                  <div className="commit-station">
+                    <p className="small muted" id="station-decision-status" role="status">
+                      {missing.length
+                        ? `Make a decision for: ${missing.join(', ')}.`
+                        : 'All decisions entered. Commit to see feedback; earlier findings remain in the record.'}
+                    </p>
+                    <button
+                      className="btn btn-primary"
+                      disabled={missing.length > 0}
+                      aria-describedby="station-decision-status"
+                      onClick={() =>
+                        setState((s) =>
+                          s.workbench ? { ...s, workbench: advanceRun(s.workbench) } : s,
+                        )
+                      }
+                    >
+                      {run.station === 9
+                        ? 'Complete technical review'
+                        : 'Commit and move to next station'}
+                    </button>
+                  </div>
+                </section>
+              </div>
+              {run.findings.length > 0 && (
+                <div
+                  className={`last-finding ${run.findings.at(-1)!.ok ? 'pass' : 'fail'}`}
+                  role="status"
+                >
+                  <strong>
+                    Previous station:{' '}
+                    {run.findings.at(-1)!.ok ? 'Decision supported' : 'Issue carried forward'}
+                  </strong>
+                  <p>{run.findings.at(-1)!.detail}</p>
+                  {!run.findings.at(-1)!.ok && <p>{run.findings.at(-1)!.consequence}</p>}
+                </div>
+              )}
+            </>
+          ) : (
+            <section className="run-debrief">
+              <h2 ref={stageHeading} tabIndex={-1}>
+                Your specimen, reviewed
+              </h2>
+              <p className="lede">
+                {canRelease(run.findings) && run.findings[9]?.ok
+                  ? 'The modeled preparation supports a technical handoff.'
+                  : 'The record identifies issues that need resolution before technical release.'}
+              </p>
+              <p>
+                {run.findings.filter((f) => f.ok).length} of 10 decisions supported. This is a
+                learning result, not a readiness score or a diagnosis.
+              </p>
+              <div className="row">
+                <button className="btn btn-primary" disabled={run.recorded} onClick={record}>
+                  {run.recorded ? 'Run saved to your notebook' : 'Save this run to your notebook'}
+                </button>
+                <button className="btn" onClick={() => selectCase(specimen.id)}>
+                  Repeat this case
+                </button>
+                <Link className="btn" to="/practice">
+                  Practice the concepts
+                </Link>
+              </div>
+            </section>
+          )}
+          <section className="specimen-record">
+            <h2>Specimen record</h2>
+            {run.findings.length === 0 ? (
+              <p className="muted">
+                Your decisions and their consequences will appear here, station by station.
+              </p>
+            ) : (
+              <ol>
+                {run.findings.map((f) => (
+                  <li key={f.station}>
+                    <div className="record-heading">
+                      <strong>
+                        {f.station + 1}. {f.title}
+                      </strong>
+                      <span className={`tag ${f.ok ? 'tag-teal' : 'tag-eosin'}`}>
+                        {f.ok ? 'Supported' : 'Review needed'}
+                      </span>
+                    </div>
+                    <p>{f.detail}</p>
+                    {!f.ok && (
+                      <>
+                        <p>
+                          <strong>Downstream effect:</strong> {f.consequence}
+                        </p>
+                        <p>
+                          <strong>Investigate:</strong> {f.repair}
+                        </p>
+                      </>
+                    )}
+                  </li>
+                ))}
+              </ol>
+            )}
+          </section>
+        </>
+      )}
+      <details className="bench-sources">
+        <summary>Model scope and references</summary>
+        <p>
+          Rules are transparent teaching scenarios. They do not calculate fixation kinetics,
+          instrument settings, stain performance, tissue viability, or clinical eligibility.
+          Corrective action is simulated only where explicitly stated. All content remains
+          author-checked, not independently expert-reviewed.
+        </p>
+        <References
+          refs={[
+            'cap-nsh-2025',
+            'leica-processing',
+            'leica-microtomy',
+            'leica-he',
+            'leica-ihc',
+          ].map((sourceId) => ({ sourceId }))}
+        />
+      </details>
+    </div>
+  )
 }

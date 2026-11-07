@@ -38,7 +38,7 @@ No account, server or API key is needed. Progress is stored in this browser's `l
 | Content: typed and validated, separate from rendering | `src/content` |
 | Persistence: versioned schema, migrations, JSON export/import | `src/store` |
 
-Stack: React 19, TypeScript, Vite, React Router, Zod (content and storage validation), Motion (animation), Vitest. Teaching illustrations use SVG; the two real micrographs are separately identified and attributed in `public/micrographs/ATTRIBUTION.md`. There are no 3D dependencies.
+Stack: React 19, TypeScript, Vite, React Router, Zod (content and storage validation), Motion (animation), Vitest. Teaching illustrations use SVG; the two real micrographs are separately identified and attributed in `public/micrographs/ATTRIBUTION.md`. The HistoQuest Lab foundation adds Three.js, React Three Fiber and Drei for later lazy-loaded scenes; these packages are not imported by the existing study routes. See [the Lab roadmap](docs/ROADMAP.md) and [baseline measurements](docs/BASELINE.md).
 
 The workbench uses synthetic, qualitative teaching models. It rehearses decisions and investigation; it does not reproduce instrument handling, validate clinical procedures, or establish professional competency or eligibility.
 
